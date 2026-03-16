@@ -1,0 +1,14 @@
+{
+  "name": "gander-studio",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w @gander-studio/server\" \"npm run dev -w @gander-studio/client\"",
+    "build": "npm run build -w @gander-studio/client",
+    "lint": "tsc --noEmit --project packages/shared/tsconfig.json && tsc --noEmit --project packages/server/tsconfig.json && tsc --noEmit --project packages/client/tsconfig.json"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "typescript": "^5.6.0"
+  }
+}
