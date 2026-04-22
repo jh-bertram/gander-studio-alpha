@@ -48,6 +48,16 @@ export async function parseAgentFile(filePath: string): Promise<Agent> {
     tools = data.tools.map(String);
   }
 
+  // Normalize communicates_with: handles both "be, fe" (comma-string) and ["be", "fe"] (YAML list)
+  let communicates_with: string[] | undefined;
+  if (typeof data.communicates_with === 'string') {
+    const parsed = data.communicates_with.split(',').map((s: string) => s.trim()).filter(Boolean);
+    communicates_with = parsed.length > 0 ? parsed : undefined;
+  } else if (Array.isArray(data.communicates_with)) {
+    communicates_with = data.communicates_with.map(String).filter(Boolean);
+    if (communicates_with.length === 0) communicates_with = undefined;
+  }
+
   return AgentSchema.parse({
     name: data.name ?? '',
     description: data.description ?? '',
@@ -55,6 +65,7 @@ export async function parseAgentFile(filePath: string): Promise<Agent> {
     model: data.model ?? 'sonnet',
     version: data.version,
     tier: data.tier ?? 'optional',
+    communicates_with,
     body: content.trim(),
     filePath,
   });
@@ -63,5 +74,20 @@ export async function parseAgentFile(filePath: string): Promise<Agent> {
 export async function parseAllAgents(ganderRoot: string): Promise<Agent[]> {
   const agentsDir = join(ganderRoot, '.claude', 'agents');
   const files = (await readdir(agentsDir)).filter(f => f.endsWith('.md'));
-  return Promise.all(files.map(f => parseAgentFile(join(agentsDir, f))));
+  const results = await Promise.allSettled(files.map(f => parseAgentFile(join(agentsDir, f))));
+  const agents: Agent[] = [];
+  results.forEach((result, i) => {
+    const filePath = join(agentsDir, files[i] ?? '');
+    if (result.status === 'rejected') {
+      console.error('[agent-parser] failed to parse agent file:', filePath, result.reason);
+      return;
+    }
+    const agent = result.value;
+    if (agent.name.trim() === '') {
+      console.error('[agent-parser] skipped agent with empty name:', filePath);
+      return;
+    }
+    agents.push(agent);
+  });
+  return agents;
 }

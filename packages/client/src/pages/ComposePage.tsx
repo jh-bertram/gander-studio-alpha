@@ -1,8 +1,10 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo, Component, type ReactNode, type ErrorInfo } from 'react';
 import type { z } from 'zod';
-import type { AgentSchema, SkillSchema, HookSchema, LoadoutSchema } from '@gander-studio/shared';
+import type { LoadoutSchema } from '@gander-studio/shared';
 import { trpc } from '../trpc';
 import { useComposeStore } from '../store/compose-store';
+import { useCanvasStore } from '../store/canvas-store';
+import MateriaCanvas from '../components/compose/MateriaCanvas';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import {
@@ -11,21 +13,12 @@ import {
   PopoverContent,
 } from '../components/ui/popover';
 import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from '../components/ui/accordion';
-import {
-  BROWSER_PANEL_WIDTH_PX,
   SAVE_SUCCESS_DURATION_MS,
   POPOVER_MAX_HEIGHT_PX,
-  BROWSER_SKELETON_COUNT,
   WARNING_CHIP_BG,
   WARNING_CHIP_BD,
   REMOVE_HOVER_BG,
   SLOT_ITEM_DIVIDER,
-  BROWSER_ITEM_HOVER_BG,
   SAVED_LOADOUT_HOVER_BG,
   POPOVER_BOX_SHADOW,
   NAME_INPUT_FOCUS_GLOW,
@@ -34,9 +27,6 @@ import {
 } from '../constants/compose';
 
 // ─── Inferred types ───────────────────────────────────────────────────────────
-type Agent   = z.infer<typeof AgentSchema>;
-type Skill   = z.infer<typeof SkillSchema>;
-type Hook    = z.infer<typeof HookSchema>;
 type Loadout = z.infer<typeof LoadoutSchema>;
 
 // ─── Focus/blur outline handlers (shared across all interactive elements) ─────
@@ -48,6 +38,35 @@ function handleFocusOutline(e: React.FocusEvent<HTMLElement>): void {
 function handleBlurOutline(e: React.FocusEvent<HTMLElement>): void {
   e.currentTarget.style.outline = 'none';
   e.currentTarget.style.outlineOffset = '0';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CanvasErrorBoundary — catches runtime errors in MateriaCanvas so the rest
+// of the compose page remains functional and the user sees a clear message.
+// ─────────────────────────────────────────────────────────────────────────────
+interface CanvasErrorBoundaryState { error: Error | null }
+class CanvasErrorBoundary extends Component<{ children: ReactNode }, CanvasErrorBoundaryState> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error: Error): CanvasErrorBoundaryState {
+    return { error };
+  }
+  override componentDidCatch(error: Error, info: ErrorInfo): void {
+    console.error('[MateriaCanvas error]', error, info.componentStack);
+  }
+  override render(): ReactNode {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 24, color: 'var(--redb)', background: 'var(--sfm)', border: '1px solid var(--red)', borderRadius: 8, fontSize: 13 }}>
+          <strong>Canvas failed to load:</strong> {this.state.error.message}
+          <br /><span style={{ color: 'var(--wm)', fontSize: 11 }}>Check the browser console for details.</span>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -73,336 +92,6 @@ function MateriaDot({ name, type }: MateriaDotProps) {
       }}
       aria-hidden="true"
     />
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Skeleton row
-// ─────────────────────────────────────────────────────────────────────────────
-function SkeletonRow({ widthPct }: { widthPct: number }) {
-  return (
-    <div
-      aria-hidden="true"
-      style={{
-        height: '30px',
-        margin: '2px 12px',
-        background: 'var(--sfm)',
-        borderRadius: 'var(--r)',
-        width: `${widthPct}%`,
-        animation: 'gs-pulse 1.2s ease-in-out infinite',
-      }}
-    />
-  );
-}
-
-const SKELETON_WIDTHS = [72, 60, 85, 68];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CountBadge
-// ─────────────────────────────────────────────────────────────────────────────
-function CountBadge({ count, loading, children }: { count?: number; loading: boolean; children?: React.ReactNode }) {
-  let content: React.ReactNode;
-  if (loading) {
-    content = '—';
-  } else if (children !== undefined) {
-    content = children;
-  } else {
-    content = count ?? 0;
-  }
-  return (
-    <span
-      style={{
-        fontFamily: 'var(--fm)',
-        fontSize: '10px',
-        color: 'var(--mt)',
-        background: 'var(--sfm)',
-        border: '1px solid var(--bd)',
-        borderRadius: 'var(--r)',
-        padding: '1px 5px',
-        marginLeft: '6px',
-      }}
-    >
-      {content}
-    </span>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// BrowserItem
-// ─────────────────────────────────────────────────────────────────────────────
-interface BrowserItemProps {
-  name: string;
-  type: 'agent' | 'skill' | 'hook';
-  isAdded: boolean;
-  onAdd: () => void;
-}
-
-function BrowserItem({ name, type, isAdded, onAdd }: BrowserItemProps) {
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <li
-      role="listitem"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '5px 12px',
-        cursor: isAdded ? 'default' : 'default',
-        transition: 'background 0.12s',
-        background: hovered && !isAdded ? BROWSER_ITEM_HOVER_BG : 'transparent',
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <MateriaDot name={name} type={type} />
-      <span
-        style={{
-          fontFamily: 'var(--fb)',
-          fontSize: '12.5px',
-          color: isAdded ? 'var(--wm)' : 'var(--wd)',
-          flex: 1,
-          minWidth: 0,
-          overflow: 'hidden',
-          whiteSpace: 'nowrap',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {name}
-      </span>
-      {isAdded ? (
-        <span
-          role="img"
-          aria-label={`${name} already in loadout`}
-          style={{
-            width: '22px',
-            height: '22px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            marginLeft: 'auto',
-            color: 'var(--mg)',
-            fontSize: '14px',
-            pointerEvents: 'none',
-            opacity: 0.7,
-          }}
-        >
-          ✓
-        </span>
-      ) : (
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={`Add ${name}`}
-          onClick={onAdd}
-          style={{
-            width: '22px',
-            height: '22px',
-            flexShrink: 0,
-            marginLeft: 'auto',
-            color: hovered ? 'var(--mt)' : 'var(--wm)',
-            background: hovered ? 'var(--sfh)' : 'transparent',
-            fontSize: '14px',
-            outline: 'none',
-          }}
-          onFocus={handleFocusOutline}
-          onBlur={handleBlurOutline}
-        >
-          +
-        </Button>
-      )}
-    </li>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// BrowserSection
-// ─────────────────────────────────────────────────────────────────────────────
-interface BrowserSectionProps {
-  label: 'AGENTS' | 'SKILLS' | 'HOOKS';
-  items: Array<{ name: string; type: 'agent' | 'skill' | 'hook' }>;
-  addedSet: Set<string>;
-  loading: boolean;
-  onAdd: (name: string, type: 'agent' | 'skill' | 'hook') => void;
-  filteredCount?: number;
-  totalCount?: number;
-  isFirst: boolean;
-}
-
-function BrowserSection({
-  label,
-  items,
-  addedSet,
-  loading,
-  onAdd,
-  filteredCount,
-  totalCount,
-  isFirst,
-}: BrowserSectionProps) {
-  const searchActive = filteredCount !== undefined && totalCount !== undefined && filteredCount !== totalCount;
-  const badgeText = loading ? '—' : searchActive ? `${filteredCount} of ${totalCount}` : String(items.length);
-
-  // Hide section when search active and no results
-  if (!loading && filteredCount === 0 && searchActive) return null;
-
-  return (
-    <div
-      style={{
-        padding: '8px 0 4px 0',
-        borderTop: isFirst ? 'none' : '1px solid var(--bd)',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 12px 4px 12px',
-        }}
-      >
-        <span
-          style={{
-            fontFamily: 'var(--fh)',
-            fontSize: '11px',
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            color: 'var(--wm)',
-          }}
-        >
-          {label}
-        </span>
-        <CountBadge loading={loading}>{badgeText}</CountBadge>
-      </div>
-
-      {loading ? (
-        <div>
-          {SKELETON_WIDTHS.slice(0, BROWSER_SKELETON_COUNT).map((w, i) => (
-            <SkeletonRow key={i} widthPct={w} />
-          ))}
-        </div>
-      ) : (
-        <ul
-          role="list"
-          aria-label={`${label} items`}
-          style={{ listStyle: 'none', margin: 0, padding: 0 }}
-        >
-          {items.map((item) => (
-            <BrowserItem
-              key={item.name}
-              name={item.name}
-              type={item.type}
-              isAdded={addedSet.has(item.name)}
-              onAdd={() => onAdd(item.name, item.type)}
-            />
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ItemBrowserBody — the scrollable content (reused in desktop & accordion)
-// ─────────────────────────────────────────────────────────────────────────────
-interface ItemBrowserBodyProps {
-  agents: Agent[];
-  skills: Skill[];
-  hooks: Hook[];
-  loading: boolean;
-  searchValue: string;
-  addedAgents: Set<string>;
-  addedSkills: Set<string>;
-  addedHooks: Set<string>;
-  onAdd: (name: string, type: 'agent' | 'skill' | 'hook') => void;
-  isSaving: boolean;
-  style?: React.CSSProperties;
-}
-
-function ItemBrowserBody({
-  agents,
-  skills,
-  hooks,
-  loading,
-  searchValue,
-  addedAgents,
-  addedSkills,
-  addedHooks,
-  onAdd,
-  isSaving,
-  style,
-}: ItemBrowserBodyProps) {
-  const q = searchValue.toLowerCase();
-  const searchActive = q.length > 0;
-
-  const filteredAgents = searchActive ? agents.filter(a => a.name.toLowerCase().includes(q)) : agents;
-  const filteredSkills = searchActive ? skills.filter(s => s.name.toLowerCase().includes(q)) : skills;
-  const filteredHooks  = searchActive ? hooks.filter(h => h.matcher.toLowerCase().includes(q)) : hooks;
-
-  const agentItems = filteredAgents.map(a => ({ name: a.name, type: 'agent' as const }));
-  const skillItems = filteredSkills.map(s => ({ name: s.name, type: 'skill' as const }));
-  const hookItems  = filteredHooks.map(h => ({ name: h.matcher, type: 'hook' as const }));
-
-  const totalMatches = filteredAgents.length + filteredSkills.length + filteredHooks.length;
-  const noResults = searchActive && !loading && totalMatches === 0;
-
-  return (
-    <div
-      style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '8px 0',
-        pointerEvents: isSaving ? 'none' : 'auto',
-        ...style,
-      }}
-    >
-      {noResults ? (
-        <p
-          style={{
-            fontFamily: 'var(--fb)',
-            fontSize: '12px',
-            color: 'var(--wm)',
-            textAlign: 'center',
-            padding: '20px 12px',
-            margin: 0,
-          }}
-        >
-          No items match your search
-        </p>
-      ) : (
-        <>
-          <BrowserSection
-            label="AGENTS"
-            items={agentItems}
-            addedSet={addedAgents}
-            loading={loading}
-            onAdd={onAdd}
-            filteredCount={searchActive ? filteredAgents.length : undefined}
-            totalCount={searchActive ? agents.length : undefined}
-            isFirst
-          />
-          <BrowserSection
-            label="SKILLS"
-            items={skillItems}
-            addedSet={addedSkills}
-            loading={loading}
-            onAdd={onAdd}
-            filteredCount={searchActive ? filteredSkills.length : undefined}
-            totalCount={searchActive ? skills.length : undefined}
-            isFirst={false}
-          />
-          <BrowserSection
-            label="HOOKS"
-            items={hookItems}
-            addedSet={addedHooks}
-            loading={loading}
-            onAdd={onAdd}
-            filteredCount={searchActive ? filteredHooks.length : undefined}
-            totalCount={searchActive ? hooks.length : undefined}
-            isFirst={false}
-          />
-        </>
-      )}
-    </div>
   );
 }
 
@@ -476,21 +165,18 @@ function SlotItem({ name, type, onRemove, isSaving }: SlotItemProps) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SlotGroup
+// SlotGroup — hooks only (agents/skills now live on MateriaCanvas)
 // ─────────────────────────────────────────────────────────────────────────────
 interface SlotGroupProps {
-  label: 'AGENTS' | 'SKILLS' | 'HOOKS';
-  type: 'agent' | 'skill' | 'hook';
+  label: 'HOOKS';
+  type: 'hook';
   items: string[];
   onRemove: (name: string) => void;
   isSaving: boolean;
 }
 
 function SlotGroup({ label, type, items, onRemove, isSaving }: SlotGroupProps) {
-  const emptyText =
-    label === 'AGENTS' ? 'No agents selected' :
-    label === 'SKILLS' ? 'No skills selected' :
-    'No hooks selected';
+  const emptyText = 'No hooks selected';
 
   const count = items.length;
   const countColor = count > 0 ? 'var(--mt)' : 'var(--wm)';
@@ -720,6 +406,7 @@ function LoadoutControls({
         disabled={saveDisabled}
         aria-disabled={saveDisabled}
         aria-label={isSaving ? 'Saving loadout' : 'Save Loadout'}
+        data-testid="save-button"
         onClick={onSave}
         style={{
           background: 'var(--mt)',
@@ -976,28 +663,36 @@ function useValidationWarnings(
 export default function ComposePage() {
   const {
     currentLoadout,
-    addAgent,
-    removeAgent,
-    addSkill,
-    removeSkill,
-    addHook,
     removeHook,
     setLoadoutName,
     loadLoadout,
     resetLoadout,
   } = useComposeStore();
 
+  // Canvas store wiring.
+  // Subscribe only to stable primitive references (s.nodes is the same array ref until mutated).
+  // Derive agent/skill name arrays via useMemo — keeps them OUT of useSyncExternalStore's
+  // snapshot comparison, which React 19 enforces strictly (new object each call = infinite loop).
+  const canvasNodes = useCanvasStore(s => s.nodes);
+  const canvasEdges = useCanvasStore(s => s.edges);
+  const canvasLoadFromLoadout = useCanvasStore(s => s.loadFromLoadout);
+  const canvasReset = useCanvasStore(s => s.resetCanvas);
+
+  const canvasAgents = useMemo(
+    () => canvasNodes.filter(n => n.type === 'agent').map(n => n.name),
+    [canvasNodes],
+  );
+  const canvasSkills = useMemo(
+    () => canvasNodes.filter(n => n.type === 'skill').map(n => n.name),
+    [canvasNodes],
+  );
+
   // tRPC queries
   const agentsQuery  = trpc.agent.list.useQuery();
   const skillsQuery  = trpc.skill.list.useQuery();
-  const hooksQuery   = trpc.hook.list.useQuery();
   const loadoutsQuery = trpc.loadout.list.useQuery();
 
-  const agents  = agentsQuery.data  ?? [];
-  const skills  = skillsQuery.data  ?? [];
-  const hooks   = hooksQuery.data   ?? [];
   const savedLoadouts = loadoutsQuery.data ?? [];
-  const browserLoading = agentsQuery.isLoading || skillsQuery.isLoading || hooksQuery.isLoading;
 
   // Save mutation
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -1028,60 +723,43 @@ export default function ComposePage() {
 
   const isSaving = saveMutation.isPending;
 
-  // Search
-  const [search, setSearch] = useState('');
-
   // Name dirty tracking
   const [nameDirty, setNameDirty] = useState(false);
 
-  // Sets for O(1) lookup
-  const addedAgents = new Set(currentLoadout.agents);
-  const addedSkills = new Set(currentLoadout.skills);
-  const addedHooks  = new Set(currentLoadout.hooks);
-
-  // Validation
+  // Validation — agents/skills from canvas-store, hooks/name from compose-store
   const warnings = useValidationWarnings(
-    currentLoadout.agents,
-    currentLoadout.skills,
+    canvasAgents,
+    canvasSkills,
     currentLoadout.hooks,
     currentLoadout.name,
     nameDirty,
   );
 
   // Handlers
-  const handleAdd = useCallback(
-    (name: string, type: 'agent' | 'skill' | 'hook') => {
-      if (type === 'agent') addAgent(name);
-      else if (type === 'skill') addSkill(name);
-      else addHook(name);
-    },
-    [addAgent, addSkill, addHook],
-  );
-
-  const handleSave = useCallback(() => {
-    if (!currentLoadout.name.trim() || isSaving) return;
-    saveMutation.mutate({
-      name: currentLoadout.name.trim(),
-      agents: currentLoadout.agents,
-      skills: currentLoadout.skills,
-      hooks: currentLoadout.hooks,
-      createdAt: new Date().toISOString(),
-    });
-  }, [currentLoadout, isSaving, saveMutation]);
-
-  const handleLoad = useCallback(
-    (lo: Loadout) => {
-      loadLoadout({
-        name: lo.name,
-        agents: lo.agents,
-        skills: lo.skills,
-        hooks: lo.hooks,
+  const handleSave = useCallback(async () => {
+    const name = currentLoadout.name.trim();
+    if (!name) { setNameDirty(true); return; }
+    try {
+      await saveMutation.mutateAsync({
+        name,
+        agents: canvasAgents,
+        skills: canvasSkills,
+        hooks: currentLoadout.hooks,          // hooks still from compose-store
+        connections: canvasEdges.map(e => ({ source: e.source, target: e.target })),
+        createdAt: new Date().toISOString(),
       });
-      setNameDirty(false);
       setSaveError(null);
-    },
-    [loadLoadout],
-  );
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Save failed');
+    }
+  }, [currentLoadout.name, currentLoadout.hooks, canvasAgents, canvasSkills, canvasEdges, saveMutation]);
+
+  const handleLoad = useCallback((lo: Loadout) => {
+    loadLoadout({ name: lo.name, agents: [], skills: [], hooks: lo.hooks });
+    canvasLoadFromLoadout(lo);
+    setNameDirty(false);
+    setSaveError(null);
+  }, [loadLoadout, canvasLoadFromLoadout]);
 
   const handleDelete = useCallback(
     (name: string) => {
@@ -1092,31 +770,15 @@ export default function ComposePage() {
 
   const handleNew = useCallback(() => {
     resetLoadout();
+    canvasReset();
     setNameDirty(false);
     setSaveError(null);
     setSaveSuccess(false);
-  }, [resetLoadout]);
+  }, [resetLoadout, canvasReset]);
 
   // Name input invalid styling: show only after first blur + name empty + has items
-  const hasItems = currentLoadout.agents.length + currentLoadout.skills.length + currentLoadout.hooks.length > 0;
+  const hasItems = canvasAgents.length + canvasSkills.length + currentLoadout.hooks.length > 0;
   const showInvalidName = nameDirty && !currentLoadout.name.trim() && hasItems;
-
-  // Total selected count for accordion badge
-  const totalSelected = currentLoadout.agents.length + currentLoadout.skills.length + currentLoadout.hooks.length;
-
-  // Browser body shared props
-  const browserBodyProps: ItemBrowserBodyProps = {
-    agents,
-    skills,
-    hooks,
-    loading: browserLoading,
-    searchValue: search,
-    addedAgents,
-    addedSkills,
-    addedHooks,
-    onAdd: handleAdd,
-    isSaving,
-  };
 
   return (
     <>
@@ -1166,316 +828,120 @@ export default function ComposePage() {
           </p>
         </div>
 
-        {/* Two-panel area */}
+        {/* ── LoadoutBuilder ── */}
         <div
-          className="compose-panels"
+          className="loadout-builder"
           style={{
-            display: 'flex',
-            flexDirection: 'row',
-            gap: '20px',
             flex: 1,
+            minWidth: 0,
             minHeight: 0,
-            alignItems: 'flex-start',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            background: 'var(--sf)',
+            border: '1px solid var(--bd)',
+            borderRadius: 'var(--rl)',
+            padding: '16px',
           }}
         >
-          {/* ── ItemBrowser — desktop (hidden at sm via CSS) ── */}
-          <div
-            className="item-browser"
-            style={{
-              width: `${BROWSER_PANEL_WIDTH_PX}px`,
-              flexShrink: 0,
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              background: 'var(--sf)',
-              border: '1px solid var(--bd)',
-              borderRadius: 'var(--rl)',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Search */}
-            <div
+          {/* Loadout name */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flexShrink: 0 }}>
+            <label
+              htmlFor="loadout-name-input"
               style={{
-                padding: '10px 12px',
-                borderBottom: '1px solid var(--bd)',
-                flexShrink: 0,
+                fontFamily: 'var(--fb)',
+                fontSize: '10px',
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: 'var(--wm)',
+                display: 'block',
+                marginBottom: '5px',
               }}
             >
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Input
-                  type="search"
-                  placeholder="Search agents, skills, hooks..."
-                  value={search}
-                  onChange={(e) => setSearch((e.target as HTMLInputElement).value)}
-                  disabled={browserLoading || isSaving}
-                  aria-label="Search agents, skills, and hooks"
-                  style={{
-                    fontFamily: 'var(--fb)',
-                    fontSize: '12px',
-                    color: 'var(--w)',
-                    background: 'var(--sfm)',
-                    border: '1px solid var(--bd)',
-                    borderRadius: 'var(--r)',
-                    height: '30px',
-                    paddingLeft: '10px',
-                    paddingRight: search.length > 0 ? '30px' : '10px',
-                    width: '100%',
-                    opacity: (browserLoading || isSaving) ? 0.5 : 1,
-                    pointerEvents: (browserLoading || isSaving) ? 'none' : 'auto',
-                    outline: 'none',
-                  }}
-                  onFocus={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor = 'var(--bdb)';
-                  }}
-                  onBlur={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor = 'var(--bd)';
-                  }}
-                />
-                {search.length > 0 && (
-                  <button
-                    type="button"
-                    aria-label="Clear search"
-                    onClick={() => setSearch('')}
-                    style={{
-                      position: 'absolute',
-                      right: '8px',
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--wm)',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      padding: '0',
-                      lineHeight: 1,
-                      outline: 'none',
-                    }}
-                    onFocus={handleFocusOutline}
-                    onBlur={handleBlurOutline}
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Browser content */}
-            <ItemBrowserBody {...browserBodyProps} />
-          </div>
-
-          {/* ── ItemBrowser — mobile accordion (shown at sm via CSS) ── */}
-          <div
-            className="item-browser-accordion"
-            style={{ display: 'none', width: '100%', flexShrink: 0 }}
-          >
-            <Accordion
+              LOADOUT NAME
+            </label>
+            <Input
+              id="loadout-name-input"
+              type="text"
+              placeholder="loadout-name"
+              value={currentLoadout.name}
+              onChange={(e) => setLoadoutName((e.target as HTMLInputElement).value)}
+              onBlur={() => setNameDirty(true)}
+              disabled={isSaving}
+              aria-invalid={showInvalidName}
               style={{
-                background: 'var(--sf)',
-                border: '1px solid var(--bd)',
-                borderRadius: 'var(--rl)',
-                overflow: 'hidden',
+                fontFamily: 'var(--fm)',
+                fontSize: '13px',
+                color: 'var(--w)',
+                background: 'var(--sfm)',
+                border: showInvalidName
+                  ? `1px solid ${INVALID_INPUT_BORDER}`
+                  : '1px solid var(--bd)',
+                borderRadius: 'var(--r)',
+                height: '32px',
+                padding: '0 10px',
+                letterSpacing: '0.06em',
+                opacity: isSaving ? 0.7 : 1,
+                pointerEvents: isSaving ? 'none' : 'auto',
+                outline: 'none',
               }}
-            >
-              <AccordionItem value="browser">
-                <AccordionTrigger
-                  style={{
-                    fontFamily: 'var(--fb)',
-                    fontSize: '12px',
-                    color: 'var(--wd)',
-                    padding: '10px 12px',
-                    outline: 'none',
-                  }}
-                >
-                  <span>
-                    AVAILABLE ITEMS
-                    <CountBadge count={totalSelected} loading={false} />
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent
-                  style={{
-                    maxHeight: '240px',
-                    overflowY: 'auto',
-                  }}
-                >
-                  {/* Search in accordion */}
-                  <div style={{ padding: '8px 12px 0', borderBottom: '1px solid var(--bd)' }}>
-                    <Input
-                      type="search"
-                      placeholder="Search agents, skills, hooks..."
-                      value={search}
-                      onChange={(e) => setSearch((e.target as HTMLInputElement).value)}
-                      disabled={browserLoading || isSaving}
-                      aria-label="Search agents, skills, and hooks"
-                      style={{
-                        fontFamily: 'var(--fb)',
-                        fontSize: '12px',
-                        color: 'var(--w)',
-                        background: 'var(--sfm)',
-                        border: '1px solid var(--bd)',
-                        borderRadius: 'var(--r)',
-                        height: '30px',
-                        width: '100%',
-                        marginBottom: '8px',
-                      }}
-                    />
-                  </div>
-                  <ItemBrowserBody {...browserBodyProps} style={{ flex: 'unset' }} />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </div>
-
-          {/* ── LoadoutBuilder ── */}
-          <div
-            className="loadout-builder"
-            style={{
-              flex: 1,
-              minWidth: 0,
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              background: 'var(--sf)',
-              border: '1px solid var(--bd)',
-              borderRadius: 'var(--rl)',
-              padding: '16px',
-            }}
-          >
-            {/* Loadout name */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label
-                htmlFor="loadout-name-input"
-                style={{
-                  fontFamily: 'var(--fb)',
-                  fontSize: '10px',
-                  letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
-                  color: 'var(--wm)',
-                  display: 'block',
-                  marginBottom: '5px',
-                }}
-              >
-                LOADOUT NAME
-              </label>
-              <Input
-                id="loadout-name-input"
-                type="text"
-                placeholder="loadout-name"
-                value={currentLoadout.name}
-                onChange={(e) => setLoadoutName((e.target as HTMLInputElement).value)}
-                onBlur={() => setNameDirty(true)}
-                disabled={isSaving}
-                aria-invalid={showInvalidName}
-                style={{
-                  fontFamily: 'var(--fm)',
-                  fontSize: '13px',
-                  color: 'var(--w)',
-                  background: 'var(--sfm)',
-                  border: showInvalidName
-                    ? `1px solid ${INVALID_INPUT_BORDER}`
-                    : '1px solid var(--bd)',
-                  borderRadius: 'var(--r)',
-                  height: '32px',
-                  padding: '0 10px',
-                  letterSpacing: '0.06em',
-                  opacity: isSaving ? 0.7 : 1,
-                  pointerEvents: isSaving ? 'none' : 'auto',
-                  outline: 'none',
-                }}
-                onFocus={(e) => {
-                  (e.target as HTMLInputElement).style.borderColor = 'var(--bdb)';
-                  (e.target as HTMLInputElement).style.boxShadow = NAME_INPUT_FOCUS_GLOW;
-                }}
-                onBlurCapture={(e) => {
-                  if (!showInvalidName) {
-                    (e.target as HTMLInputElement).style.borderColor = 'var(--bd)';
-                  }
-                  (e.target as HTMLInputElement).style.boxShadow = 'none';
-                }}
-              />
-            </div>
-
-            {/* Slot groups */}
-            <div
-              style={{
-                flex: 1,
-                overflowY: 'auto',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                minHeight: 0,
+              onFocus={(e) => {
+                (e.target as HTMLInputElement).style.borderColor = 'var(--bdb)';
+                (e.target as HTMLInputElement).style.boxShadow = NAME_INPUT_FOCUS_GLOW;
               }}
-            >
-              <SlotGroup
-                label="AGENTS"
-                type="agent"
-                items={currentLoadout.agents}
-                onRemove={removeAgent}
-                isSaving={isSaving}
-              />
-              <SlotGroup
-                label="SKILLS"
-                type="skill"
-                items={currentLoadout.skills}
-                onRemove={removeSkill}
-                isSaving={isSaving}
-              />
-              <SlotGroup
-                label="HOOKS"
-                type="hook"
-                items={currentLoadout.hooks}
-                onRemove={removeHook}
-                isSaving={isSaving}
-              />
-            </div>
-
-            {/* Validation warnings */}
-            <ValidationWarnings warnings={warnings} />
-
-            {/* Save/Load/New controls */}
-            <LoadoutControls
-              name={currentLoadout.name}
-              isSaving={isSaving}
-              saveSuccess={saveSuccess}
-              savedLoadouts={savedLoadouts}
-              loadoutsLoading={loadoutsQuery.isLoading}
-              onSave={handleSave}
-              onLoad={handleLoad}
-              onDelete={handleDelete}
-              onNew={handleNew}
+              onBlurCapture={(e) => {
+                if (!showInvalidName) {
+                  (e.target as HTMLInputElement).style.borderColor = 'var(--bd)';
+                }
+                (e.target as HTMLInputElement).style.boxShadow = 'none';
+              }}
             />
-
-            {/* Save error card */}
-            {saveError && (
-              <SaveErrorCard message={saveError} onDismiss={() => setSaveError(null)} />
-            )}
           </div>
+
+          {/* MateriaCanvas — explicit height avoids height:100% chain failure */}
+          <div style={{ height: 520, minHeight: 520, flexShrink: 0 }}>
+            <CanvasErrorBoundary>
+              <MateriaCanvas
+                availableAgents={(agentsQuery.data ?? []).map(a => ({ name: a.name, filePath: a.filePath }))}
+                availableSkills={(skillsQuery.data ?? []).map(s => ({ name: s.name, filePath: s.filePath }))}
+                isSaving={isSaving}
+              />
+            </CanvasErrorBoundary>
+          </div>
+
+          {/* Hooks slot */}
+          <div style={{ flexShrink: 0 }}>
+            <SlotGroup
+              label="HOOKS"
+              type="hook"
+              items={currentLoadout.hooks}
+              onRemove={removeHook}
+              isSaving={isSaving}
+            />
+          </div>
+
+          {/* Validation warnings */}
+          <ValidationWarnings warnings={warnings} />
+
+          {/* Save/Load/New controls */}
+          <LoadoutControls
+            name={currentLoadout.name}
+            isSaving={isSaving}
+            saveSuccess={saveSuccess}
+            savedLoadouts={savedLoadouts}
+            loadoutsLoading={loadoutsQuery.isLoading}
+            onSave={handleSave}
+            onLoad={handleLoad}
+            onDelete={handleDelete}
+            onNew={handleNew}
+          />
+
+          {/* Save error card */}
+          {saveError && (
+            <SaveErrorCard message={saveError} onDismiss={() => setSaveError(null)} />
+          )}
         </div>
       </div>
-
-      {/* Responsive CSS */}
-      <style>{`
-        @media (max-width: 640px) {
-          .compose-panels {
-            flex-direction: column !important;
-            gap: 16px !important;
-          }
-          .item-browser {
-            display: none !important;
-          }
-          .item-browser-accordion {
-            display: block !important;
-            width: 100% !important;
-          }
-          .loadout-builder {
-            width: 100% !important;
-            height: auto !important;
-          }
-        }
-        @media (max-width: 390px) {
-          .compose-panels {
-            gap: 12px !important;
-          }
-        }
-      `}</style>
     </>
   );
 }

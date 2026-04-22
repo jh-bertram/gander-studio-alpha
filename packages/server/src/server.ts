@@ -12,7 +12,19 @@ await server.register(fastifyTRPCPlugin, {
   trpcOptions: { router: appRouter },
 });
 
-await server.listen({ port: SERVER_PORT, host: '127.0.0.1' });
+try {
+  await server.listen({ port: SERVER_PORT, host: '127.0.0.1' });
+} catch (err) {
+  if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE') {
+    process.stderr.write(
+      `✗ Port ${SERVER_PORT} is already in use.\n` +
+      `  Kill the existing process: lsof -ti:${SERVER_PORT} | xargs kill -9\n` +
+      `  Then run: npm run dev\n`
+    );
+    process.exit(1);
+  }
+  throw err;
+}
 
 console.log(`[gander-studio] server listening on http://127.0.0.1:${SERVER_PORT}`);
 console.log(`[gander-studio] GANDER_ROOT: ${GANDER_ROOT}`);

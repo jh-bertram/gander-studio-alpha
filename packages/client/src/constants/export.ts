@@ -8,6 +8,9 @@ export const EXPORT_SUCCESS_DURATION_MS = 2000;
 // Target directory name validation pattern
 export const TARGET_DIR_PATTERN = /^[a-zA-Z0-9_-]+$/;
 
+// Base directory (absolute path) validation pattern
+export const BASE_PATH_PATTERN = /^\//;
+
 // ─── Stat chip backgrounds ────────────────────────────────────────────────────
 // Agents chip — var(--mg) green family
 export const AGENTS_CHIP_BG = 'rgba(76,175,125,0.12)';

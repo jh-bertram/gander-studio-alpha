@@ -2,6 +2,19 @@
 // Compose mode constants — all magic values live here, never inline in components
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { AgentRole } from '../constants/agent-roles';
+import {
+  META_AGENTS as COMMAND_AGENTS,
+  SPECIALIST_AGENTS as IMPL_AGENTS,
+  GATE_AGENTS,
+  EXTERNAL_AGENTS as INTEL_AGENTS,
+  META_AGENTS,
+  META_FRAGMENTS,
+  SPECIALIST_FRAGMENTS,
+  GATE_FRAGMENTS,
+  EXTERNAL_FRAGMENTS,
+} from '../constants/agent-roles';
+
 export const BROWSER_PANEL_WIDTH_PX = 320;
 export const SAVE_SUCCESS_DURATION_MS = 1200;
 export const POPOVER_MAX_HEIGHT_PX = 200;
@@ -39,13 +52,22 @@ export const INVALID_INPUT_BORDER = 'rgba(207,60,60,0.50)';
 // Returns a CSS custom property string based on agent name or item type.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const COMMAND_AGENTS = new Set(['orchestrator', 'project-manager']);
-const IMPL_AGENTS    = new Set(['backend-engineer', 'frontend-engineer', 'db-specialist']);
-const GATE_AGENTS    = new Set(['auditor', 'critic', 'code-auditor']);
-const INTEL_AGENTS   = new Set(['researcher', 'statistician', 'archivist']);
-const META_AGENTS    = new Set(['dispatcher', 'ui-designer', 'system-health-monitor']);
-
-export function getMateriaColor(name: string, type: 'agent' | 'skill' | 'hook'): string {
+export function getMateriaColor(
+  name: string,
+  type: 'agent' | 'skill' | 'hook',
+  role?: AgentRole,
+): string {
+  // Role-based fast path — when role is provided, skip name-hashing entirely
+  if (role !== undefined) {
+    switch (role) {
+      case 'meta':       return 'var(--my)';
+      case 'specialist': return 'var(--mg)';
+      case 'gate':       return 'var(--mr)';
+      case 'external':   return 'var(--mp)';
+      case 'skill':      return 'var(--mb)';
+    }
+  }
+  // Fallback: existing name-based logic (backwards-compatible — all callers without role still work)
   if (type === 'skill') return 'var(--mb)';
   if (type === 'hook')  return 'var(--mo)';
 
@@ -57,11 +79,10 @@ export function getMateriaColor(name: string, type: 'agent' | 'skill' | 'hook'):
   if (META_AGENTS.has(lower))    return 'var(--mp)';
 
   // Fallback: match by partial name fragments
-  if (lower.includes('orchestrat') || lower.includes('project-manag')) return 'var(--my)';
-  if (lower.includes('backend') || lower.includes('frontend') || lower.includes('db-spec')) return 'var(--mg)';
-  if (lower.includes('audit') || lower.includes('critic')) return 'var(--mr)';
-  if (lower.includes('research') || lower.includes('statist') || lower.includes('archiv')) return 'var(--mb)';
-  if (lower.includes('dispatch') || lower.includes('ui-design') || lower.includes('health')) return 'var(--mp)';
+  if (META_FRAGMENTS.some((f) => lower.includes(f)))        return 'var(--my)';
+  if (SPECIALIST_FRAGMENTS.some((f) => lower.includes(f)))  return 'var(--mg)';
+  if (GATE_FRAGMENTS.some((f) => lower.includes(f)))        return 'var(--mr)';
+  if (EXTERNAL_FRAGMENTS.some((f) => lower.includes(f)))    return 'var(--mb)';
 
   return 'var(--wm)';
 }

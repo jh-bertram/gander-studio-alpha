@@ -1,0 +1,21 @@
+{
+  "name": "Test-gs-1-3",
+  "agents": [
+    "orchestrator",
+    "project-manager",
+    "critic"
+  ],
+  "skills": [],
+  "hooks": [],
+  "createdAt": "2026-04-05T00:35:24.985Z",
+  "connections": [
+    {
+      "source": "critic",
+      "target": "project-manager"
+    },
+    {
+      "source": "project-manager",
+      "target": "critic"
+    }
+  ]
+}

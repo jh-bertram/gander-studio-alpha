@@ -8,6 +8,7 @@ export const AgentSchema = z.object({
   model: z.string(),
   version: z.string().optional(),
   tier: z.enum(['core', 'impl', 'optional']).default('optional'),
+  communicates_with: z.array(z.string()).optional(),
   body: z.string(),
   filePath: z.string(),
 });
@@ -36,4 +37,16 @@ export const LoadoutSchema = z.object({
   skills: z.array(z.string()),
   hooks: z.array(z.string()),
   createdAt: z.string(),
+  connections: z.array(z.object({ source: z.string(), target: z.string() })).default([]),
+  cardTitle: z.string().optional(),
+});
+
+// ExportInputSchema — input for export.spawn procedure
+export const ExportInputSchema = z.object({
+  loadout: LoadoutSchema,
+  targetDirName: z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Invalid directory name'),
+  includeStandards: z.boolean().default(false),
+  targetBasePath: z.string().optional(),
 });

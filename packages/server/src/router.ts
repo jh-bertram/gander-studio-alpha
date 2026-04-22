@@ -10,6 +10,7 @@ import {
   AgentSchema,
   SkillSchema,
   LoadoutSchema,
+  ExportInputSchema,
 } from '@gander-studio/shared';
 
 const t = initTRPC.create();
@@ -38,16 +39,10 @@ function sanitizeName(name: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Export schemas (defined inline per task spec)
+// Export schemas
 // ---------------------------------------------------------------------------
 
-const ExportInputSchema = z.object({
-  loadout: LoadoutSchema,
-  targetDirName: z
-    .string()
-    .regex(/^[a-zA-Z0-9_-]+$/, 'Invalid directory name'),
-  includeStandards: z.boolean().default(false),
-});
+// ExportInputSchema is imported from @gander-studio/shared
 
 const ExportResultSchema = z.object({
   targetPath: z.string(),
@@ -86,6 +81,10 @@ const agentRouter = t.router({
       const versionLine = input.version ? `version: ${input.version}\n` : '';
       const tierLine =
         input.tier !== 'optional' ? `tier: ${input.tier}\n` : '';
+      const communicatesLine =
+        input.communicates_with && input.communicates_with.length > 0
+          ? `communicates_with: ${input.communicates_with.join(', ')}\n`
+          : '';
 
       const content =
         `---\n` +
@@ -95,6 +94,7 @@ const agentRouter = t.router({
         `model: ${input.model}\n` +
         versionLine +
         tierLine +
+        communicatesLine +
         `---\n` +
         input.body;
 
@@ -218,18 +218,25 @@ const exportRouter = t.router({
     .input(ExportInputSchema)
     .output(ExportResultSchema)
     .mutation(async ({ input }) => {
-      const targetPath = path.join(EXPORT_BASE_DIR, input.targetDirName);
+      if (input.targetBasePath !== undefined) {
+        const resolved = path.resolve(input.targetBasePath);
+        if (resolved !== input.targetBasePath || !resolved.startsWith('/')) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetBasePath must be an absolute normalised path' });
+        }
+      }
+      const targetPath = path.join(input.targetBasePath ?? EXPORT_BASE_DIR, input.targetDirName);
       const { loadout } = input;
 
       // Track (sourcePath, destPath) pairs alongside plannedFiles
       const filePairs: Array<[string, string]> = [];
       const plannedFiles: string[] = [];
 
-      // agent .md files
+      // agent .md files — skip orchestrator.md (written as CLAUDE.md separately)
       const agents = await parseAllAgents(GANDER_ROOT);
       for (const agentName of loadout.agents) {
         const agent = agents.find(a => a.name === agentName);
         if (agent) {
+          if (path.basename(agent.filePath) === 'orchestrator.md') continue;
           const rel = path.relative(GANDER_ROOT, agent.filePath);
           const destPath = path.join(targetPath, rel);
           filePairs.push([agent.filePath, destPath]);
@@ -261,17 +268,8 @@ const exportRouter = t.router({
         }
       }
 
-      // special files: settings.json, CLAUDE.md, standards.md
-      const specialFiles: Array<[string, string]> = [
-        [
-          path.join(GANDER_ROOT, '.claude', 'settings.json'),
-          path.join(targetPath, '.claude', 'settings.json'),
-        ],
-        [
-          path.join(GANDER_ROOT, 'CLAUDE.md'),
-          path.join(targetPath, 'CLAUDE.md'),
-        ],
-      ];
+      // special files: standards.md only (settings.json and CLAUDE.md are handled separately below)
+      const specialFiles: Array<[string, string]> = [];
       if (input.includeStandards) {
         specialFiles.push([
           path.join(GANDER_ROOT, '.claude', 'rules', 'standards.md'),
@@ -310,6 +308,77 @@ const exportRouter = t.router({
           // ENOENT: source vanished between plan and copy — skip silently
         }
       }
+
+      // --- p2-001: Filter and rewrite settings.json ---
+      // Shape mirrors hook-parser.ts Settings/SettingsHooks interfaces; cast is safe for the
+      // same reason hook-parser.ts uses it: we own the source file and validate field-by-field.
+      interface SettingsHookEntry { type: string; command: string }
+      interface SettingsHooks {
+        [event: string]: Array<{ matcher: string; hooks: SettingsHookEntry[] }>;
+      }
+      interface SettingsShape { hooks?: SettingsHooks; [key: string]: unknown }
+
+      const srcSettingsPath = path.join(GANDER_ROOT, '.claude', 'settings.json');
+      try {
+        const rawSettings = await readFile(srcSettingsPath, 'utf8');
+        const settings = JSON.parse(rawSettings) as SettingsShape;
+        const { hooks: srcHooks, ...otherKeys } = settings;
+        const loadoutHookPaths = new Set(loadout.hooks);
+
+        const filteredHooks: SettingsHooks = {};
+        for (const [event, matchers] of Object.entries(srcHooks ?? {})) {
+          const filteredMatchers = matchers
+            .map(matcherEntry => ({
+              ...matcherEntry,
+              hooks: matcherEntry.hooks.filter(h => {
+                const srcHookPath = h.command.replace(/^bash\s+/, '');
+                return loadoutHookPaths.has(srcHookPath);
+              }),
+            }))
+            .filter(m => m.hooks.length > 0);
+
+          if (filteredMatchers.length > 0) {
+            filteredHooks[event] = filteredMatchers.map(matcherEntry => ({
+              ...matcherEntry,
+              hooks: matcherEntry.hooks.map(h => {
+                const srcHookPath = h.command.replace(/^bash\s+/, '');
+                const rel = path.relative(GANDER_ROOT, srcHookPath);
+                const destHookPath = path.join(targetPath, rel);
+                return { ...h, command: `bash ${destHookPath}` };
+              }),
+            }));
+          }
+        }
+
+        const destSettingsPath = path.join(targetPath, '.claude', 'settings.json');
+        await mkdir(path.dirname(destSettingsPath), { recursive: true });
+        const outSettings: SettingsShape = { ...otherKeys, hooks: filteredHooks };
+        await writeFile(destSettingsPath, JSON.stringify(outSettings, null, 2), 'utf8');
+        copiedFiles.push(destSettingsPath);
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to process settings.json during export',
+          });
+        }
+        // settings.json absent — skip silently
+      }
+
+      // --- p2-002: Write orchestrator.md content as CLAUDE.md ---
+      const orchestratorSrcPath = path.join(GANDER_ROOT, '.claude', 'agents', 'orchestrator.md');
+      let orchestratorContent: string;
+      try {
+        orchestratorContent = await readFile(orchestratorSrcPath, 'utf8');
+      } catch {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'orchestrator.md not found in GANDER_ROOT — cannot generate CLAUDE.md',
+        });
+      }
+      const destClaudeMdPath = path.join(targetPath, 'CLAUDE.md');
+      await writeFile(destClaudeMdPath, orchestratorContent, 'utf8');
+      copiedFiles.push(destClaudeMdPath);
 
       const loadoutSummary =
         `Loadout: ${loadout.name}\n` +

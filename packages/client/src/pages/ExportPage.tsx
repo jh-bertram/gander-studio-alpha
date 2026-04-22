@@ -8,6 +8,7 @@ import { Input } from '../components/ui/input';
 import {
   EXPORT_SUCCESS_DURATION_MS,
   TARGET_DIR_PATTERN,
+  BASE_PATH_PATTERN,
   AGENTS_CHIP_BG,
   AGENTS_CHIP_BD,
   SKILLS_CHIP_BG,
@@ -72,6 +73,7 @@ export default function ExportPage() {
   const { currentLoadout } = useComposeStore();
 
   // ── Local state ──────────────────────────────────────────────────────────────
+  const [basePath, setBasePath] = useState('');
   const [targetDirName, setTargetDirName] = useState('');
   const [includeStandards, setIncludeStandards] = useState(false);
   const [exportStatus, setExportStatus] = useState<ExportStatus>('idle');
@@ -93,12 +95,17 @@ export default function ExportPage() {
   }, []);
 
   // ── A11y IDs ─────────────────────────────────────────────────────────────────
+  const basePathId = useId();
+  const basePathErrorId = useId();
+  const basePathHintId = useId();
   const targetDirId = useId();
   const targetDirErrorId = useId();
   const targetDirHintId = useId();
   const checkboxId = useId();
 
   // ── Validation ────────────────────────────────────────────────────────────────
+  const isBasePathInvalid =
+    basePath.length > 0 && !BASE_PATH_PATTERN.test(basePath);
   const isDirNameInvalid =
     targetDirName.length > 0 && !TARGET_DIR_PATTERN.test(targetDirName);
   const isLoadoutEmpty =
@@ -110,6 +117,7 @@ export default function ExportPage() {
     !isLoadoutEmpty &&
     targetDirName.length > 0 &&
     !isDirNameInvalid &&
+    !isBasePathInvalid &&
     exportStatus !== 'loading';
 
   // ── tRPC mutation ─────────────────────────────────────────────────────────────
@@ -138,11 +146,17 @@ export default function ExportPage() {
       agents: currentLoadout.agents,
       skills: currentLoadout.skills,
       hooks: currentLoadout.hooks,
+      connections: [],
       createdAt: new Date().toISOString(),
     };
 
     setExportStatus('loading');
-    exportMutation.mutate({ loadout, targetDirName, includeStandards });
+    exportMutation.mutate({
+      loadout,
+      targetDirName,
+      includeStandards,
+      ...(basePath.length > 0 ? { targetBasePath: basePath } : {}),
+    });
   }
 
   // ── Button label ──────────────────────────────────────────────────────────────
@@ -238,6 +252,68 @@ export default function ExportPage() {
       <section aria-label="Export configuration" style={PANEL_STYLE}>
         <div style={PANEL_LABEL_STYLE}>Export Config</div>
 
+        {/* Base directory (optional absolute path) field */}
+        <div style={{ marginBottom: '14px' }}>
+          <label
+            htmlFor={basePathId}
+            style={{
+              display: 'block',
+              fontFamily: 'var(--fb)',
+              fontSize: '10px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.15em',
+              color: 'var(--wm)',
+              marginBottom: '4px',
+            }}
+          >
+            Base Directory
+          </label>
+          <Input
+            id={basePathId}
+            value={basePath}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setBasePath(e.target.value)
+            }
+            placeholder="/home/user/projects"
+            aria-invalid={isBasePathInvalid ? 'true' : undefined}
+            aria-describedby={
+              isBasePathInvalid ? basePathErrorId : basePathHintId
+            }
+            style={{
+              fontFamily: 'var(--fm)',
+              fontSize: '13px',
+              background: 'var(--sfm)',
+              borderColor: isBasePathInvalid ? 'var(--redb)' : undefined,
+            }}
+          />
+          {isBasePathInvalid ? (
+            <p
+              id={basePathErrorId}
+              role="alert"
+              style={{
+                fontFamily: 'var(--fb)',
+                fontSize: '11px',
+                color: 'var(--redb)',
+                margin: '4px 0 0',
+              }}
+            >
+              Base directory must be an absolute path starting with /.
+            </p>
+          ) : (
+            <p
+              id={basePathHintId}
+              style={{
+                fontFamily: 'var(--fb)',
+                fontSize: '11px',
+                color: 'var(--wm)',
+                margin: '4px 0 0',
+              }}
+            >
+              Optional. Overrides the default export base directory.
+            </p>
+          )}
+        </div>
+
         {/* Target directory name field */}
         <div style={{ marginBottom: '14px' }}>
           <label
@@ -295,8 +371,9 @@ export default function ExportPage() {
                 margin: '4px 0 0',
               }}
             >
-              Files will be written to EXPORT_BASE_DIR/
-              {targetDirName || '[dirname]'}/.claude/
+              {basePath.length > 0 && !isBasePathInvalid
+                ? `${basePath}/${targetDirName || '[dirname]'}/.claude/`
+                : `Files will be written to EXPORT_BASE_DIR/${targetDirName || '[dirname]'}/.claude/`}
             </p>
           )}
         </div>
