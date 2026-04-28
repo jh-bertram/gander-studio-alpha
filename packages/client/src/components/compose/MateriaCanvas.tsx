@@ -574,6 +574,7 @@ const PALETTE_SECTION_HEADING_STYLE: React.CSSProperties = {
 };
 
 function buildPaletteItemStyle(isOnCanvas: boolean, type: 'agent' | 'skill'): React.CSSProperties {
+  const paletteRole: AgentRole = type === 'agent' ? 'specialist' : 'skill';
   return {
     display: 'flex',
     alignItems: 'center',
@@ -589,7 +590,7 @@ function buildPaletteItemStyle(isOnCanvas: boolean, type: 'agent' | 'skill'): Re
     color: 'var(--wd)',
     userSelect: 'none',
     // type-specific left accent via inline boxShadow (inset left border)
-    boxShadow: `inset 3px 0 0 ${getMateriaColor(type === 'agent' ? 'frontend-engineer' : 'skill', type)}`,
+    boxShadow: `inset 3px 0 0 ${getMateriaColor(type === 'agent' ? 'frontend-engineer' : 'skill', type, paletteRole)}`,
   };
 }
 

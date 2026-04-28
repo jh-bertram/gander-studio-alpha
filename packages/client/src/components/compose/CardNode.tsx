@@ -5,26 +5,13 @@
 import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { useCanvasStore } from '../../store/canvas-store';
+import { INVISIBLE_HANDLE_STYLE } from './handle-style';
 import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
   CARD_HEADER_HEIGHT_PX,
   CARD_BORDER_RADIUS_PX,
 } from '../../constants/canvas';
-
-// Handle style — invisible 1×1px anchor at card center; mirrors MateriaNode treatment.
-// Required by @xyflow/react to resolve edge SVG endpoints for orchestrator↔agent edges.
-const CARD_HANDLE_STYLE: React.CSSProperties = {
-  width: 1,
-  height: 1,
-  opacity: 0,
-  pointerEvents: 'none',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  border: 'none',
-  background: 'transparent',
-};
 
 // Header inline padding (px) — not shared with any other component, defined once here.
 const HEADER_PADDING_INLINE_PX = 12;
@@ -161,7 +148,7 @@ export function CardNode(): React.ReactElement {
       <Handle
         type="source"
         position={Position.Right}
-        style={CARD_HANDLE_STYLE}
+        style={INVISIBLE_HANDLE_STYLE}
         isConnectable={false}
         tabIndex={-1}
         aria-hidden="true"
@@ -169,7 +156,7 @@ export function CardNode(): React.ReactElement {
       <Handle
         type="target"
         position={Position.Left}
-        style={CARD_HANDLE_STYLE}
+        style={INVISIBLE_HANDLE_STYLE}
         isConnectable={false}
         tabIndex={-1}
         aria-hidden="true"

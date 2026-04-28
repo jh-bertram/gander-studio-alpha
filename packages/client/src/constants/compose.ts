@@ -8,7 +8,6 @@ import {
   SPECIALIST_AGENTS as IMPL_AGENTS,
   GATE_AGENTS,
   EXTERNAL_AGENTS as INTEL_AGENTS,
-  META_AGENTS,
   META_FRAGMENTS,
   SPECIALIST_FRAGMENTS,
   GATE_FRAGMENTS,
@@ -72,11 +71,11 @@ export function getMateriaColor(
   if (type === 'hook')  return 'var(--mo)';
 
   const lower = name.toLowerCase();
+  // COMMAND_AGENTS ≡ META_AGENTS (imported aliased); META_AGENTS un-aliased branch was removed as dead code.
   if (COMMAND_AGENTS.has(lower)) return 'var(--my)';
   if (IMPL_AGENTS.has(lower))    return 'var(--mg)';
   if (GATE_AGENTS.has(lower))    return 'var(--mr)';
   if (INTEL_AGENTS.has(lower))   return 'var(--mb)';
-  if (META_AGENTS.has(lower))    return 'var(--mp)';
 
   // Fallback: match by partial name fragments
   if (META_FRAGMENTS.some((f) => lower.includes(f)))        return 'var(--my)';

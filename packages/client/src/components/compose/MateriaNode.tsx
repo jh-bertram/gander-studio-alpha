@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { getMateriaColor } from '../../constants/compose';
 import type { AgentRole } from '../../constants/agent-roles';
+import { INVISIBLE_HANDLE_STYLE } from './handle-style';
 import {
   ORB_SIZE_PX,
   ORB_SIZE_ORCHESTRATOR_PX,
@@ -32,27 +33,6 @@ import {
   ORB_HOVER_RIM_SPREAD_PX,
   ORB_HOVER_AMBIENT_SPREAD_PX,
 } from '../../constants/canvas';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Handle style — invisible 1×1px anchor; pointer-events: none so the orb
-// remains the only hit target. isConnectable={false} prevents manual wiring.
-// aria-hidden keeps handles out of the accessibility tree (decorative anchors).
-// ─────────────────────────────────────────────────────────────────────────────
-
-const HANDLE_STYLE: React.CSSProperties = {
-  width: 1,
-  height: 1,
-  opacity: 0,
-  pointerEvents: 'none',
-  // Center the 1×1 anchor on the orb's geometric center.
-  // RF positions handles at top/bottom/left/right midpoints by default;
-  // top:-0.5px + left:50% compensates for the 1px size to achieve true center.
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  border: 'none',
-  background: 'transparent',
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -214,7 +194,7 @@ export function MateriaNode({
         <Handle
           type="source"
           position={Position.Right}
-          style={HANDLE_STYLE}
+          style={INVISIBLE_HANDLE_STYLE}
           isConnectable={false}
           tabIndex={-1}
           aria-hidden="true"
@@ -222,7 +202,7 @@ export function MateriaNode({
         <Handle
           type="target"
           position={Position.Left}
-          style={HANDLE_STYLE}
+          style={INVISIBLE_HANDLE_STYLE}
           isConnectable={false}
           tabIndex={-1}
           aria-hidden="true"
