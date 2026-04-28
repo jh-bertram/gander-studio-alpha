@@ -381,3 +381,201 @@ Each entry records a task completion, architectural decision, or sprint state sn
     Verdict: PARTIAL_PASS due to HCG-2 proximity edge regression.
   </retention_keys>
 </archive_entry>
+
+<archive_entry>
+  <timestamp>2026-04-27T12:00:00Z</timestamp>
+  <task_id>gander-studio-p2-agent-cards-postmortem</task_id>
+  <event_type>POST_MORTEM</event_type>
+  <rationale>
+    Post-mortem on completed sprint gander-studio-p2-agent-cards (2026-03-30T00:00Z → 2026-04-04T06:25Z, 5.3 days, 3 sessions, 5 implementation tasks). Verdict confirmed: PARTIAL_PASS (35/36 requirements COVERED, 1 PARTIAL on HCG-2 proximity edge regression). Post-mortem analysis surfaced 6 protocol gaps and 2 skill drift candidates, plus 1 content-quality candidate for requirements-validate.
+
+    KEY FINDINGS:
+
+    (1) PM OVERSCOPING PATTERN RECURS (G1): Same 4-files-into-1-task error documented in canvas-link post-mortem (§5, C2). PM#0 v1 packed CardNode creation + 4 design constants + getMateriaColor signature change + MateriaNode prop change into FE-001, forcing critic CR#1 to issue 5 BLOCKERs and 3 WARNINGs. PM revised 3 times (G1 requires 2 full PM-revise → Critic re-block cycles, 2.5h wall-clock). Root cause: despite agent-improvement-2026-03-30-1.md documenting the overscoping pattern and PM.md 1.0.1 mandating pre-decomposition post-mortem read, the PM did not read the canvas-link post-mortem before decomposing. This indicates the feedback loop from post-mortem-into-PM-prompt is not closing. **Lesson:** Mandatory post-mortem read is ineffective without enforcement — PM agent needs a deterministic `pm-preflight.sh` hook that greps the 3 most recent post-mortems for OVERSCOPED patterns and surfaces them as a checklist before decomposition, not as a prose suggestion.
+
+    (2) VERBATIM DELIVERABLE OMISSION (G2): PM#0 v1 silently dropped the human's stated "appearance config file" deliverable (noted in brief overview). Critic CR#1 caught this as C1 SCOPE_DRIFT. Root cause: PM parsed the human's request as a vague narrative ("update colors") rather than extracting nouns/verbs and mapping them to tasks. Alternative considered: defer it with explicit rationale. This was correct, but omission without a deferred block invited the block. **Lesson:** dispatch-task skill needs a `verbatim-deliverable-check` script at Step 1 that parses nouns/verbs from the human brief and requires the PM brief to include each in a task or a `<deferred>` block.
+
+    (3) A11Y CLICK-HANDLER-WITHOUT-KEYBOARD (G3): FE-001b delivered CardNode.tsx with a title-edit `<span onClick=...>` lacking keyboard equivalent (`tabIndex`, `role="button"`, `onKeyDown`). Auditor SA gate caught it on first read (AUDIT_FAIL); FE#2 remediated in 1 cycle (~2h). Root cause: FE#2 performed a visual click-test but did not conduct a keyboard-only walkthrough. **Lesson:** Deterministic grep for this pattern can self-catch it before audit. Add a `PreToolUse:Edit` hook on FE agent that runs `grep -nP 'onClick=' on all .tsx files in diff and fails COMPLETE if any non-button/anchor element lacks a sibling `tabIndex` and `onKeyDown`. This is a code-not-prompt opportunity (G3).
+
+    (4) NODE_TYPES / toRFNode EDGE-RENDERING REGRESSION (G4, ROOT CAUSE OF HCG-2): FE-002 wave modified toRFNode to branch on ORCHESTRATOR_ID returning type:'card'. Audit gates all passed (SA, QA, SX); requirements-validate marked 35/36 as COVERED. But at human visual check (post-delivery), proximity-link edge did not render after snap, though sound played. Post-mortem analysis: Playwright spec in proximity-link.spec.ts asserts on playLink() firing and state mutation, not on the rendered `.react-flow__edge` DOM element. The edge-creation code is present but may not execute (drop handler missing addEdge call) or may not sync to RF state. No audit gate detects visual-only regressions. **Lessons:** (a) Add explicit `.react-flow__edge` assertion to proximity-link.spec.ts post-snap (FE follow-up); (b) Add auditor checklist rule: any diff touching NODE_TYPES, toRFNode, toRFEdge requires a DOM-assertion Playwright test, not just store-state verification (G4).
+
+    (5) AUDIT GATES DO NOT RUN DEV SERVER (G5): Audit pipeline runs lint + Playwright headless. It does not launch the dev server and visually verify rendered output. HCG-2 would have been caught by visual smoke (launch dev, proximity snap, screenshot edges). Alternative considered: add Tier 3 smoke to audit pipeline. This is a heavy lift but necessary for any edge-rendering, z-order, or off-canvas positioning bugs to be visible. Defer to future sprint but document as a known blindspot (G5).
+
+    (6) SOUND-AS-PROXY-FOR-SUCCESS ANTI-PATTERN (G6): proximity-link.spec.ts asserts playLink() fires as proxy for "edge created." When node-type registration changed in FE-002, the sound emission remained decoupled from the edge render. Spec rule: when asserting a side effect (sound, network call, store mutation), also assert the primary user-visible effect (rendered DOM element) (G6).
+
+    SKILL DRIFT & CONTENT-QUALITY CANDIDATES:
+
+    (A) convention-detect not invoked: Skill was defined but not auto-triggered at dispatch-task Step 0.5. Sprint conventions inherited from canvas-link without re-detection. Recommendation: make convention-detect mandatory in dispatch-task flow (drift candidate).
+
+    (B) requirements-validate produced PARTIAL_PASS by static-only verification: Skill correctly identified HCG-2 as PARTIAL but did not catch it by running the app — human visual check found it. Skill currently does traceability only, no runtime verification. When a criterion describes runtime behavior (renders, plays, navigates), skill should spawn a Playwright smoke or surface as REQUIRES_HUMAN_VISUAL (content-quality candidate).
+
+    (C) audit-pipeline lacks Tier 3 visual smoke: Drift candidate. Add explicit note that pipeline cannot catch visual-only regressions; any diff touching NODE_TYPES, canvas rendering, or edge creation needs supplemental manual visual check or Tier 3 automated smoke.
+
+    NEW SKILL CANDIDATES:
+
+    - `pm-preflight` (LOW effort): Grep 3 recent post-mortems for OVERSCOPED / SCOPE_DRIFT patterns; surface checklist before PM dispatch (addresses G1).
+    - `react-flow-render-smoke` (MEDIUM effort): Launch dev server, run Playwright snapshot on canvas + edges after proximity snap; diff against baseline (addresses G4/G5).
+
+    AGENT PERFORMANCE:
+
+    | Agent | First-pass | Notes |
+    |-------|-----------|-------|
+    | PM#0  | 0% (3 BLOCKER cycles) | Overscoping recurrence; pattern not internalized despite prior post-mortem. |
+    | CR#1  | 100% (5 BLOCKERs correct) | High-value gate; caught all overscoping issues + logic regression (5-color to 3-color). |
+    | DS#1  | 100% | Clean schema + role classification. |
+    | FE#1  | 100% | Constants + getMateriaColor signature. |
+    | FE#2  | 0% → 100% (SA fail: a11y click handler, 1 remediation) | Keyboard-navigation oversight; auditor caught. |
+    | FE#3  | 100% | NODE_TYPES registration + CardNode. Post-delivery HCG-2 regression attributed to this wave, but regression not visible at audit (G4 gap). |
+    | FE#4  | 100% | LoadoutListPanel tree layout + Playwright coverage. |
+    | AUDITOR (×6) | 100% accuracy | FE-001b FAIL was correct; all PASS verdicts correct. 1 post-delivery regression not caught (G4 gap, not auditor fault). |
+    | requirements-validate | PARTIAL | Static-only verification; did not catch HCG-2 by running app (content-quality gap). |
+
+    OVERALL FIRST-PASS RATE: 5/7 auditable agents = 71%. PM contributed 0%, FE#2 failed SA, others clean.
+
+    PATTERN ANALYSIS: PM overscoping (identical to canvas-link C2) recurred despite agent-improvement-2026-03-30-1.md §1 explicitly adding PM.md step 0 "mandatory pre-decomposition read." This indicates mandatory prose steps are insufficient — deterministic hooks (pm-preflight.sh) are required. Recommendation for next improvement session: escalate PM overscoping from prose-based to hook-based enforcement.
+
+    SUMMARY OF 6 PROTOCOL GAPS:
+    - G1: PM overscoping recurs; needs pm-preflight.sh deterministic hook, not prose instruction
+    - G2: Verbatim deliverable omission; needs verbatim-deliverable-check script in dispatch-task
+    - G3: A11y click-handler-without-keyboard; needs PreToolUse:Edit grep hook on FE agent
+    - G4: NODE_TYPES changes break edge rendering with no audit signal; needs DOM-assertion spec update + auditor rule
+    - G5: Audit gates don't run dev server; visual regressions invisible. Defer Tier 3 smoke but document blindspot
+    - G6: Sound-as-proxy-for-success spec anti-pattern; needs spec authoring rule in standards.md
+  </rationale>
+  <dependencies>
+    gander-studio-p2-agent-cards (sprint completion, tasks DS-001, FE-001a/b, FE-002, FE-003, 5 audit waves);
+    gander-studio-p2-canvas-link.md (prior post-mortem documenting C2 overscoping pattern);
+    agent-improvement-2026-03-30-1.md (attempt to fix overscoping via PM.md prose; did not prevent recurrence);
+    proximity-link.spec.ts (Playwright spec asserts on sound, not edge DOM);
+    FE-001b AUDIT_FAIL (keyboard-navigation a11y violation);
+    FE-002 NODE_TYPES changes (origin of HCG-2 edge-rendering regression)
+  </dependencies>
+  <retention_keys>
+    docs/post-mortems/gander-studio-p2-agent-cards.md (full post-mortem with 8 sections);
+    6 protocol gaps identified (G1–G6), ranked by impact:
+      G1: PM overscoping pattern (P1, P2 recurring) — needs pm-preflight.sh hook not prose
+      G2: Verbatim deliverable omission — needs verbatim-deliverable-check script
+      G3: A11y click-handler-without-keyboard — needs PreToolUse:Edit grep hook
+      G4: NODE_TYPES / toRFNode change breaks edge rendering — needs DOM-assertion spec + auditor rule
+      G5: Audit gates don't run dev server — visual regressions invisible, defer Tier 3 smoke
+      G6: Sound-as-proxy-for-success spec anti-pattern — needs standards.md rule
+    1 content-quality candidate: requirements-validate (static-only, needs runtime verification option)
+    2 new skill candidates: pm-preflight (LOW effort, addresses G1), react-flow-render-smoke (MEDIUM effort, addresses G4/G5)
+    2 drift candidates: convention-detect (not auto-invoked), audit-pipeline (lacks Tier 3 visual smoke)
+    HCG-2 proximity edge regression: sound plays, no edge renders. Root cause: likely drop handler doesn't call addEdge or RF edges state not syncing. Needs investigation. Posted to /home/jhber/.claude/projects/-home-jhber-projects-gander-studio-alpha/memory/project_proximity_edge_bug.md
+    Key contract change: FE-001b keyboard-inaccessible span remediated with role="button", tabIndex={0}, onKeyDown handlers. Pattern now part of accessibility checklist.
+    PM.md Step 0 "mandatory post-mortem read" was added in agent-improvement-2026-03-30-1 but did not prevent overscoping recurrence — prose instruction insufficient. Next improvement needs code-not-prompt enforcement (pm-preflight.sh hook).
+  </retention_keys>
+</archive_entry>
+
+<archive_entry>
+  <timestamp>2026-04-27T14:30:00Z</timestamp>
+  <task_id>agent-improvement-2026-04-27-1</task_id>
+  <event_type>AGENT_IMPROVEMENT</event_type>
+  <rationale>
+    Acted on 4 of 6 protocol gaps identified in post-mortem `gander-studio-p2-agent-cards.md`. Changed 4 agent specification files (pm.md, critic.md, frontend.md, auditor.md) with 8 targeted edits to close recurring pattern failures and post-delivery regression gaps:
+
+    (1) G1 — PM OVERSCOPING RECURRENCE (P1 + P2 + agent-cards): Prior improvement session (2026-03-30-1) added prose-only Step 0 "read most recent post-mortem" to PM agent spec, but the same overscoping pattern (4 files into 1 task) recurred in agent-cards FE-001, wasting 2+ planning cycles on Critic revisions. Root cause: prose instructions are bypassed when nothing mechanically enforces them. Fix: Escalated to structural enforcement. Added PM Step 0.5 requiring PM to emit one `<recurring_pattern>` XML element per row of Section 6 tables in the 3 most recent post-mortems, with explicit avoid/accept rationale for each identified pattern. Critic hardened OVERSCOPED dimension with deterministic 4+-file BLOCKER threshold for FE tasks (no escape hatch). Added recurring-pattern declaration enforcement: missing PM enumeration is now a `MISSING_RECURRENCE_DECLARATION` BLOCKER. This triples the enforcement surface: (a) PM must produce the XML enumeration, (b) Critic mechanically validates it exists, (c) Critic blocks if the enumeration is missing or incomplete. Version: pm.md 1.4.6 → 1.5.0; critic.md 1.3.1 → 1.4.0.
+
+    (2) G2 — PM SILENT DELIVERABLE OMISSION: PM step 7 required noun/verb coverage in prose routing notes, but allowed free-text affirmation without structural verification. PM v1 confirmed coverage ("update colors in getMateriaColor") while silently omitting the human's stated "appearance config file" deliverable, which the Critic caught only by re-reading the original brief. Fix: Strengthened PM step 7 to require a literal `<verbatim_deliverable_audit>` XML block in written output with one `<phrase>` per noun/verb phrase extracted from the human's request, each mapping to `<addressed task=...>`, `<deferred reason=...>`, or `<out_of_scope reason=...>`. Affirmations without this block fail the completeness check. This ensures every deliverable noun is explicitly routed, not silently dropped. Included in pm.md 1.5.0 (combined with G1 edits into single MINOR bump).
+
+    (3) G3 — A11Y CLICK-HANDLER-WITHOUT-KEYBOARD (FE-001b audit fail): FE delivered inline title-edit span with `onClick` handler lacking `tabIndex`, `role="button"`, and `onKeyDown` keyboard handlers — violations caught by auditor SA gate after implementation, costing ~2h remediation. Pattern is mechanical and detectable by grep: span/div/li elements with onClick but not on button/a elements, missing the three required a11y attributes. Fix: Added Click-Handler Keyboard-Equivalent Audit section to FE agent, requiring `grep -nE "<(span|div|li|a)[^>]*onClick="` on every modified .tsx file before ui_packet submission. Each match on non-button/anchor must have all three attributes. Added matching SA gate in auditor spec as defense in depth, so even if FE misses it, auditor blocks pre-delivery. Version: frontend.md 1.5.0 → 1.6.0; auditor.md 1.5.0 → 1.6.0. Post-mortem flagged this as a hook candidate; grep-in-prose lands the rule today; HR can convert to PreToolUse:Edit hook in a follow-up sprint.
+
+    (4) G4 — NODE_TYPES CHANGE BREAKS EDGE RENDERING, NO AUDIT SIGNAL (HCG-2 root cause): FE-002 modified NODE_TYPES and toRFNode to register the orchestrator card, passing all audit gates (SA, QA, SX) and 35/36 requirements validation. However, proximity-link edge did not render post-snap at runtime, though sound played — a post-delivery regression invisible to the audit pipeline. Root cause chain: (a) Playwright spec asserted on playLink() callback and canvas store edge entry (side effects), not `.react-flow__edge` DOM presence (primary user-visible effect); (b) No audit gate detects visual-only regressions from NODE_TYPES/toRFNode changes; (c) Audit pipeline runs lint + headless Playwright, not visual dev-server smoke. Fix: Added React Flow NODE_TYPES/EDGE_TYPES/toRFNode/toRFEdge AUDIT_RISK rule to Critic requiring any plan touching these exports to mandate DOM-presence assertions in the spec (not side-effect proxies). Added "Side-Effect-As-Proxy Spec Anti-Pattern" section to FE spec with bad/good code examples, mandating that every side-effect assertion (sound, store mutation, callback) be paired with a DOM-presence assertion (`.react-flow__edge` for edges, `.react-flow__node` for nodes). Added React Flow rendering-registration SA gate to auditor: if diff matches NODE_TYPES|EDGE_TYPES|toRFNode|toRFEdge and spec has no `.react-flow__edge` or `.react-flow__node` matcher, SA FAIL. This captures the regression at three layers: (a) PM planning layer (Critic blocks plans without proper spec intent), (b) FE pre-submission layer (FE reviews spec for DOM assertions), (c) auditor SA layer (auditor double-checks on any RF changes). Version: critic.md 1.4.0 (combined with G1); frontend.md 1.6.0 (combined with G3); auditor.md 1.6.0 (combined with G3).
+
+    GAPS NOT ADDRESSED:
+    - G5 (Tier 3 visual smoke): Heavy lift requiring new tooling (Playwright visual regression, baseline screenshots, diff library). Post-mortem itself defers this. Documented as a known blindspot; surface to human for future sprint scoping.
+    - G6 (Sound-as-proxy spec anti-pattern): Addressed indirectly via G4's "Side-Effect-As-Proxy" rule, which covers both side-effect proxies and sound-specific cases. Duplicating would create two contradicting authorities; folded into G4.
+
+    SKILL FINDINGS ROUTED TO HONE:
+    Post-mortem identifies 1 content-quality candidate (requirements-validate), 2 new skill candidates (pm-preflight shell script, react-flow-render-smoke Playwright smoke), and 2 drift candidates (convention-detect auto-invocation, audit-pipeline Tier 3 gap). These are out of agent-improvement scope — routed to human for next orchestration step.
+
+    NO RESEARCH CONDUCTED: All four gaps were mechanically derivable from post-mortem evidence. No external best-practice lookup or third-party verification needed. All fixes trace directly to root-cause + counterfactual + suggested fix already documented in post-mortem Section 6.
+
+    COMMIT STATUS: Changes to pm.md, critic.md, frontend.md, auditor.md pending — commit not yet verified. Will be included in a durability commit by the human or orchestrator commit-packet step.
+  </rationale>
+  <dependencies>
+    gander-studio-p2-agent-cards.md (post-mortem identifying gaps G1–G6 with Section 6 root-cause tables);
+    gander-studio-p2-canvas-link.md (prior post-mortem documenting C2 overscoping pattern, referenced by G1);
+    agent-improvement-2026-03-30-1.md (prior prose-only fix for overscoping that proved insufficient);
+    FE-001b AUDIT_FAIL (keyboard-navigation a11y violation, origin of G3);
+    FE-002 NODE_TYPES changes (origin of HCG-2 edge-rendering regression, root of G4);
+    pm.md spec file (1.4.6 baseline);
+    critic.md spec file (1.3.1 baseline);
+    frontend.md spec file (1.5.0 baseline);
+    auditor.md spec file (1.5.0 baseline)
+  </dependencies>
+  <retention_keys>
+    docs/agent-improvements/agent-improvement-2026-04-27-1.md (full change log with 8 edits);
+    docs/agent-changelog.md (aggregate spec version history);
+    Archived prior versions: docs/agent-versions/{pm,critic,frontend,auditor}/v{prior}-2026-04-27.md (for audit trail);
+    4 gaps addressed: G1 (PM overscoping → Step 0.5 + Critic enforcement), G2 (deliverable omission → verbatim_deliverable_audit block), G3 (a11y click handler → grep + auditor gate), G4 (NODE_TYPES edge regression → side-effect-as-proxy spec rule + RF SA gate);
+    2 gaps deferred: G5 (Tier 3 visual smoke, heavy lift, documented as blindspot), G6 (folded into G4 fix);
+    3 gaps converted to hook candidates for HR: pm-preflight.sh (G1), verbatim-deliverable-check (G2), PreToolUse:Edit grep (G3);
+    5 skill findings routed to hone: 1 content-quality, 2 new skill candidates, 2 drift candidates;
+    Critical enforcement surfaces (defense in depth):
+      - G1: PM Step 0.5 enumeration + Critic MISSING_RECURRENCE_DECLARATION block + Critic 4+-file BLOCKER for FE
+      - G3: FE pre-submission grep + auditor SA gate
+      - G4: Critic AUDIT_RISK on NODE_TYPES + FE side-effect-as-proxy spec section + auditor React Flow SA gate
+    Next review trigger: after proximity-edge-fix sprint (HCG-2 followup) or 2 additional sprints. Monitor PM Step 0.5 adoption and FE pre-flight execution rate.
+    Pattern: prose-only agent improvements have proven ineffective when repeated (G1 prose from 2026-03-30 recurred); structural XML blocks + mechanical Critic checks represent third intervention escalation.
+  </retention_keys>
+</archive_entry>
+
+<archive_entry>
+  <timestamp>2026-04-27T16:45:00Z</timestamp>
+  <task_id>hone-2026-04-27-1</task_id>
+  <event_type>HONE_SESSION</event_type>
+  <rationale>
+    Hone session acting on 3 of 5 skill findings from post-mortem `gander-studio-p2-agent-cards.md` Section 5. Session name: hone-2026-04-27-1. Closed 3 Section 8 findings (1 content-quality, 2 skill drift) via skill specification updates. 2 additional findings escalated to human as new-skill candidates pending design review.
+
+    (1) REQUIREMENTS-VALIDATE CONTENT-QUALITY (8c-content): Post-mortem § 5.B identified that requirements-validate performs static-only verification (reading specs, traceability checks, Zod schema coverage) without running the app. When criterion describes runtime behavior (renders, plays, navigates, transmits, snaps), skill outputs PARTIAL without executing the code path. HCG-2 proximity-edge regression (sound plays, no edge renders) was static-traceability COVERED but runtime FAILED — only caught at human visual check. Root cause: skill lacks provision for runtime verification when spec references a user-visible behavior. Fix: Enhanced skill spec requirements-validate.md with Step 2.5 "Runtime Behavior Verification" — when criterion explicitly references user-observable behavior (DOM render, audio play, canvas animation, mouse drag feedback), skill now (a) checks if Playwright spec exists with DOM-presence assertion for that behavior, (b) if spec lacks coverage, emits REQUIRES_HUMAN_VISUAL flag on PARTIAL verdict and recommends manual spot-check. This preserves static-traceability speed while surfacing gaps in runtime coverage to the human. Version: requirements-validate 1.0.2 → 1.1.0.
+
+    (2) DISPATCH-TASK SKILL DRIFT (8e-drift): Post-mortem § 5.A identified convention-detect as a defined skill that should run at dispatch-task Step 0.5 (after input parsing, before task plan writing) but was never invoked in the agent-cards sprint. Convention-detect declares "Run at Step 0.5" in its spec, but dispatch-task Step 0 stops at Step 0.4 (generate tasks), Step 0.6 (routing), with no corresponding Step 0.5 slot. This is a contract drift: convention-detect's self-declared contract was out of sync with dispatch-task's actual step sequence. Fix: Added explicit Step 0.5 to dispatch-task spec flow: "Convention Detection (Automatic)" — runs convention-detect.sh on the project tree, emits a <conventions> XML block listing detected patterns (monorepo structure, Zod schemas on boundaries, YAML agent specs, tRPC routers), and threads conventions into task descriptions. This closes the gap where convention-detect defined its own insertion point without being wired into the caller's flow. Version: dispatch-task 1.5.0 → 1.6.0.
+
+    (3) AUDIT-PIPELINE KNOWN-BLINDSPOT DOCUMENTATION (8e-drift): Post-mortem § 5.C identified audit-pipeline as lacking Tier 3 visual-rendering smoke (cannot detect z-order bugs, off-canvas regressions, edge-render failures). This is a capability gap, not a bug — the pipeline correctly states it cannot catch visual-only regressions (§ 5.C: "Audit gates don't run dev server"). Rather than attempt a heavy-lift tool-add in a hone session, skill spec was updated with explicit pipeline_integrity: VISUAL_BLINDSPOT_KNOWN flag. Step 5 now emits this flag on any SA/QA/SX pass that touches NODE_TYPES, canvas rendering, positioning, or z-index patterns. Recommendation surfaces: "human visual smoke recommended for FE diffs touching {portal, z-index, transform, position, overflow}" until a future sprint implements Tier 3 automated visual regression (heavy lift deferred). Version: audit-pipeline 1.3.0 → 1.3.1.
+
+    NO SKILL RETIREMENTS: All 3 skills remain in active use. No specifications were removed or deprecated.
+
+    NEW SKILL CANDIDATES ESCALATED (out of hone scope):
+    Post-mortem § 5 identified 2 new skill candidates requiring design by human or skill-creator agent:
+    - `pm-preflight.sh` (LOW effort): Grep 3 recent post-mortems for OVERSCOPED / SCOPE_DRIFT patterns; surface checklist before PM dispatch. Addresses agent-improvement G1. Ready for human design.
+    - `react-flow-render-smoke` (MEDIUM effort): Playwright runner for NODE_TYPES diffs — launches dev server, captures baseline canvas state, runs proximity snap, diffs edges DOM post-snap, reports regression. Addresses agent-improvement G4 + post-mortem G5. Requires visual-regression baseline strategy (human design choice).
+
+    RESEARCH TASKS SPAWNED: 0 — all skill updates mechanically derived from post-mortem § 5 evidence.
+
+    RETENTION KEYS FOR NEXT IMPROVEMENT SESSION:
+    - docs/agent-improvements/hone-2026-04-27-1.md (full change log, 3 spec updates)
+    - docs/agent-changelog.md (updated versions: requirements-validate 1.1.0, dispatch-task 1.6.0, audit-pipeline 1.3.1)
+    - Archived prior versions: docs/agent-versions/skills/{requirements-validate,dispatch-task,audit-pipeline}/v{prior}-2026-04-27.md
+    - 3 Section 8 findings closed: 8c (requirements-validate runtime verification) + 8e-drift (dispatch-task Step 0.5, audit-pipeline blindspot doc)
+    - 2 Section 8 findings routed to human: new skill pm-preflight (LOW) + new skill react-flow-render-smoke (MEDIUM)
+    - Step 0.5 convention-detect contract now wired into dispatch-task Step 0.5 explicit slot
+    - requirements-validate now emits REQUIRES_HUMAN_VISUAL on runtime-behavior PARTIAL gaps
+    - audit-pipeline now emits pipeline_integrity: VISUAL_BLINDSPOT_KNOWN on NODE_TYPES / canvas diffs
+  </rationale>
+  <dependencies>
+    gander-studio-p2-agent-cards.md (post-mortem § 5 identifying 5 skill findings, 8c + 8e slots);
+    agent-improvement-2026-04-27-1.md (preceding agent-improvement session, agent specs hardening);
+    convention-detect.md skill spec (declares Step 0.5 insertion point, now wired);
+    requirements-validate.md (prior 1.0.2 version);
+    dispatch-task.md (prior 1.5.0 version);
+    audit-pipeline.md (prior 1.3.0 version)
+  </dependencies>
+  <retention_keys>
+    docs/agent-improvements/hone-2026-04-27-1.md;
+    docs/agent-changelog.md (aggregate skill version history);
+    docs/agent-versions/skills/{requirements-validate,dispatch-task,audit-pipeline}/v{prior}-2026-04-27.md (archived baselines);
+    3 skills modified:
+      1. requirements-validate 1.0.2 → 1.1.0: Added Step 2.5 Runtime Behavior Verification — emits REQUIRES_HUMAN_VISUAL when criterion describes observable behavior but spec lacks DOM/audio/animation assertion
+      2. dispatch-task 1.5.0 → 1.6.0: Added Step 0.5 "Convention Detection (Automatic)" — wires convention-detect.sh invocation into explicit step slot, threads <conventions> block into task descriptions
+      3. audit-pipeline 1.3.0 → 1.3.1: Added pipeline_integrity: VISUAL_BLINDSPOT_KNOWN flag on NODE_TYPES/canvas/z-index diffs, documents known limitation (no dev-server visual smoke) and recommends human visual spot-check
+    2 new-skill candidates routed to human:
+      1. pm-preflight.sh (LOW effort, addresses agent-improvement G1)
+      2. react-flow-render-smoke (MEDIUM effort, addresses agent-improvement G4/G5)
+    0 retirement candidates
+    0 research tasks spawned
+    Closed Section 8 findings: 8c (content-quality), 8e-drift (2 slots)
+    Remaining post-mortem findings for future work: new-skill design (2 candidates), Tier 3 visual smoke tooling (deferred), hook implementations (pm-preflight.sh, verbatim-deliverable-check, PreToolUse:Edit grep — 3 candidates pending HR escalation from agent-improvement-2026-04-27-1)
+  </retention_keys>
+</archive_entry>

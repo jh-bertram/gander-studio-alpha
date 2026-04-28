@@ -4,6 +4,36 @@ Records all agent and skill file edits made during improvement sessions.
 
 ---
 
+## hone-2026-04-27-1
+**Date:** 2026-04-27
+**Post-mortems acted on:** `gander-studio-p2-agent-cards.md`
+
+| File | Previous version | New version | Change |
+|------|-----------------|-------------|--------|
+| `.claude/skills/requirements-validate/SKILL.md` | 1.0.2 | 1.1.0 | Added Step 2.5 Runtime Behavior Verification — runtime criteria require DOM-presence Playwright assertion or REQUIRES_HUMAN_VISUAL flag |
+| `.claude/skills/dispatch-task/SKILL.md` | 1.5.0 | 1.6.0 | Added Step 0.5 mandating convention-detect invocation before PM Context Preflight |
+| `.claude/skills/audit-pipeline/SKILL.md` | 1.3.0 | 1.3.1 | Documented Tier 3 visual-rendering blindspot; emit pipeline_integrity VISUAL_BLINDSPOT_KNOWN on NODE_TYPES/portal/z-index diffs |
+
+---
+
+## agent-improvement-2026-04-27-1
+**Date:** 2026-04-27
+**Post-mortems acted on:** `gander-studio-p2-agent-cards.md`
+
+| File | Previous version | New version | Change |
+|------|-----------------|-------------|--------|
+| `.claude/agents/pm.md` | 1.4.6 | 1.5.0 | Added Step 0.5 mandating XML-block enumeration of recurring patterns from prior post-mortems before decomposition |
+| `.claude/agents/pm.md` | 1.5.0 | 1.5.0 | Strengthened Step 7 to require `<verbatim_deliverable_audit>` block in written output, not free-text claim |
+| `.claude/agents/critic.md` | 1.3.1 | 1.4.0 | Hardened OVERSCOPED with deterministic 4+-file BLOCKER threshold for FE tasks |
+| `.claude/agents/critic.md` | 1.4.0 | 1.4.0 | Added recurring-pattern declaration enforcement; missing PM enumeration now BLOCKs |
+| `.claude/agents/critic.md` | 1.4.0 | 1.4.0 | Added React Flow NODE_TYPES/toRFNode/toRFEdge rule requiring DOM-presence assertion in spec |
+| `.claude/agents/frontend.md` | 1.5.0 | 1.6.0 | Added Click-Handler Keyboard-Equivalent Audit greping onClick on non-button elements before ui_packet |
+| `.claude/agents/frontend.md` | 1.6.0 | 1.6.0 | Added Side-Effect-As-Proxy spec anti-pattern: side-effect assertions must pair with DOM-presence assertion |
+| `.claude/agents/auditor.md` | 1.5.0 | 1.6.0 | Added React Flow rendering-registration SA gate: NODE_TYPES/toRFNode diffs require DOM-presence assertion |
+| `.claude/agents/auditor.md` | 1.6.0 | 1.6.0 | Added Click-Handler Keyboard-Equivalent SA gate as defense-in-depth backstop to FE pre-flight |
+
+---
+
 ## agent-improvement-2026-03-30-1
 **Date:** 2026-03-30
 **Post-mortems acted on:** `gander-studio-p2-canvas-link.md`
