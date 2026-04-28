@@ -1,0 +1,281 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - img [ref=e6]
+    - generic [ref=e13]:
+      - heading "GANDER STUDIO" [level=1] [ref=e14]
+      - paragraph [ref=e15]: Agent Configuration Tool
+    - generic [ref=e16]:
+      - generic [ref=e17]: GANDER STUDIO v1.0.0
+      - generic [ref=e18]: 4/27/2026, 8:52:52 PM
+  - navigation "Main navigation" [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e21]: Navigation
+      - button "Browse" [ref=e22] [cursor=pointer]: Browse
+      - button "Compose" [ref=e24] [cursor=pointer]: Compose
+      - button "Edit" [ref=e26] [cursor=pointer]: Edit
+      - button "Export" [ref=e28] [cursor=pointer]: Export
+  - main [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]: All Materia
+      - search "Browse filters" [ref=e34]:
+        - group "Type filter" [ref=e35]:
+          - button "All" [pressed] [ref=e36] [cursor=pointer]
+          - button "Agents" [ref=e37] [cursor=pointer]
+          - button "Skills" [ref=e38] [cursor=pointer]
+          - button "Hooks" [ref=e39] [cursor=pointer]
+        - group "Tier filter":
+          - button "All" [disabled] [pressed]
+          - button "core" [disabled]
+          - button "impl" [disabled]
+          - button "optional" [disabled]
+        - group "Model filter":
+          - button "All" [disabled] [pressed]
+          - button "opus" [disabled]
+          - button "sonnet" [disabled]
+          - button "haiku" [disabled]
+        - searchbox "Search agents, skills, and hooks" [ref=e40]
+      - generic "Agents" [ref=e41]:
+        - button "archivist — optional agent" [ref=e42] [cursor=pointer]:
+          - generic [ref=e43]:
+            - generic [ref=e44]: AR
+            - generic [ref=e45]: archivist
+            - generic [ref=e46]: haiku
+          - generic [ref=e47]:
+            - paragraph [ref=e48]: Maintains the project's temporal knowledge graph — decisions, rationale, task completions, and context snapshots. Spawn this agent after any task is successfully audited and closed (to log the completion), after any significant architectural decision (to record the rationale), or when the session is getting long and context quality is degrading (to produce a context snapshot). Also spawn when the PM needs to reconstruct the state of work after a session gap. Never writes application code. Outputs archive_entry XML blocks.
+            - generic [ref=e49]:
+              - generic [ref=e50]: haiku
+              - generic [ref=e51]: OPTIONAL
+        - button "backend-engineer — optional agent" [ref=e52] [cursor=pointer]:
+          - generic [ref=e53]:
+            - generic [ref=e54]: BE
+            - generic [ref=e55]: backend-engineer
+            - generic [ref=e56]: sonnet
+          - generic [ref=e57]:
+            - paragraph [ref=e58]: Implements server-side logic, API routes, middleware, and data validation using TypeScript and Zod. Spawn this agent for any task involving API endpoint design or implementation, business logic, server-side authentication/authorization, request/response schema definition, or service integration. Also spawn when a frontend task needs a data contract established first — the BE defines the Zod schema, then FE consumes it. Never touches UI code. Outputs a completion_packet XML block.
+            - generic [ref=e59]:
+              - generic [ref=e60]: sonnet
+              - generic [ref=e61]: OPTIONAL
+        - button "critic — optional agent" [ref=e62] [cursor=pointer]:
+          - generic [ref=e63]:
+            - generic [ref=e64]: CR
+            - generic [ref=e65]: critic
+            - generic [ref=e66]: opus
+          - generic [ref=e67]:
+            - paragraph [ref=e68]: Adversarially reviews the PM's plan before any implementing agent starts. Spawn this agent after the PM produces a sprint_state and before Step 2 of dispatch-task. The Critic reads the task packets, the referenced codebase, recent post-mortems, and the standards rules — then challenges the plan across six dimensions. A BLOCK result halts execution; the PM must revise before agents are spawned. Read-only. Never fixes; only finds. Outputs a plan_critique XML block.
+            - generic [ref=e69]:
+              - generic [ref=e70]: opus
+              - generic [ref=e71]: OPTIONAL
+        - button "dispatcher — optional agent" [ref=e72] [cursor=pointer]:
+          - generic [ref=e73]:
+            - generic [ref=e74]: DI
+            - generic [ref=e75]: dispatcher
+            - generic [ref=e76]: haiku
+          - generic [ref=e77]:
+            - paragraph [ref=e78]: Routes completed agent outputs to the correct next agent in the workflow pipeline. Spawn this agent when multiple tasks are in flight simultaneously and the PM needs explicit state tracking of which packets are waiting for which next step — particularly in parallel workstreams where BE, FE, and DS are producing outputs concurrently. The dispatcher maintains a task registry and emits dispatch XML blocks that tell the PM exactly what to do next with each packet. Use for complex multi-agent tasks; simple linear tasks don't need it.
+            - generic [ref=e79]:
+              - generic [ref=e80]: haiku
+              - generic [ref=e81]: OPTIONAL
+        - button "frontend-engineer — optional agent" [ref=e82] [cursor=pointer]:
+          - generic [ref=e83]:
+            - generic [ref=e84]: FE
+            - generic [ref=e85]: frontend-engineer
+            - generic [ref=e86]: sonnet
+          - generic [ref=e87]:
+            - paragraph [ref=e88]: Builds accessible, state-aware React components using Tailwind and Shadcn/ui. Spawn this agent for any task involving UI components, client-side state management, accessibility compliance, design token application, or visual/interactive behavior. Also spawn when a design spec from the UI Designer needs to be implemented. Requires a Zod schema from the backend agent before wiring live API calls — if no schema exists yet, FE can build against a mock. Outputs a ui_packet XML block.
+            - generic [ref=e89]:
+              - generic [ref=e90]: sonnet
+              - generic [ref=e91]: OPTIONAL
+        - button "system-health-monitor — optional agent" [ref=e92] [cursor=pointer]:
+          - generic [ref=e93]:
+            - generic [ref=e94]: HR
+            - generic [ref=e95]: system-health-monitor
+            - generic [ref=e96]: opus
+          - generic [ref=e97]:
+            - paragraph [ref=e98]: Monitors prompt integrity and patches agent/skill definitions when protocols break down. Spawn this agent when a PM escalates three consecutive audit failures on the same task (possible MISSING_PROTOCOL root cause), when an agent repeatedly produces output in the wrong format (PROMPT_AMBIGUITY), when a new protocol requirement needs to be propagated across multiple agent files, or when the human explicitly requests a system health check or agent modification. HR diagnoses the structural cause of recurring failures and applies targeted edits directly to .claude/agents/*.md and .claude/skills/**/*.md files. Never modifies application source code. Outputs system_health_report and prompt_patch XML blocks.
+            - generic [ref=e99]:
+              - generic [ref=e100]: opus
+              - generic [ref=e101]: OPTIONAL
+        - button "orchestrator — optional agent" [ref=e102] [cursor=pointer]:
+          - generic [ref=e103]:
+            - generic [ref=e104]: OR
+            - generic [ref=e105]: orchestrator
+            - generic [ref=e106]: opus
+          - generic [ref=e107]:
+            - paragraph [ref=e108]: Primary human-facing agent for the Gander team. The sole interface between the human and the full agent team. Receives human requests, clarifies intent when needed, directs the PM to decompose the work, then routes the plan through critic review, implementation agents, audit pipeline, and archivist. Reports results to the human in plain language. Spawn this agent first for any development task that needs the full team.
+            - generic [ref=e109]:
+              - generic [ref=e110]: opus
+              - generic [ref=e111]: OPTIONAL
+        - button "project-manager — optional agent" [ref=e112] [cursor=pointer]:
+          - generic [ref=e113]:
+            - generic [ref=e114]: PM
+            - generic [ref=e115]: project-manager
+            - generic [ref=e116]: sonnet
+          - generic [ref=e117]:
+            - paragraph [ref=e118]: Decomposes high-level tasks into atomic, agent-routed task packets. Spawned by the Orchestrator with an <orchestrator_brief>. The PM determines which agents to involve, in what order, with what inputs and success criteria. Returns a <task_decomposition> block to the Orchestrator — which then handles critic routing, agent dispatch, audit pipeline, and human reporting. The PM is a planning and decomposition subagent, not a routing hub.
+            - generic [ref=e119]:
+              - generic [ref=e120]: sonnet
+              - generic [ref=e121]: OPTIONAL
+        - button "researcher — optional agent" [ref=e122] [cursor=pointer]:
+          - generic [ref=e123]:
+            - generic [ref=e124]: RA
+            - generic [ref=e125]: researcher
+            - generic [ref=e126]: sonnet
+          - generic [ref=e127]:
+            - paragraph [ref=e128]: Searches the web for technical documentation, library APIs, market context, external references, and scientific datasets. Spawn this agent when a task requires understanding a third-party API or SDK, when the team is evaluating technology options, when implementation depends on external documentation that may have changed, when scientific or public datasets need to be located and acquired, or when the PM needs competitive or market context for a decision. Also spawn before implementing any integration with an external service — verify the current API docs rather than relying on training data. Every claim must be sourced. Outputs a research_dossier XML block; for dataset acquisition, outputs a data_acquisition_report XML block.
+            - generic [ref=e129]:
+              - generic [ref=e130]: sonnet
+              - generic [ref=e131]: OPTIONAL
+        - button "statistician — optional agent" [ref=e132] [cursor=pointer]:
+          - generic [ref=e133]:
+            - generic [ref=e134]: ST
+            - generic [ref=e135]: statistician
+            - generic [ref=e136]: sonnet
+          - generic [ref=e137]:
+            - paragraph [ref=e138]: Performs statistical analysis, data cleaning, exploratory data analysis (EDA), and visualization on datasets acquired by the Researcher. Spawn this agent after the researcher produces a data_acquisition_report, when raw data needs to be cleaned or transformed before use, when the team needs statistical summaries or hypothesis tests to inform a decision, or when data-driven insights are needed for a feature (e.g., what thresholds to set, what distributions to expect). Outputs a statistical_report XML block. Never writes application code or UI — analysis and insights only.
+            - generic [ref=e139]:
+              - generic [ref=e140]: sonnet
+              - generic [ref=e141]: OPTIONAL
+        - button "ui-designer — optional agent" [ref=e142] [cursor=pointer]:
+          - generic [ref=e143]:
+            - generic [ref=e144]: UI
+            - generic [ref=e145]: ui-designer
+            - generic [ref=e146]: sonnet
+          - generic [ref=e147]:
+            - paragraph [ref=e148]: Creates visual design specifications for UI components and page layouts before implementation begins. Spawn this agent when a task involves new user-facing UI that requires design decisions — layout structure, component hierarchy, color and typography choices, spacing, responsive behavior, or interaction states. The UI Designer produces a design_spec that the Frontend Engineer implements faithfully, separating design intent from implementation. Spawn before the FE agent, not after. Outputs a design_spec XML block.
+            - generic [ref=e149]:
+              - generic [ref=e150]: sonnet
+              - generic [ref=e151]: OPTIONAL
+      - generic "Skills" [ref=e152]:
+        - button "agent-improvement skill" [ref=e153] [cursor=pointer]:
+          - generic [ref=e155]:
+            - generic [ref=e156]: SKILL
+            - generic [ref=e157]: agent-improvement
+            - paragraph
+        - button "agent-log skill" [ref=e158] [cursor=pointer]:
+          - generic [ref=e160]:
+            - generic [ref=e161]: SKILL
+            - generic [ref=e162]: agent-log
+            - paragraph [ref=e163]: Durable, agent-specific task journal. Three-stage protocol that survives context resets and enables clean resumption after interruption.
+        - button "assign-agents skill" [ref=e164] [cursor=pointer]:
+          - generic [ref=e166]:
+            - generic [ref=e167]: SKILL
+            - generic [ref=e168]: assign-agents
+            - paragraph [ref=e169]: Formally dispatch implementing agents after the Critic has passed the PM's plan. Use at dispatch-task Step 2 — after CRITIQUE_PASS, before any implementing agent is spawned. Produces explicit per-agent assignments with expected return packet shapes, logs all SPAWN events, and builds the expectation manifest the PM uses to validate return packets. Ensures no agent starts without a complete, unambiguous brief and that the PM knows exactly what it is waiting for from each one. Triggers automatically within dispatch-task after Step 1.5 passes.
+        - button "audit-pipeline skill" [ref=e170] [cursor=pointer]:
+          - generic [ref=e172]:
+            - generic [ref=e173]: SKILL
+            - generic [ref=e174]: audit-pipeline
+            - paragraph [ref=e175]: Run the full verification pipeline on completed work — standards check, functional tests, and security scan. Use after any feature implementation by BE, FE, or DS before considering the task done. Also use when the human asks for a review or audit. Triggers on phrases like "audit this", "review the changes", "run the checks", or automatically after any completion_packet, ui_packet, or data_packet is produced.
+        - button "canvas skill" [ref=e176] [cursor=pointer]:
+          - generic [ref=e178]:
+            - generic [ref=e179]: SKILL
+            - generic [ref=e180]: canvas
+            - paragraph [ref=e181]: Zoey's persistent sketchbook. Invoke when the human types /canvas. Gives Zoey a read/write space at ~/.claude/zoeys-canvas/ that survives across sessions. Use to browse, create, modify, or delete files within budget — reflections, research notes, working sketches, anything.
+        - button "commit-packet skill" [ref=e182] [cursor=pointer]:
+          - generic [ref=e184]:
+            - generic [ref=e185]: SKILL
+            - generic [ref=e186]: commit-packet
+            - paragraph [ref=e187]: "Use after audit PASS to commit a packet's modified paths to git with strict scope enforcement — never git add -A, never include unrelated working-tree state. Triggers on \"durability commit\", \"commit the audited packet\", \"commit after audit PASS\", \"git commit the packet files\", \"stage and commit packet paths\", \"run the durability commit step\". Stages only the paths the packet enumerates in its files_modified or files_created blocks, then writes a conventional-commits message with task: {id} and Audit: PASS trailers. Halt and surface to the Orchestrator if SA, QA, or SX is anything other than PASS/SECURE."
+        - button "context-compression skill" [ref=e188] [cursor=pointer]:
+          - generic [ref=e190]:
+            - generic [ref=e191]: SKILL
+            - generic [ref=e192]: context-compression
+            - paragraph [ref=e193]: Compress project context when conversations get long or context feels stale. Use when the human mentions 'context is bloated', 'you seem to be forgetting things', 'compress the history', or when you notice degraded performance in a long session.
+        - button "convention-detect skill" [ref=e194] [cursor=pointer]:
+          - generic [ref=e196]:
+            - generic [ref=e197]: SKILL
+            - generic [ref=e198]: convention-detect
+            - paragraph [ref=e199]: Scan the active project and produce a structured <project_conventions> block for inclusion in orchestrator_brief. Fast, read-only. Run at Step 0.5 before PM decomposition so every downstream agent works from the same grounding.
+        - button "dispatch-task skill" [ref=e200] [cursor=pointer]:
+          - generic [ref=e202]:
+            - generic [ref=e203]: SKILL
+            - generic [ref=e204]: dispatch-task
+            - paragraph [ref=e205]: Orchestrate a complete feature delivery cycle from task decomposition through implementation, audit, and archiving. Invoked by the Orchestrator after receiving a human request. Drives the full PM → Critic → [BE/FE/DS/UI] → Auditor → Archivist pipeline, handling routing and verification gates automatically. The Orchestrator is the entry point; this skill is the procedure the Orchestrator executes.
+        - button "generate-design skill" [ref=e206] [cursor=pointer]:
+          - generic [ref=e208]:
+            - generic [ref=e209]: SKILL
+            - generic [ref=e210]: generate-design
+            - paragraph [ref=e211]: Bootstrap or update a DESIGN.md for an app. Produces a machine-readable design token manifest used by the UI Designer and Frontend Engineer as the single source of truth for all visual decisions. Invoke when starting a new app with UI work, when PM flags DESIGN.md as absent in risk_flags, or when the design system needs a refresh.
+        - button "hone skill" [ref=e212] [cursor=pointer]:
+          - generic [ref=e214]:
+            - generic [ref=e215]: SKILL
+            - generic [ref=e216]: hone
+            - paragraph [ref=e217]: "Iteratively improves the skill catalog by acting on Section 8 of post-mortem documents: analyzes skill invocation outcomes, researches current best practices, and applies versioned, archived edits to skill SKILL.md files. Use after any post-mortem with Section 8 findings, or when the human asks to run hone, improve our skills, act on Section 8, identify which skills are drifting, or decide should we retire any skills. Spawns the Researcher to verify current Claude Code skill conventions before description rewrites. Surfaces retirement candidates for human confirmation — never auto-retires. Produces a hone report archived alongside the improvement changelog entry."
+        - button "jidoka skill" [ref=e218] [cursor=pointer]:
+          - generic [ref=e220]:
+            - generic [ref=e221]: SKILL
+            - generic [ref=e222]: jidoka
+            - paragraph [ref=e223]: Plan-only preflight round between the Critic plan gate and assign-agents. Each implementing agent (and the system-health-monitor for meta-agent work) assigned in the PM's critic-approved plan is first dispatched in "plan-only mode" — it reads its assigned source files, produces a scoped plan_packet (no file modifications), and returns. The Orchestrator synthesizes the plan_packets; if they surface a re-partition need or a fact the plan assumed wrongly, the PM re-decomposes and the revised plan re-runs the Critic gate. Opt-in — use when context_files are numerous, task packets are large-scope, the Critic flagged codebase-fact unknowns, or the sprint edits agent/skill/rule specs. Named after Toyota's "autonomation" — stop the line at the first abnormality, root-cause, re-engage.
+        - button "log-event skill" [ref=e224] [cursor=pointer]:
+          - generic [ref=e226]:
+            - generic [ref=e227]: SKILL
+            - generic [ref=e228]: log-event
+            - paragraph [ref=e229]: Use to log a SPAWN before dispatching a subagent, or a COMPLETE for ORC#0-direct work the SubagentStop hook will not auto-log. Triggers on "log a SPAWN event", "log a COMPLETE event", "append to the event log", "record the spawn", "emit an agent event", "write to agent-events JSONL". Appends one JSONL event to the UTC-dated agent-events log, handling filename determination, seq continuation from the last line, template construction, and atomic append in one step. Do NOT invoke to re-log a subagent Agent-tool return — that is the SubagentStop hook's job; double-logging is a protocol violation.
+        - button "post-mortem skill" [ref=e230] [cursor=pointer]:
+          - generic [ref=e232]:
+            - generic [ref=e233]: SKILL
+            - generic [ref=e234]: post-mortem
+            - paragraph [ref=e235]: Synthesize a structured post-mortem document for a completed sprint. Use after any sprint delivered via dispatch-task, especially when there were audit failures, remediation cycles, or runtime bugs discovered post-delivery. Gathers all agent-produced artifacts (event log, task specs, agent outputs, audit results, archivist entries) and produces a post-mortem in docs/post-mortems/. The main session performs the synthesis — no new agent is spawned for the analysis itself. Triggers on "write a post-mortem", "retrospective on the last sprint", or "what went wrong in sprint X".
+        - button "project-archive skill" [ref=e236] [cursor=pointer]:
+          - generic [ref=e238]:
+            - generic [ref=e239]: SKILL
+            - generic [ref=e240]: project-archive
+            - paragraph [ref=e241]: Archives all project-specific files to remove them from the active context window, giving the agent team a clean slate for a new project or new phase. Moves source code, task outputs, event logs, and sprint artifacts into a timestamped archive directory and excludes them via .claudeignore. Team files (agent specs, skills, rules, changelog, agent-versions) are never touched — they carry the institutional knowledge forward. Requires post-mortem and agent-improvement to have run first. Triggers on "archive the project", "clean slate", "start fresh", "new project".
+        - button "ralph-loop skill" [ref=e242] [cursor=pointer]:
+          - generic [ref=e244]:
+            - generic [ref=e245]: SKILL
+            - generic [ref=e246]: ralph-loop
+            - paragraph [ref=e247]: Self-correcting iteration pattern for tasks with concrete pass/fail conditions. Use whenever a task requires multiple attempts, has a verifiable completion condition, or involves fixing errors from previous attempts. Triggers on phrases like "keep trying until it works", "iterate until tests pass", "fix all the errors", or any task with a clear success condition (build passes, tests green, linter clean, output matches spec).
+        - button "requirements-validate skill" [ref=e248] [cursor=pointer]:
+          - generic [ref=e250]:
+            - generic [ref=e251]: SKILL
+            - generic [ref=e252]: requirements-validate
+            - paragraph [ref=e253]: Requirements traceability gate. Run after all audit gates PASS and before the Archivist logs completion. Maps every success criterion from the original human request back to specific delivered artifacts. Produces a requirements_coverage_report. MISSING findings block sprint close and route back to the implementing agent, not the auditor.
+        - button "resume-project skill" [ref=e254] [cursor=pointer]:
+          - generic [ref=e256]:
+            - generic [ref=e257]: SKILL
+            - generic [ref=e258]: resume-project
+            - paragraph [ref=e259]: Resume an in-progress sprint at the start of a new session. Reads the most recent SESSION-CHECKPOINT and restores Orchestrator context without re-reading every task output. Triggers on 'continue the project', 'pick up where we left off', 'resume', or when the human opens a new session on an active sprint.
+        - button "scientific-data skill" [ref=e260] [cursor=pointer]:
+          - generic [ref=e262]:
+            - generic [ref=e263]: SKILL
+            - generic [ref=e264]: scientific-data
+            - paragraph [ref=e265]: Extended patterns for acquiring data from scientific databases across specific research domains — genomics/bioinformatics, climate science, astronomy, social science, and public health. Use when the researcher agent needs domain-specific download tools, specialized file formats, or database-specific query syntax. Also use when a dataset requires NCBI SRA tools, netCDF handling, FITS files, or other domain-specific formats that WebFetch alone can't handle. Triggers on mentions of specific databases (GEO, SRA, ERA5, SDSS, IPUMS, NHANES) or file formats (FASTQ, netCDF, FITS, HDF5, Parquet).
+        - button "scry skill" [ref=e266] [cursor=pointer]:
+          - generic [ref=e268]:
+            - generic [ref=e269]: SKILL
+            - generic [ref=e270]: scry
+            - paragraph [ref=e271]: "Pre-plan preflight skill. Dispatches the Researcher (RA) upstream of PM decomposition to gather citation-grounded external evidence (third-party API shapes, SDK versions, platform semantics, regulatory or dataset facts). RA returns a structured `<evidence_brief>` with per-claim provenance — source URL, retrieval timestamp, verbatim quoted passage, author/org, staleness risk. The PM consumes the brief verbatim in its `<orchestrator_brief>` context so decomposition rests on cited external facts rather than training-data assumptions. Symmetrical to jidoka but upstream: jidoka catches codebase-fact assumptions post-plan; scry catches external-fact assumptions pre-plan. Opt-in; skip when the sprint is purely intra-codebase."
+        - button "sprint-report skill" [ref=e272] [cursor=pointer]:
+          - generic [ref=e274]:
+            - generic [ref=e275]: SKILL
+            - generic [ref=e276]: sprint-report
+            - paragraph [ref=e277]: Produce a sprint intelligence report from JSONL event logs — session breakdown, agent roster, token usage, and file attribution per agent. Use after any sprint completes, before or after running post-mortem. Triggers on 'sprint report', 'who did what', 'show session breakdown', 'token usage', 'sprint stats', or any request for sprint-level observability.
+        - button "team-report skill" [ref=e278] [cursor=pointer]:
+          - generic [ref=e280]:
+            - generic [ref=e281]: SKILL
+            - generic [ref=e282]: team-report
+            - paragraph [ref=e283]: "Generate a self-contained HTML report of the current Gander agent team and skill setup. Uses FF7 Remake Intergrade design language — Mako Teal palette, tactical information hierarchy, materia color-coding by agent role. Report includes: executive summary, agent roster with materia-coded role badges, skill inventory, interactive workflow diagram, and drilldown panels for each agent. Output written to docs/team-report.html."
+        - button "tidy-up skill" [ref=e284] [cursor=pointer]:
+          - generic [ref=e286]:
+            - generic [ref=e287]: SKILL
+            - generic [ref=e288]: tidy-up
+            - paragraph [ref=e289]: Ongoing artifact hygiene for active Gander projects. Rotates accumulated agent task outputs, event logs, agent-logs, and sprint artifacts into a timestamped archive directory, keeping the active workspace small and context-safe. Maintains a one-line-per-run log at docs/tidy-up-log.md. Never deletes — always moves. Never archives uncommitted files. Never archives whole projects (use project-archive for that). Triggers on "tidy up", "tidy-up", "cleanup", "clean up", "run cleanup", "rotate old outputs", "clean up logs", "tidy the workspace", or when any target directory exceeds its size threshold.
+        - button "visual-inspect skill" [ref=e290] [cursor=pointer]:
+          - generic [ref=e292]:
+            - generic [ref=e293]: SKILL
+            - generic [ref=e294]: visual-inspect
+            - paragraph [ref=e295]: Run a structured visual and accessibility inspection of a live web page using Playwright MCP tools. Produces an <observed_state> block (when gathering context for a new spec) or a <visual_audit> block (when auditing an existing implementation). Any agent with the Playwright MCP tools declared can invoke this skill.
+  - tablist "Main navigation" [ref=e296]:
+    - tab "Browse" [selected] [ref=e297] [cursor=pointer]:
+      - generic [ref=e299]: Browse
+    - tab "Compose" [ref=e300] [cursor=pointer]:
+      - generic [ref=e302]: Compose
+    - tab "Edit" [ref=e303] [cursor=pointer]:
+      - generic [ref=e305]: Edit
+    - tab "Export" [ref=e306] [cursor=pointer]:
+      - generic [ref=e308]: Export
+```

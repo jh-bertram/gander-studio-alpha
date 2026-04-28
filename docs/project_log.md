@@ -579,3 +579,256 @@ Each entry records a task completion, architectural decision, or sprint state sn
     Remaining post-mortem findings for future work: new-skill design (2 candidates), Tier 3 visual smoke tooling (deferred), hook implementations (pm-preflight.sh, verbatim-deliverable-check, PreToolUse:Edit grep — 3 candidates pending HR escalation from agent-improvement-2026-04-27-1)
   </retention_keys>
 </archive_entry>
+
+<archive_entry>
+  <timestamp>2026-04-28T02:55:00Z</timestamp>
+  <task_id>gander-studio-p4-proximity-edge-hardening-FE-001</task_id>
+  <event_type>TASK_COMPLETE</event_type>
+  <rationale>
+    FE-001 hardened Playwright spec file (packages/client/src/tests/compose/materia-canvas.spec.ts) across 4 advisories addressing test rigor and post-mortem G6 (sound-as-proxy anti-pattern).
+
+    A1 — BROKEN SELECTOR REPLACEMENT &amp; SILENT-SKIP REMOVAL: Replaced zero-match selector `[data-testid^="palette-item-agent-"]` (palette items use `palette-item-{name}`, no type prefix) with section-landmark helpers `locateAgentPaletteItem` and `locateSkillPaletteItem` using h3 heading filters. Removed all silent-skip fallbacks (`test.skip`, `if (!isVisible) return`) at 4 sites and replaced with strict `waitFor({ state: 'visible', timeout: 5000 })`. Tests now fail hard when palette is empty, not silently skip — aligns with G6 hard-fail principle.
+
+    A2 — TAUTOLOGY ASSERTION REPLACEMENT: Replaced `expect(postDragEdgeCount).toBeGreaterThanOrEqual(0)` (always true) with `expect(postDragEdgeCount).toBe(initialEdgeCount + 1)`. Removed conditional wrapper `if (postDragEdgeCount > 0) { ... }` — edge presence assertion now unconditional and deterministic.
+
+    A3 — AGENT↔SKILL PROXIMITY TEST: Added new test exercising agent-to-skill proximity drop symmetrically (prior tests were agent-to-orchestrator-card only). Uses both landmark helpers; asserts `edgeCount > 0` (DOM-level, Tier 2).
+
+    A4 — FREQUENCY-DISCRIMINATED AUDIO SPY &amp; DOM-EDGE PAIRED ASSERTION: Added test combining link-sound spy with DOM-edge assertion per post-mortem G6 (DOM primary, sound secondary, paired). Patched `AudioParam.prototype.setValueAtTime` globally to count oscillators set to LINK_PRIMARY_FREQ_HZ (880 Hz) and LINK_SECONDARY_FREQ_HZ (1320 Hz) only, filtering out APPROACH_FREQ_HZ (220 Hz) approach tone. Constants injected via serialized args; no magic numbers in test source. DOM assertion `expect(edgeCount).toBe(1)` runs first; audio assertion `expect(linkOscCount).toBe(2)` runs second. `addInitScript` placed BEFORE page navigation to ensure spy is installed before any audio context creation.
+
+    ENVIRONMENT NOTE: Dev `.env` initially had `GANDER_ROOT=/home/jhber/projects/gander-studio-alpha` (empty, no agents/skills subdirs). AUDITOR#1 flagged silent-fallback anti-pattern violation; FE#1-rem1 remediation made helpers strict (no fallback). With corrected env (`GANDER_ROOT=/home/jhber/projects/gander`, 12 agents + 24 skills), AUDITOR#3 re-audit passed 9/9 spec tests. Environment fix is session-local (.env not git-tracked).
+
+    ALTERNATIVES CONSIDERED FOR A4: (1) Raw oscillator-count reset-and-assert — proved wrong via CR#2 analysis (playApproach fires during drag, final count 3 not 2). (2) Spy on playLink function directly — brittle if audio module refactors. (3) Frequency-discriminated spy — selected. Isolates link oscillators from approach oscillators via `setValueAtTime` frequency argument, eliminates false positives, and is resilient to audio module implementation details.
+
+    COMMITMENT: committed at `f970935`; audited PASS by AUDITOR#3.
+  </rationale>
+  <dependencies>
+    gander-studio-p4-proximity-edge-hardening (sprint definition, task decomposition PM-rev2);
+    post-mortem gander-studio-p2-agent-cards.md § 6 (G6: sound-as-proxy-for-success anti-pattern);
+    constants/canvas.ts (LINK_PRIMARY_FREQ_HZ=880, LINK_SECONDARY_FREQ_HZ=1320, APPROACH_FREQ_HZ=220)
+  </dependencies>
+  <retention_keys>
+    commit `f970935`: FE-001 spec hardening merged;
+    landmark-helper pattern: h3.filter({ hasText: /^Agents$/i }).locator('..').locator('[data-testid^="palette-item-"]') — use for future palette item selection in Playwright tests;
+    frequency-discriminated audio spy pattern: patch `AudioParam.prototype.setValueAtTime`, increment counter only for frequencies === LINK_PRIMARY_FREQ_HZ or === LINK_SECONDARY_FREQ_HZ; constants injected via serialized args to `page.addInitScript`; place spy BEFORE page navigation; use for future audio-side-effect tests;
+    post-mortem G6 implementation: DOM assertion first, audio assertion second, paired not separate; frequency-discriminated spy is recommended pattern for link-sound tests;
+    spec test names: "orchestrator↔agent proximity drop", "DOM .react-flow__edge count matches store edges", "agent↔skill proximity drop", "edge creation fires link sound and renders DOM edge element";
+    environment coupling: GANDER_ROOT must point to agents repo with agents and skills subdirs; add pre-flight validation to FE task specs to catch this in planning phase (not audit phase)
+  </retention_keys>
+</archive_entry>
+
+<archive_entry>
+  <timestamp>2026-04-28T02:55:00Z</timestamp>
+  <task_id>gander-studio-p4-proximity-edge-hardening-FE-002</task_id>
+  <event_type>TASK_COMPLETE</event_type>
+  <rationale>
+    FE-002 applied 3 production source hygiene fixes across 5 files, no behavior change. All changes committed at `c380956`.
+
+    A5 — DEDUPLICATE INVISIBLE_HANDLE_STYLE CONSTANT: Extracted byte-identical 9-property CSS object (width, height, opacity, pointerEvents, top, left, transform, border, background) from both MateriaNode.tsx and CardNode.tsx into new `packages/client/src/components/compose/handle-style.ts`. Both components now import and use shared constant. Styles are property-order-independent for inline rendering; visual output identical before and after (byte-identity verified against commit edf6621).
+
+    A6 — DELETE DEAD META_AGENTS BRANCH: In `constants/compose.ts`, removed unreachable `if (META_AGENTS.has(lower)) return 'var(--mp)'` branch at line 79 (COMMAND_AGENTS alias intercepts all META_AGENTS members first, making branch dead). Removed un-aliased import `META_AGENTS,` at line 11 (to-remove). Preserved aliased import `META_AGENTS as COMMAND_AGENTS` at line 7 (still used at line 75) and `META_FRAGMENTS,` at line 12 (still used at line 82). Added comment explaining alias relationship. Color behavior unchanged: COMMAND_AGENTS members still return `'var(--my)'` (meta yellow).
+
+    A7 — EXPLICIT ROLE ARG TO getMateriaColor: In `MateriaCanvas.tsx` `buildPaletteItemStyle`, computed `paletteRole` const as `'specialist'` for agents, `'skill'` for skills, and passed as third arg to `getMateriaColor` call. No duplicate `AgentRole` import (already present). Color output verified identical: role-based fast path returns same CSS vars as prior name-based fallback (`'var(--mg)'` agents, `'var(--mb)'` skills).
+
+    ALTERNATIVES CONSIDERED FOR A5: (1) Keep as separate literals in each component — violates DRY. (2) Extract to canvas.ts where all design tokens live — would introduce import chaining; co-locating in compose/handle-style.ts keeps component-related constants close to usage. (3) Export to a shared styles module — unnecessary indirection; static object export is cleaner.
+
+    TESTING: Bundle completes at 881.67 kB (under 1000 kB gate). tsc --noEmit clean across all 3 packages. Playwright e2e baseline-stash verified: 31 passed, 13 failed pre-change; 31 passed, 13 failed post-change (identical failures, zero regressions).
+
+    COMMITMENT: committed at `c380956`; audited PASS by AUDITOR#2.
+  </rationale>
+  <dependencies>
+    gander-studio-p4-proximity-edge-hardening (sprint definition, task decomposition PM-rev2);
+    commit edf6621 (prior proximity-edge-fix sprint, baseline for style identity verification)
+  </dependencies>
+  <retention_keys>
+    commit `c380956`: FE-002 source hygiene merged;
+    handle-style.ts pattern: 9-property CSSProperties object extracted to shared module for components using identical invisible-handle styles; co-location in `components/compose/handle-style.ts` keeps constant with related components (MateriaNode, CardNode);
+    dead-code removal: when a condition guards a branch that is unreachable due to an earlier condition, delete the branch + any now-unused imports; add comment explaining why earlier condition makes branch dead;
+    getMateriaColor explicit-role pattern: when optional `role` arg can be determined statically at call site (not user data), pass explicit value to enable role-based fast path and avoid name-based Set membership checks;
+    bundle-size gate: main JS chunk must remain under 1000 kB per sprint-p2 SA constraint; current 881.67 kB leaves ~118 kB headroom for p5;
+    baseline-stash methodology: for regression detection, stash all changes, run full test suite, pop stash, re-run on head with identical config; identical failure lists confirm zero regressions
+  </retention_keys>
+</archive_entry>
+
+<archive_entry>
+  <timestamp>2026-04-28T02:55:00Z</timestamp>
+  <task_id>gander-studio-p4-proximity-edge-hardening</task_id>
+  <event_type>SPRINT_COMPLETE</event_type>
+  <rationale>
+    Sprint gander-studio-p4-proximity-edge-hardening completed: 7 auditor advisories (5 from sprint-p3 audit + 2 carried-forward from prior sprints) bundled into single test-rigor + code-hygiene sprint. All advisories shipped and audited PASS. Requirements validation: 12/12 COVERED.
+
+    ARCHITECTURAL DECISIONS &amp; PATTERNS:
+
+    (1) FREQUENCY-DISCRIMINATED AUDIO SPY (A4 decision, post-mortem G6 resolution): Replaced raw oscillator-count discrimination (which would fail CI due to playApproach drag-phase calls inflating count to 3 instead of expected 2) with frequency-selective spy on `AudioParam.prototype.setValueAtTime`. Spy increments `__linkOscCount` only for frequencies 880 Hz (LINK_PRIMARY_FREQ_HZ) and 1320 Hz (LINK_SECONDARY_FREQ_HZ), filtering out 220 Hz (APPROACH_FREQ_HZ) approach tone. Constants injected via serialized args to `page.addInitScript`; no magic numbers in test source. Spy installed BEFORE page navigation. This pattern is robust across audio module refactors (depends on frequency, not function name) and eliminates false-positive failures from drag-phase approach oscillators. Recommended for all future link-sound test assertions.
+
+    (2) THREE-ROUND CRITIC GATE (human-authorized override): Critic round 1 proposed an option-(b) recipe for A4 that was found to have an arithmetic error in its own logic during CR#2. PM#2 would have escalated to full replan. Instead, PM#3 issued a narrow revision (A4 only), triggering a third Critic round (CR#3) to vet the frequency-spy replacement. Protocol cap is 2 rounds; round 3 required human authorization because the flaw was in the Critic's own recipe, not in PM/FE execution. This decision preserves efficiency when the flaw is localized to one advisory. SYSTEM HEALTH NOTE: This reveals a gap in the Critic spec — when giving prescriptive code recipes (especially for complex domains like audio synthesis or test spies), the Critic should prefer "name the problem and point at the file" over "write the fix". This sprint did not resolve the gap (out of scope) but documented it for future Critic spec revision.
+
+    (3) SECTION LANDMARK PATTERN FOR PALETTE ITEM SELECTION: Replaced broken `[data-testid^="palette-item-agent-"]` selector (zero-match, palette items use no type prefix) with section-landmark pattern: `h3.filter({ hasText: /^Agents$/i }).locator('..').locator('[data-testid^="palette-item-"]')`. This technique scopes palette-item selection to a specific section via its heading, eliminating false negatives when multiple sections exist. Applied to both Agents (existing test fix) and Skills (new A3 test). Recommended pattern for future Playwright specs selecting items from repeated list sections.
+
+    (4) ENVIRONMENT CONFIGURATION AS SESSION-LOCAL CONCERN: Dev `.env` had `GANDER_ROOT=/home/jhber/projects/gander-studio-alpha` (project root, no agents/skills), breaking landmark helpers during test execution. Correct path is `/home/jhber/projects/gander` (symlinked from `~/projects/gander`, contains 12 agents + 24 skills). ORC corrected `.env` mid-sprint (session-local, file not git-tracked). This reveals a gap in PM pre-flight: GANDER_ROOT validation should be a required check before FE task dispatch (prevent env misconfiguration from surfacing as test failures in audit). Recommendation: add environment checklist to PM task decomposition for FE work.
+
+    CRITIC SYSTEM NOTE (for future meta-agent improvement): The Critic's prescribed option-(b) recipe in CR#1 turned out to be flawed (oscillator count arithmetic). This is a Critic-domain bug, not a PM/implementation failure. The protocol escalated to human override of the 2-round cap. Future Critic revisions may benefit from preferring problem statement + file pointers over prescriptive code recipes in complex domains (audio, React Flow internals, etc.), shifting verification burden from the Critic's code correctness to the implementing agent's problem-solving. Not a blocker (CR#3 validation caught it), but worth noting for system health.
+
+    AUDIT OUTCOMES:
+    - FE-001 initial audit: FAIL (AUDITOR#1 — fallback anti-pattern in helpers violates G6 principle)
+    - FE-001 remediation: FE#1-rem1 removed fallbacks, strict helpers with hard `waitFor`, deleted debug files
+    - FE-001 re-audit: PASS (AUDITOR#3 — 9/9 spec tests pass with corrected GANDER_ROOT; 13 pre-existing e2e failures unchanged, zero regressions)
+    - FE-002 audit: PASS (AUDITOR#2 — SA + QA + SX all clear; bundle 881.67 kB; baseline-stash verified zero regressions)
+
+    REQUIREMENTS COVERAGE: All 12 requirements from original request COVERED (R-001 through R-012). No gaps, no PARTIAL verdicts.
+
+    TWO COMMITS:
+    - `c380956`: FE-002 (handle-style.ts extracted; dead META_AGENTS branch removed; explicit role arg to getMateriaColor)
+    - `f970935`: FE-001 (section-landmark selectors; silent-skip fallbacks removed; tautology assertion fixed; A3 agent↔skill test; A4 frequency-spy + DOM-edge paired test)
+  </rationale>
+  <dependencies>
+    gander-studio-p2-agent-cards (sprint that introduced proximity-edge regression HCG-2);
+    gander-studio-p3-proximity-edge-fix (sprint that shipped regression fix, surfaced 5 auditor advisories from post-audit);
+    post-mortem gander-studio-p2-agent-cards.md (G4: NODE_TYPES edge-render regression lesson, G6: sound-as-proxy anti-pattern);
+    agent-improvement-2026-04-27-1 (hardened Critic, FE, auditor specs per agent-cards post-mortem gaps)
+  </dependencies>
+  <retention_keys>
+    docs/project_log.md entries: this sprint-complete entry, FE-001 task entry, FE-002 task entry;
+    docs/post-mortems/gander-studio-p4-proximity-edge-hardening.md (if created, will be populated by human post-session);
+    frequency-discriminated audio spy pattern: recommended for all future link-sound Playwright tests; injected constants via serialized args; install spy BEFORE page navigation; 880/1320 Hz link frequencies, filter out 220 Hz approach frequency;
+    section-landmark selector pattern: h3.filter({ hasText: /^SectionName$/i }).locator('..').locator('[data-testid^="prefix-"]') for selecting items from named list sections; applies to both new tests and existing broken selectors;
+    GANDER_ROOT environment validation: add pre-flight checklist to PM task specs for FE work — verify GANDER_ROOT points to agents repo with agents/ and skills/ subdirs before dispatch;
+    Critic spec gap: when giving prescriptive code recipes (especially complex domains), consider problem-statement + file-pointer approach instead; this allows implementing agent to solve creatively rather than execute potentially-flawed recipe;
+    bundle-size gate: 881.67 kB current, ~118 kB headroom for next sprint under 1000 kB ceiling;
+    AUDIT FAIL→REMEDIATION→PASS cycle (FE-001): Fallback anti-pattern in helpers (violates G6 hard-fail principle) → strict helpers + hard waitFor + debug cleanup → full audit pass;
+    two-commit delivery: FE-002 source hygiene first (`c380956`), then FE-001 spec hardening (`f970935`);
+    all 7 advisories closed across 2 task packets; 12/12 requirements covered
+  </retention_keys>
+</archive_entry>
+
+<archive_entry>
+  <timestamp>2026-04-28T04:00:00Z</timestamp>
+  <task_id>gander-studio-p4-proximity-edge-hardening-postmortem</task_id>
+  <event_type>POST_MORTEM</event_type>
+  <rationale>
+    Gander Studio p4 sprint completed 2026-04-28: bundled 7 auditor advisories into single test-rigor + code-hygiene sprint. All advisories shipped across 2 commits (c380956 source-hygiene, f970935 spec-hardening) with full audit coverage (FE-001 initial FAIL→remediation→PASS, FE-002 first-pass PASS). Sprint closed clean after human browser verification. Post-mortem identified 6 protocol gaps and 4 skill findings (1 content-quality, 2 new-skill candidates, 1 drift).
+
+    PROTOCOL GAPS (Section 6):
+    (G1) SILENT-SUBSTITUTION-AS-GRACEFUL-DEGRADATION PATTERN RECURS: Silent-skip was advisory A1's target; FE#1 reintroduced fallback (Agents→Skills) violating the same G6 hard-fail principle A1 was meant to eliminate. AUDITOR#1 caught this in FE-001 initial audit (1 remediation cycle cost). Pattern appeared 3× in sprint (original p3 silent-skip, FE#1 fallback, GANDER_ROOT env). Root cause: fallback-as-graceful-degradation instinct overrides explicit principles in the brief. Fix: Add Stop hook on FE agent to grep for fallback patterns (`\|\| &lt;fallback&gt;`, `if (!.*) return &lt;fallback&gt;`, `try {} catch { return }`) in newly-added test code. Route to HR for hook implementation.
+
+    (G2) PM DOES NOT PROPAGATE SPEC-LEVEL FIXES TO ALL SITES WITHIN THE SAME FILE: PM#1 applied A1's selector fix only to new A3 test, missed pre-existing tests at lines 99/154 in the same file. CR#1 caught it (1 full plan revision cost). The pre-existing tests had been "passing" because silent-skip absorbed their zero-match selectors; removing skip without fixing all selector instances would break them. Fix: Add same-file-propagation-check to PM's decomposition checklist: when an advisory cites a file fix, enumerate every existing instance and decide for each whether the fix applies. Agent-prompt change for PM, enforced via checklist line.
+
+    (G3) CRITIC GIVES PRESCRIPTIVE CODE RECIPES WITH ARITHMETIC BUGS: CR#1's option-(b) recipe for A4 ("reset counter to 0, assert === 2") had its own arithmetic flaw — recipe author did not trace useLinkSound.ts to see that playApproach also fires during drag, making final count 3 not 2. PM#2 faithfully implemented the wrong recipe; CR#2 caught it (1 PM round + 1 CR round + human authorization cost). Root cause: Critic tried to write the fix rather than analyze the problem end-to-end. Fix: When Critic identifies a code-level fix in complex domains (audio synthesis, test spies, React Flow internals, scheduler logic), prefer "name the problem, point at the file, list the constraints" over "write the fix". Shift verification burden from Critic code-correctness to implementing agent problem-solving. Agent-prompt change for Critic, route to HR.
+
+    (G4) PM DOES NOT PRE-FLIGHT ENVIRONMENTAL DEPENDENCIES: GANDER_ROOT was misconfigured (pointed to studio repo, not agents repo) before sprint start. Original silent-skip absorbed the broken env. When tests went strict (A1), env failure surfaced inside audit gate (~10 min diagnosis + 1 re-audit round) instead of planning gate. FE-001 Auditor flagged strict helpers with broken env; ORC diagnosed and fixed .env mid-sprint; AUDITOR#3 re-audit passed. Fix: For any FE task running Playwright against live dev server, PM must add pre-flight env-validation step: enumerate required env vars (GANDER_ROOT, LOADOUTS_DIR), run minimal liveness check (curl health + curl agent.list | jq length > 0), fail-fast if env broken. Code-not-prompt: implement as script invoked by assign-agents before FE wave dispatch. Route to HR.
+
+    (G5) FE AGENTS LEAVE UNTRACKED SCRATCH FILES IN WORKING TREE: FE#1 left debug-selector.spec.ts and debug-selector2.spec.ts from investigation phase. Auditor caught cleanup item but it should have been caught at COMPLETE time. Files picked up by playwright test runner and emitted noise. Fix: Add working-tree-untracked-spec-check to FE pre-COMPLETE: git status --short should not show untracked .spec.ts files unless declared in &lt;files_modified&gt; or &lt;components_created&gt;. Code-not-prompt: implement as Stop hook on FE agent. Route to HR.
+
+    (G6) ORC HAS NO SendMessage PRIMITIVE ON THIS HARNESS: Revision rounds spawn fresh PM/CR agents instead of continuing originals. Each fresh agent re-reads context, increasing token cost ~30% across 3 PM/CR rounds. Documented harness limitation — can't fix in spec. Workaround already in protocol: revision briefs include explicit &lt;prior_decomposition_path&gt; and &lt;critique_path&gt; so context is bridged via files. Acceptable as-is; mention in next system-health review if SendMessage-like primitive becomes available.
+
+    SKILL FINDINGS (Section 8):
+
+    (8c) CONTENT-QUALITY CANDIDATE — commit-packet: ORC ran git add + git commit directly, bypassing formal skill invocation. Skill spec provides template; ORC read it and executed inline. Skill description does not gate with hard artifact like assign-agents/requirements-validate do. Ambiguous whether inline execution satisfies contract or violates gating principle. Recommendation: Either (a) tighten spec to require formal invocation (matching assign-agents pattern: "ORC executing inline does not satisfy contract"), OR (b) accept inline execution and demote to documentation pattern. Decide via hone.
+
+    (8d) NEW-SKILL CANDIDATES: Two patterns observed once this sprint, would apply to multiple prior sprints:
+    - env-preflight (LOW effort): Pre-flight validation script for FE-against-live-API tasks — curl health + curl agent.list/skill.list non-empty. Invoked by assign-agents Step 1.5. Addresses G4.
+    - silent-substitution-detect (MEDIUM effort): Grep-based analyzer for newly-added test code — detect fallback patterns, swallowed errors, || defaults masking failure. Addresses G1.
+
+    (8e) DRIFT CANDIDATE — dispatch-task: ORC drove pipeline turn-by-turn rather than invoking meta-skill. Dispatch-task's composition value is unrealized; ORC reads it then executes constituent skills directly. Same gating issue as commit-packet. Either (a) gate meta-skill like assign-agents/requirements-validate, OR (b) demote to documentation pattern. Decide via hone.
+
+    ARCHITECTURAL ACHIEVEMENTS:
+    - Frequency-discriminated audio spy pattern for link-sound tests — injected constants, spy before page nav, frequency-filtered oscillator count
+    - Section-landmark selector pattern for palette item selection via h3 heading scope
+    - GANDER_ROOT environment requirement documented and validated
+    - Three-round Critic gate (human-authorized override when flaw is in Critic recipe, not implementation)
+
+    QUALITY GATES IN EFFECT: SA (Standards) + QA (Functional) + SX (Security) + CR plan-gate + REQVAL post-audit gate + human Step 4.5 visual verification. All 12 requirements COVERED. Zero runtime defects reached human; first audit cycle caught all deviations (FE-001 fallback anti-pattern, untracked debug files; GANDER_ROOT env surfaced as side-effect).
+  </rationale>
+  <dependencies>
+    docs/post-mortems/gander-studio-p4-proximity-edge-hardening.md (full post-mortem with section 6 &amp; 8 analysis);
+    gander-studio-p4-proximity-edge-hardening (sprint task, 2-commit delivery);
+    gander-studio-p4-proximity-edge-hardening-FE-001 (spec hardening task, frequency-spy + landmark selectors);
+    gander-studio-p4-proximity-edge-hardening-FE-002 (source hygiene task, DRY extraction + dead code removal);
+    agent-improvement-2026-04-27-1 (prior agent spec hardening, set stage for G3/G4 detection);
+    gander-studio-p2-agent-cards.md post-mortem (G4 and G6 origin: NODE_TYPES edge-render regression, sound-as-proxy anti-pattern)
+  </dependencies>
+  <retention_keys>
+    docs/post-mortems/gander-studio-p4-proximity-edge-hardening.md (full post-mortem with all findings);
+    commit c380956 (FE-002 durability: handle-style.ts DRY, dead META_AGENTS branch, explicit role arg);
+    commit f970935 (FE-001 durability: section-landmark selectors, strict waitFor/helpers, A3 agent↔skill test, A4 frequency-spy + DOM-paired test);
+    6 protocol gaps identified: G1 (silent-substitution pattern, FE Stop hook), G2 (same-file fix propagation, PM checklist), G3 (Critic prescriptive recipe flaws, Critic spec change), G4 (env pre-flight, assign-agents script), G5 (untracked spec files, FE Stop hook), G6 (SendMessage limitation, documented);
+    4 skill findings: 1 content-quality (commit-packet gating), 2 new-skill candidates (env-preflight LOW, silent-substitution-detect MEDIUM), 1 drift candidate (dispatch-task meta-skill bypass);
+    frequency-discriminated audio spy: LINK_PRIMARY_FREQ_HZ (880), LINK_SECONDARY_FREQ_HZ (1320), filter out APPROACH_FREQ_HZ (220); constants injected via serialized args; spy installed BEFORE page navigation; DOM assertion first, audio second;
+    section-landmark selector pattern: h3.filter({ hasText: /^SectionName$/i }).locator('..').locator('[data-testid^="item-"]') for scoping item selection to named list sections;
+    GANDER_ROOT must point to agents repo root (~/projects/gander), not studio repo (gander-studio-alpha);
+    A1–A7 all delivered and audited PASS; FE-001 remediation required (fallback→strict helpers), GANDER_ROOT env correction required (session-local .env fix);
+    two-agent workflow yielded highest quality: FE-002 shipped clean first-pass (AUDITOR#2 PASS), FE-001 required 1 remediation cycle (AUDITOR#1 FAIL→FE#1-rem1→AUDITOR#3 PASS);
+    Critic three-round gate justified by human authorization (CR#1's option-(b) recipe bug, not PM/FE failure);
+    All 12 requirements COVERED; zero regressions; 13 pre-existing e2e failures unchanged
+  </retention_keys>
+</archive_entry>
+
+<archive_entry>
+  <timestamp>2026-04-28T13:35:00Z</timestamp>
+  <task_id>agent-improvement-2026-04-28-1</task_id>
+  <event_type>AGENT_IMPROVEMENT</event_type>
+  <rationale>
+    Acted on 2 of 6 protocol gaps identified in gander-studio-p4-proximity-edge-hardening post-mortem.
+    These two gaps are agent-prompt-only fixes (no code/hook infrastructure required); the other four
+    require dedicated HR sprints (hooks, scripts, settings.json wiring) and were deferred.
+
+    **G2 — PM same-file fix propagation (ACTED)**
+    Root cause: PM#1 propagated A1's selector-fix to the new A3 test but did not enumerate the
+    pre-existing test sites at lines 99/154 in the same spec file. CR#1 caught it at plan-review time,
+    forcing a full plan revision (PM#1 → PM#2). Cost: 1 CR round + 1 PM round.
+    Fix: Added Step 5.5 to `.claude/agents/pm.md` (v1.5.0 → v1.5.1): "Same-file fix propagation.
+    When an advisory cites a fix at a specific line, grep the entire file for the pattern and enumerate
+    every existing instance in the task packet description."
+    Mechanism: Checklist addition. Enforced at PM spec-read time, not gated by external artifact.
+
+    **G3 — Critic prescriptive code recipes in complex domains (ACTED)**
+    Root cause: CR#1 wrote an option-(b) recipe for A4 ("reset counter, assert === 2") without tracing
+    useLinkSound.ts to see that playApproach also fires during drag. PM#2 implemented the recipe
+    faithfully. CR#2 caught it (via source trace) after a wasted PM round + Critic round. Cost:
+    1 PM round + 1 CR round + human authorization for 3rd Critic round (cap exceeded).
+    Fix: Added "Recipe vs. problem-naming" guidance to `.claude/agents/critic.md` (v1.4.0 → v1.4.1)
+    at the close of §AUDIT_RISK: "In complex domains (audio synthesis, test spies, scheduler/event-loop
+    logic, React Flow internals, build-tool internals) prefer naming the problem and pointing at the file
+    over writing a prescriptive recipe. Reserve recipes for domains the Critic has fully traced."
+    Mechanism: Guidance insertion. Enforced at Critic spec-read time; effectiveness to be monitored over
+    the next 2 sprints.
+
+    **Deferred gaps (G1, G4, G5, G6) — rationale for deferral**
+    - G1 (silent-substitution pattern, FE): Requires a Stop hook with regex/false-positive analysis.
+    - G4 (env pre-flight before FE dispatch): Requires a script (~/.claude/scripts/env-preflight.sh)
+      invoked by assign-agents, plus settings.json wiring.
+    - G5 (untracked spec files): Requires a Stop hook checking `git status --short` for undeclared .spec.ts.
+    - G6 (SendMessage harness limitation): Documented as acceptable; no action until Anthropic harness
+      provides SendMessage primitive.
+
+    Recommendation: Bundle G1, G4, G5 into single HR-led "team-hygiene-hooks" sprint covering new
+    artifacts (~/.claude/hooks/fe-silent-substitution-check.sh, ~/.claude/hooks/fe-untracked-spec-check.sh,
+    ~/.claude/scripts/env-preflight.sh) and settings.json wiring.
+
+    **Outstanding hone-domain item**
+    Post-mortem §8c identified a skill-drift candidate: commit-packet and dispatch-task gating. ORC bypassed
+    commit-packet skill and executed inline (git add + git commit). dispatch-task skill was similarly bypassed
+    in favor of invoking constituent skills individually. Recommendation: `hone` should decide whether to
+    tighten both skills' gating (make them mandatory entry points with hard artifact checks) or demote them
+    to documentation patterns. This decision sits outside scope of agent-improvement; requires PM/hone collaboration.
+  </rationale>
+  <dependencies>
+    gander-studio-p4-proximity-edge-hardening (post-mortem source; all 6 gaps, all rationales);
+    agent-improvement session rationale derives from post-mortem §6 G2 and G3 evidence chains;
+    deferred gaps (G1/G4/G5) identified as "Code-not-prompt" in post-mortem §6 and tabled for HR;
+    hone-domain item from post-mortem §8c and §8e (skill-drift and content-quality analysis)
+  </dependencies>
+  <retention_keys>
+    docs/agent-improvements/agent-improvement-2026-04-28-1.md (full session report);
+    docs/agent-changelog.md § agent-improvement-2026-04-28-1 (version bumps: PM 1.5.0→1.5.1, Critic 1.4.0→1.4.1);
+    docs/agent-versions/pm/v1.5.0-2026-04-28.md (PM Step 5.5 spec);
+    docs/agent-versions/critic/v1.4.0-2026-04-28.md (Critic recipe-vs-problem-naming guidance);
+    4 deferred gaps (G1, G4, G5, G6) — recommend "team-hygiene-hooks" HR sprint scope;
+    1 outstanding hone item: commit-packet and dispatch-task skill gating decision;
+    G2/G3 fixes are prompt-text additions, enforced at agent spec-read time (not gated by external artifact);
+    G2 mechanism: PM adds grep+enumerate step when fixing repeated patterns in same file;
+    G3 mechanism: Critic prefers problem-naming in complex audio/test/scheduler/RF domains over prescriptive recipes;
+    Effectiveness of G3 guidance to be monitored next 2 sprints — if no change, escalate to hard gate rule;
+    Silent-substitution pattern (G1) recurred at 3 layers in p4 (orig advisory, FE fallback, env masking);
+      if it recurs before hook implementation, escalate to BLOCKER status
+  </retention_keys>
+</archive_entry>

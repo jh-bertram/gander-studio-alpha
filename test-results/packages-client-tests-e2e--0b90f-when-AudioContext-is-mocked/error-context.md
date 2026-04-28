@@ -1,0 +1,118 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - img [ref=e6]
+    - generic [ref=e13]:
+      - heading "GANDER STUDIO" [level=1] [ref=e14]
+      - paragraph [ref=e15]: Agent Configuration Tool
+    - generic [ref=e16]:
+      - generic [ref=e17]: GANDER STUDIO v1.0.0
+      - generic [ref=e18]: 4/27/2026, 8:33:04 PM
+  - navigation "Main navigation" [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e21]: Navigation
+      - button "Browse" [ref=e22] [cursor=pointer]: Browse
+      - button "Compose" [active] [ref=e24] [cursor=pointer]: Compose
+      - button "Edit" [ref=e26] [cursor=pointer]: Edit
+      - button "Export" [ref=e28] [cursor=pointer]: Export
+  - main [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - heading "COMPOSE" [level=2] [ref=e33]
+        - paragraph [ref=e34]: Build and save agent loadouts
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - generic [ref=e37]: LOADOUT NAME
+          - textbox "LOADOUT NAME" [ref=e38]:
+            - /placeholder: loadout-name
+        - generic [ref=e40]:
+          - complementary "Palette — drag items to canvas" [ref=e41]:
+            - searchbox "Search palette" [ref=e43]
+            - generic [ref=e44]:
+              - generic [ref=e45]:
+                - heading "Agents" [level=3] [ref=e46]
+                - paragraph [ref=e47]: No agents match.
+              - generic [ref=e48]:
+                - heading "Skills" [level=3] [ref=e49]
+                - button "Add agent-improvement to canvas" [ref=e50]:
+                  - generic [ref=e51]: agent-improvement
+                - button "Add agent-log to canvas" [ref=e52]:
+                  - generic [ref=e53]: agent-log
+                - button "Add assign-agents to canvas" [ref=e54]:
+                  - generic [ref=e55]: assign-agents
+                - button "Add audit-pipeline to canvas" [ref=e56]:
+                  - generic [ref=e57]: audit-pipeline
+                - button "Add context-compression to canvas" [ref=e58]:
+                  - generic [ref=e59]: context-compression
+                - button "Add convention-detect to canvas" [ref=e60]:
+                  - generic [ref=e61]: convention-detect
+                - button "Add dispatch-task to canvas" [ref=e62]:
+                  - generic [ref=e63]: dispatch-task
+                - button "Add post-mortem to canvas" [ref=e64]:
+                  - generic [ref=e65]: post-mortem
+                - button "Add project-archive to canvas" [ref=e66]:
+                  - generic [ref=e67]: project-archive
+                - button "Add ralph-loop to canvas" [ref=e68]:
+                  - generic [ref=e69]: ralph-loop
+                - button "Add requirements-validate to canvas" [ref=e70]:
+                  - generic [ref=e71]: requirements-validate
+                - button "Add resume-project to canvas" [ref=e72]:
+                  - generic [ref=e73]: resume-project
+                - button "Add scientific-data to canvas" [ref=e74]:
+                  - generic [ref=e75]: scientific-data
+                - button "Add sprint-report to canvas" [ref=e76]:
+                  - generic [ref=e77]: sprint-report
+                - button "Add team-report to canvas" [ref=e78]:
+                  - generic [ref=e79]: team-report
+                - button "Add visual-inspect to canvas" [ref=e80]:
+                  - generic [ref=e81]: visual-inspect
+          - application [ref=e83]:
+            - generic [ref=e85]:
+              - generic:
+                - generic:
+                  - group:
+                    - generic:
+                      - generic:
+                        - button "♛ The Orchestrator"
+            - img
+            - generic "Control Panel" [ref=e86]:
+              - button "Zoom In" [ref=e87] [cursor=pointer]:
+                - img [ref=e88]
+              - button "Zoom Out" [ref=e90] [cursor=pointer]:
+                - img [ref=e91]
+              - button "Fit View" [ref=e93] [cursor=pointer]:
+                - img [ref=e94]
+              - button "Toggle Interactivity" [ref=e96] [cursor=pointer]:
+                - img [ref=e97]
+            - link "React Flow attribution" [ref=e100] [cursor=pointer]:
+              - /url: https://reactflow.dev
+              - text: React Flow
+          - complementary [ref=e102]:
+            - generic [ref=e103]: Loadout
+            - 'generic "Card: The Orchestrator" [ref=e104]':
+              - generic [ref=e106]: The Orchestrator
+            - generic [ref=e107]: No nodes on canvas
+        - generic [ref=e109]:
+          - generic [ref=e110]:
+            - generic [ref=e111]: HOOKS
+            - generic [ref=e112]: "0"
+          - list "Selected hooks" [ref=e113]:
+            - listitem [ref=e114]: No hooks selected
+        - alert [ref=e115]:
+          - generic [ref=e116]: ⚠ Auditor recommended for verification workflows
+        - generic [ref=e117]:
+          - button "Save Loadout" [disabled]
+          - button "Load" [ref=e118] [cursor=pointer]
+          - button "New" [ref=e119] [cursor=pointer]
+  - tablist "Main navigation" [ref=e120]:
+    - tab "Browse" [ref=e121] [cursor=pointer]:
+      - generic [ref=e123]: Browse
+    - tab "Compose" [selected] [ref=e124] [cursor=pointer]:
+      - generic [ref=e126]: Compose
+    - tab "Edit" [ref=e127] [cursor=pointer]:
+      - generic [ref=e129]: Edit
+    - tab "Export" [ref=e130] [cursor=pointer]:
+      - generic [ref=e132]: Export
+```

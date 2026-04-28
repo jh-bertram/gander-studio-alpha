@@ -4,6 +4,17 @@ Records all agent and skill file edits made during improvement sessions.
 
 ---
 
+## agent-improvement-2026-04-28-1
+**Date:** 2026-04-28
+**Post-mortems acted on:** `gander-studio-p4-proximity-edge-hardening.md`
+
+| File | Previous version | New version | Change |
+|------|-----------------|-------------|--------|
+| `.claude/agents/pm.md` | 1.5.0 | 1.5.1 | Added Step 5.5 same-file fix propagation: grep cited pattern across whole file and enumerate all instances |
+| `.claude/agents/critic.md` | 1.4.0 | 1.4.1 | Added recipe-vs-problem-naming guidance: prefer naming problem in complex domains over prescriptive recipes |
+
+---
+
 ## hone-2026-04-27-1
 **Date:** 2026-04-27
 **Post-mortems acted on:** `gander-studio-p2-agent-cards.md`
