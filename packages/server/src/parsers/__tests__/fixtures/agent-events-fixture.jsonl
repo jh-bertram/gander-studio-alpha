@@ -1,0 +1,10 @@
+{"seq":1,"ts":"2026-05-20T10:00:00Z","ev":"SPAWN","task_id":"prog-studio-sessions-2026-05-s1-backend-t3","agent_id":"PM#1","parent_id":"orchestrator","edge_label":"dispatch"}
+{"seq":2,"ts":"2026-05-20T10:01:00Z","ev":"SPAWN","task_id":"prog-studio-sessions-2026-05-s1-backend-t3","agent_id":"BE#1","parent_id":"PM#1","edge_label":"task_dispatch"}
+{"seq":3,"ts":"2026-05-20T10:05:00Z","ev":"COMPLETE","task_id":"prog-studio-sessions-2026-05-s1-backend-t3","agent_id":"BE#1","parent_id":"PM#1","edge_label":"completion_packet","output_files":["packages/server/src/parsers/event-log-parser.ts"]}
+{"seq":4,"ts":"2026-05-20T10:06:00Z","ev":"CRITIQUE_BLOCK","task_id":"prog-studio-sessions-2026-05-s1-backend-t3","agent_id":"BE#1","parent_id":"PM#1","edge_label":"critique_result"}
+{"seq":5,"ts":"2026-05-20T10:07:00Z","ev":"SPAWN","task_id":"prog-studio-sessions-2026-05-s1-backend-t3","agent_id":"BE#1","parent_id":"PM#1","edge_label":"task_dispatch"}
+{"seq":6,"ts":"2026-05-20T10:12:00Z","ev":"COMPLETE","task_id":"prog-studio-sessions-2026-05-s1-backend-t3","agent_id":"BE#1","parent_id":"PM#1","edge_label":"completion_packet","output_files":["packages/server/src/parsers/session-stats.ts"]}
+{"seq":7,"ts":"2026-05-20T10:13:00Z","ev":"CRITIQUE_PASS","task_id":"prog-studio-sessions-2026-05-s1-backend-t3","agent_id":"CR#1","parent_id":"PM#1","edge_label":"critique_result"}
+{"seq":8,"ts":"2026-05-20T10:14:00Z","ev":"AUDIT_PASS","task_id":"prog-studio-sessions-2026-05-s1-backend-t3","agent_id":"SA#1","parent_id":"PM#1","edge_label":"audit_result"}
+{"seq":9,"ts":"2026-05-20T10:15:00Z","ev":"AUDIT_FAIL","task_id":"prog-studio-sessions-2026-05-s1-backend-t3","agent_id":"SA#1","parent_id":"PM#1","edge_label":"audit_result"}
+{"seq":10,"ts":"2026-05-20T10:20:00Z","ev":"COMPLETE","task_id":"OTHER-task-unrelated","agent_id":"BE#2","parent_id":"PM#1","edge_label":"completion_packet"}
