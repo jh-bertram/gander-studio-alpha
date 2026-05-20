@@ -1,15 +1,17 @@
+import React from 'react';
 import { useUIStore } from '../store/ui-store';
+import type { AppMode } from '../store/ui-store';
 import BrowsePage from '../pages/BrowsePage';
 import ComposePage from '../pages/ComposePage';
 import EditPage from '../pages/EditPage';
 import ExportPage from '../pages/ExportPage';
 
-const PAGE_MAP = {
+const PAGE_MAP: Partial<Record<AppMode, React.ComponentType>> = {
   browse: BrowsePage,
   compose: ComposePage,
   edit: EditPage,
   export: ExportPage,
-} as const;
+};
 
 export default function ModeContent() {
   const { activeMode } = useUIStore();
@@ -24,7 +26,7 @@ export default function ModeContent() {
         padding: '28px',
       }}
     >
-      <ActivePage />
+      {ActivePage && <ActivePage />}
     </main>
   );
 }
