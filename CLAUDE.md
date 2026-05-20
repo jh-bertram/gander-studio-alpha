@@ -29,6 +29,8 @@ Required at runtime — set in `.env` or export before `npm run dev`:
 | `LOADOUTS_DIR` | Yes | Path for storing loadout JSON files |
 | `EXPORT_BASE_DIR` | No | Export target directory (default: `/tmp/gander-exports`) |
 | `SERVER_PORT` | No | Server port (default: `3001`) |
+| `SESSIONS_EDITS_DIR` | No | Directory where session markdown edits are saved (default: absolute-normalized path adjacent to `LOADOUTS_DIR`) |
+| `SESSIONS_SOURCE_DIRS` | No | Comma-delimited list of root directories to scan for post-mortems (default: `GANDER_ROOT`) |
 
 See `.env.example` for reference.
 
