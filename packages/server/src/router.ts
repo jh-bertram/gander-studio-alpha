@@ -18,6 +18,7 @@ import { parseSessionFile } from './parsers/session-parser.js';
 import { parseEventLogFiles } from './parsers/event-log-parser.js';
 import { computeSessionStats } from './parsers/session-stats.js';
 import { collectSessions } from './session-list.js';
+import { validateSaveEditPath } from './parsers/saveedit-guard.js';
 
 const t = initTRPC.create();
 
@@ -480,16 +481,14 @@ const sessionRouter = t.router({
       return computeSessionStats(foundSession, events);
     }),
 
-  // session.saveEdit — security stub; path-traversal guard resolved on BOTH sides.
-  // t5 will extract the containment check into validateSaveEditPath() as a pure
-  // refactor — no behavior change needed because the guard is already correct here.
   saveEdit: t.procedure
     .input(z.object({ id: z.string(), content: z.string() }))
     .output(z.object({ success: z.boolean(), filePath: z.string() }))
     .mutation(async ({ input }) => {
-      const safeBase = path.resolve(SESSIONS_EDITS_DIR);
-      const target = path.resolve(path.join(SESSIONS_EDITS_DIR, `${input.id}.md`));
-      if (target !== safeBase && !target.startsWith(safeBase + path.sep)) {
+      let target: string;
+      try {
+        target = validateSaveEditPath(input.id, SESSIONS_EDITS_DIR);
+      } catch {
         throw new TRPCError({ code: 'FORBIDDEN', message: 'Path traversal detected' });
       }
       await mkdir(SESSIONS_EDITS_DIR, { recursive: true });
