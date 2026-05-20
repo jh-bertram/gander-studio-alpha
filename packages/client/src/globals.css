@@ -181,6 +181,12 @@ body::before {
   100% { background-position: 200% 0; }
 }
 
+/* Pulse opacity animation (empty state dot) */
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 /* Spinner animation */
 @keyframes spin {
   0% { transform: rotate(0deg); }
