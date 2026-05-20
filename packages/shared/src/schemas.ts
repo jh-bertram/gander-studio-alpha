@@ -50,3 +50,65 @@ export const ExportInputSchema = z.object({
   includeStandards: z.boolean().default(false),
   targetBasePath: z.string().optional(),
 });
+
+// EventLogEntrySchema — one parsed JSONL event-log line
+// ev is z.string() (not z.enum) — live corpus has open-ended event types
+export const EventLogEntrySchema = z.object({
+  seq: z.number(),
+  ts: z.string(),
+  ev: z.string(),
+  task_id: z.string(),
+  agent_id: z.string(),
+  parent_id: z.string().optional(),
+  edge_label: z.string().optional(),
+  output_files: z.array(z.string()).optional(),
+});
+export type EventLogEntry = z.infer<typeof EventLogEntrySchema>;
+
+// AgentActivitySchema — per-agent roll-up for one session
+export const AgentActivitySchema = z.object({
+  agent_id: z.string(),
+  spawns: z.number(),
+  completes: z.number(),
+  feedback_loops: z.number(),
+  critique_passes: z.number(),
+  critique_blocks: z.number(),
+  audit_passes: z.number(),
+  audit_fails: z.number(),
+  wall_clock_ms: z.number().optional(),
+});
+export type AgentActivity = z.infer<typeof AgentActivitySchema>;
+
+// SessionSchema — top-level parsed session object
+// gap_classes/.default([]) and status/type/.optional() allow frontmatter-less files to parse
+export const SessionSchema = z.object({
+  id: z.string(),
+  sprint: z.string(),
+  date: z.string(),
+  gap_classes: z.array(z.string()).default([]),
+  status: z.string().optional(),
+  type: z.string().optional(),
+  title: z.string().optional(),
+  filePath: z.string(),
+  editedFilePath: z.string().optional(),
+  source_root: z.string(),
+  agents: z.array(AgentActivitySchema),
+  events: z.array(EventLogEntrySchema),
+});
+export type Session = z.infer<typeof SessionSchema>;
+
+// SessionStatsSchema — aggregated stats for a session
+export const SessionStatsSchema = z.object({
+  session_id: z.string(),
+  total_spawns: z.number(),
+  total_completes: z.number(),
+  total_feedback_loops: z.number(),
+  total_critique_passes: z.number(),
+  total_critique_blocks: z.number(),
+  total_audit_passes: z.number(),
+  total_audit_fails: z.number(),
+  agents: z.array(AgentActivitySchema),
+  wall_clock_ms: z.number().optional(),
+  event_count: z.number(),
+});
+export type SessionStats = z.infer<typeof SessionStatsSchema>;
