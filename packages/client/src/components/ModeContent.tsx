@@ -5,12 +5,14 @@ import BrowsePage from '../pages/BrowsePage';
 import ComposePage from '../pages/ComposePage';
 import EditPage from '../pages/EditPage';
 import ExportPage from '../pages/ExportPage';
+import SessionsRouter from '../pages/sessions/SessionsRouter';
 
-const PAGE_MAP: Partial<Record<AppMode, React.ComponentType>> = {
+const PAGE_MAP: Record<AppMode, React.ComponentType> = {
   browse: BrowsePage,
   compose: ComposePage,
   edit: EditPage,
   export: ExportPage,
+  sessions: SessionsRouter,
 };
 
 export default function ModeContent() {
