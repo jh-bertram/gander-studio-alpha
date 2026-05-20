@@ -13,6 +13,7 @@ import {
   ExportInputSchema,
   SessionSchema,
   SessionStatsSchema,
+  SessionRawOutputSchema,
 } from '@gander-studio/shared';
 import { parseSessionFile } from './parsers/session-parser.js';
 import { parseEventLogFiles } from './parsers/event-log-parser.js';
@@ -494,6 +495,47 @@ const sessionRouter = t.router({
       await mkdir(SESSIONS_EDITS_DIR, { recursive: true });
       await writeFile(target, input.content, 'utf8');
       return { success: true as const, filePath: target };
+    }),
+
+  // getRaw — returns the raw markdown of a session's ORIGINAL source file.
+  // Client input: id only (never filePath — path-traversal prevention).
+  // Always reads session.filePath (original source), never editedFilePath.
+  getRaw: t.procedure
+    .input(z.object({ id: z.string() }))
+    .output(SessionRawOutputSchema)
+    .query(async ({ input }) => {
+      for (const dir of SESSIONS_SOURCE_DIRS) {
+        const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
+        let entries: string[];
+        try {
+          entries = await readdir(postMortemsDir);
+        } catch {
+          continue;
+        }
+        for (const file of entries.filter((e) => e.endsWith('.md'))) {
+          const filePath = path.join(postMortemsDir, file);
+          try {
+            const session = await parseSessionFile(filePath, dir);
+            if (session.id === input.id || session.sprint === input.id) {
+              // Read the ORIGINAL source file (session.filePath), not editedFilePath.
+              let content: string;
+              try {
+                content = await readFile(session.filePath, 'utf8');
+              } catch (err) {
+                throw new TRPCError({
+                  code: 'INTERNAL_SERVER_ERROR',
+                  message: (err as Error).message,
+                });
+              }
+              return { content };
+            }
+          } catch (err) {
+            if (err instanceof TRPCError) throw err;
+            continue;
+          }
+        }
+      }
+      throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
     }),
 });
 

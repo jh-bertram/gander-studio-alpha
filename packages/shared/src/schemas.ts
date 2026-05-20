@@ -97,6 +97,13 @@ export const SessionSchema = z.object({
 });
 export type Session = z.infer<typeof SessionSchema>;
 
+// SessionRawInputSchema / SessionRawOutputSchema — for session.getRaw procedure
+export const SessionRawInputSchema = z.object({ id: z.string() });
+export type SessionRawInput = z.infer<typeof SessionRawInputSchema>;
+
+export const SessionRawOutputSchema = z.object({ content: z.string() });
+export type SessionRawOutput = z.infer<typeof SessionRawOutputSchema>;
+
 // SessionStatsSchema — aggregated stats for a session
 export const SessionStatsSchema = z.object({
   session_id: z.string(),
