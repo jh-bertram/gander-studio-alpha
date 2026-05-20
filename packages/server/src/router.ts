@@ -2,7 +2,7 @@ import { initTRPC, TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { writeFile, readFile, readdir, unlink, mkdir, copyFile, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { GANDER_ROOT, LOADOUTS_DIR, EXPORT_BASE_DIR } from './env.js';
+import { GANDER_ROOT, LOADOUTS_DIR, EXPORT_BASE_DIR, SESSIONS_SOURCE_DIRS, SESSIONS_EDITS_DIR } from './env.js';
 import { parseAllAgents } from './parsers/agent-parser.js';
 import { parseAllSkills } from './parsers/skill-parser.js';
 import { parseAllHooks } from './parsers/hook-parser.js';
@@ -11,7 +11,13 @@ import {
   SkillSchema,
   LoadoutSchema,
   ExportInputSchema,
+  SessionSchema,
+  SessionStatsSchema,
 } from '@gander-studio/shared';
+import { parseSessionFile } from './parsers/session-parser.js';
+import { parseEventLogFiles } from './parsers/event-log-parser.js';
+import { computeSessionStats } from './parsers/session-stats.js';
+import { collectSessions } from './session-list.js';
 
 const t = initTRPC.create();
 
@@ -392,6 +398,107 @@ const exportRouter = t.router({
 });
 
 // ---------------------------------------------------------------------------
+// Session sub-router
+// ---------------------------------------------------------------------------
+//
+// WARNING-2 (response shape asymmetry):
+//   session.list  → envelope: { sessions: Session[], skipped: number }
+//   session.get   → bare Session object
+//   session.getStats → bare SessionStats object
+// This asymmetry is intentional: list needs the skipped count for FE observability
+// while get/getStats return a single entity where no envelope is required.
+
+const sessionRouter = t.router({
+  // session.list — returns envelope { sessions, skipped } so callers know how many
+  // files were unparseable (skipped > 0 signals data quality issues upstream).
+  list: t.procedure
+    .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }))
+    .output(z.object({ sessions: z.array(SessionSchema), skipped: z.number() }))
+    .query(async ({ input }) => {
+      return collectSessions(SESSIONS_SOURCE_DIRS, input.limit);
+    }),
+
+  get: t.procedure
+    .input(z.object({ id: z.string() }))
+    .output(SessionSchema)
+    .query(async ({ input }) => {
+      for (const dir of SESSIONS_SOURCE_DIRS) {
+        const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
+        let entries: string[];
+        try {
+          entries = await readdir(postMortemsDir);
+        } catch {
+          continue;
+        }
+        for (const file of entries.filter((e) => e.endsWith('.md'))) {
+          const filePath = path.join(postMortemsDir, file);
+          try {
+            const session = await parseSessionFile(filePath, dir);
+            if (session.id === input.id || session.sprint === input.id) {
+              return session;
+            }
+          } catch {
+            continue;
+          }
+        }
+      }
+      throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
+    }),
+
+  getStats: t.procedure
+    .input(z.object({ id: z.string() }))
+    .output(SessionStatsSchema)
+    .query(async ({ input }) => {
+      let foundSession = null as import('@gander-studio/shared').Session | null;
+      for (const dir of SESSIONS_SOURCE_DIRS) {
+        const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
+        let entries: string[];
+        try {
+          entries = await readdir(postMortemsDir);
+        } catch {
+          continue;
+        }
+        for (const file of entries.filter((e) => e.endsWith('.md'))) {
+          const filePath = path.join(postMortemsDir, file);
+          try {
+            const session = await parseSessionFile(filePath, dir);
+            if (session.id === input.id || session.sprint === input.id) {
+              foundSession = session;
+              break;
+            }
+          } catch {
+            continue;
+          }
+        }
+        if (foundSession) break;
+      }
+      if (!foundSession) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
+      }
+      const eventsDir = path.join(foundSession.source_root, 'docs', 'events');
+      const events = await parseEventLogFiles(eventsDir, foundSession.sprint);
+      return computeSessionStats(foundSession, events);
+    }),
+
+  // session.saveEdit — security stub; path-traversal guard resolved on BOTH sides.
+  // t5 will extract the containment check into validateSaveEditPath() as a pure
+  // refactor — no behavior change needed because the guard is already correct here.
+  saveEdit: t.procedure
+    .input(z.object({ id: z.string(), content: z.string() }))
+    .output(z.object({ success: z.boolean(), filePath: z.string() }))
+    .mutation(async ({ input }) => {
+      const safeBase = path.resolve(SESSIONS_EDITS_DIR);
+      const target = path.resolve(path.join(SESSIONS_EDITS_DIR, `${input.id}.md`));
+      if (target !== safeBase && !target.startsWith(safeBase + path.sep)) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Path traversal detected' });
+      }
+      await mkdir(SESSIONS_EDITS_DIR, { recursive: true });
+      await writeFile(target, input.content, 'utf8');
+      return { success: true as const, filePath: target };
+    }),
+});
+
+// ---------------------------------------------------------------------------
 // App router
 // ---------------------------------------------------------------------------
 
@@ -402,6 +509,7 @@ export const appRouter = t.router({
   hook: hookRouter,
   loadout: loadoutRouter,
   export: exportRouter,
+  session: sessionRouter,
 });
 
 export type AppRouter = typeof appRouter;
