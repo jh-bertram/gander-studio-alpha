@@ -2,6 +2,8 @@ import { useCallback, useRef } from 'react';
 import { SESSION_TABS } from '../../constants/sessions';
 import { useSessionDetail } from '../../hooks/useSessions';
 import { useSessionStore } from '../../store/session-store';
+import OverviewTab from './tabs/OverviewTab';
+import TableTab from './tabs/TableTab';
 
 // ---- ErrorState -------------------------------------------------------------
 
@@ -98,15 +100,7 @@ function LoadingState() {
   );
 }
 
-// ---- TabPanel stubs (t5b/t6b will replace these) ----------------------------
-
-function OverviewTabStub() {
-  return <div data-testid="overview-tab-stub" />;
-}
-
-function TableTabStub() {
-  return <div data-testid="table-tab-stub" />;
-}
+// ---- TabPanel stubs (t6b will replace EditorTab) ----------------------------
 
 function EditorTabStub() {
   return <div data-testid="editor-tab-stub" />;
@@ -298,8 +292,8 @@ export default function SessionDetailPage() {
             aria-labelledby={`${activeTab}-tab`}
             style={{ paddingTop: '20px' }}
           >
-            {activeTab === 'overview' && <OverviewTabStub />}
-            {activeTab === 'table'    && <TableTabStub />}
+            {activeTab === 'overview' && <OverviewTab session={session} />}
+            {activeTab === 'table'    && <TableTab session={session} />}
             {activeTab === 'editor'   && <EditorTabStub />}
           </div>
         </>

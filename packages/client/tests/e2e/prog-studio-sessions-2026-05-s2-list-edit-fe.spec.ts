@@ -62,8 +62,8 @@ test('clicking a session row shows the detail page', async ({ page }) => {
   await expect(detailPage).toBeVisible({ timeout: 5000 });
 });
 
-// ─── t5a: Tab switching ────────────────────────────────────────────────────────
-test('overview and table tabs render correct panel stubs', async ({ page }) => {
+// ─── t5b: Tab switching — real OverviewTab + TableTab ─────────────────────────
+test('overview and table tabs render real panels', async ({ page }) => {
   await page.goto('http://localhost:5173');
 
   const sessionsNav = page.locator('text=SESSIONS').first();
@@ -74,22 +74,84 @@ test('overview and table tabs render correct panel stubs', async ({ page }) => {
   const listPage = page.getByTestId('sessions-list-page');
   await expect(listPage).toBeVisible({ timeout: 5000 });
 
+  // Assert at least one row exists — corpus must be non-empty for this test to run
   const firstRow = listPage.locator('tbody tr').first();
-  const hasRows = await firstRow.isVisible().catch(() => false);
-  if (!hasRows) {
-    return; // No sessions in test environment
-  }
+  await expect(firstRow).toBeVisible({ timeout: 5000 });
 
   await firstRow.click();
   await expect(page.getByTestId('sessions-detail-page')).toBeVisible({ timeout: 5000 });
 
-  // Click Overview tab
+  // Click Overview tab — real OverviewTab
   await page.getByRole('tab', { name: 'Overview' }).click();
-  await expect(page.getByTestId('overview-tab-stub')).toBeAttached({ timeout: 3000 });
+  await expect(page.getByTestId('overview-tab')).toBeVisible({ timeout: 3000 });
 
-  // Click Table tab
+  // Click Table tab — real TableTab
   await page.getByRole('tab', { name: 'Table' }).click();
-  await expect(page.getByTestId('table-tab-stub')).toBeAttached({ timeout: 3000 });
+  await expect(page.getByTestId('table-tab')).toBeVisible({ timeout: 3000 });
+});
+
+// ─── t5b: Overview tab shows sprint slug ──────────────────────────────────────
+test('overview tab shows the session sprint slug text', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+
+  const sessionsNav = page.locator('text=SESSIONS').first();
+  if (await sessionsNav.isVisible()) {
+    await sessionsNav.click();
+  }
+
+  const listPage = page.getByTestId('sessions-list-page');
+  await expect(listPage).toBeVisible({ timeout: 5000 });
+
+  // Assert at least one row exists — corpus must be non-empty for this test to run
+  const firstRow = listPage.locator('tbody tr').first();
+  await expect(firstRow).toBeVisible({ timeout: 5000 });
+
+  await firstRow.click();
+  await expect(page.getByTestId('sessions-detail-page')).toBeVisible({ timeout: 5000 });
+
+  await page.getByRole('tab', { name: 'Overview' }).click();
+  const overviewTab = page.getByTestId('overview-tab');
+  await expect(overviewTab).toBeVisible({ timeout: 3000 });
+
+  // Overview tab must contain the sprint slug (same text as the detail header h1)
+  const sprintText = await page.locator('[data-testid="sessions-detail-page"] h1').innerText();
+  await expect(overviewTab).toContainText(sprintText);
+});
+
+// ─── t5b: Table tab shows Agent ID column header ──────────────────────────────
+test('table tab shows Agent ID column header', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+
+  const sessionsNav = page.locator('text=SESSIONS').first();
+  if (await sessionsNav.isVisible()) await sessionsNav.click();
+
+  const listPage = page.getByTestId('sessions-list-page');
+  await expect(listPage).toBeVisible({ timeout: 5000 });
+
+  // Assert at least one row exists — corpus must be non-empty for this test to run
+  await expect(listPage.locator('tbody tr').first()).toBeVisible({ timeout: 5000 });
+
+  // Target a known session with canonical Section-2 agent activity tables.
+  // gander-studio-p1 has 32+ agent entries in the 5-col canonical format
+  // (Seq | Timestamp | Event | Agent | Notes), giving agents.length > 0.
+  // Corpus-coupling: gander-studio-p1 is the original studio sprint post-mortem
+  // (2026-03-16) and is expected to be present in all GANDER_ROOT environments.
+  const targetRow = listPage.locator('tbody tr', { hasText: 'gander-studio-p1' });
+  await expect(
+    targetRow,
+    'gander-studio-p1 session row must be present in the sessions list — ' +
+    'this session provides the canonical agent-activity table data for TableTab testing'
+  ).toBeVisible({ timeout: 5000 });
+
+  await targetRow.click();
+  await expect(page.getByTestId('sessions-detail-page')).toBeVisible({ timeout: 5000 });
+
+  await page.getByRole('tab', { name: 'Table' }).click();
+  const tableTab = page.getByTestId('table-tab');
+  await expect(tableTab).toBeVisible({ timeout: 3000 });
+
+  // Table tab must contain the "Agent ID" column header button (real agent data present)
+  await expect(tableTab.getByRole('button', { name: /Agent ID/i }).first()).toBeVisible();
 });
 
 // ─── t5a: Analyze tab is disabled ─────────────────────────────────────────────
