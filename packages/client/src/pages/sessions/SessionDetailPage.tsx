@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { SESSION_TABS } from '../../constants/sessions';
 import { useSessionDetail } from '../../hooks/useSessions';
 import { useSessionStore } from '../../store/session-store';
+import EditorTab from './tabs/EditorTab';
 import OverviewTab from './tabs/OverviewTab';
 import TableTab from './tabs/TableTab';
 
@@ -98,12 +99,6 @@ function LoadingState() {
       </div>
     </div>
   );
-}
-
-// ---- TabPanel stubs (t6b will replace EditorTab) ----------------------------
-
-function EditorTabStub() {
-  return <div data-testid="editor-tab-stub" />;
 }
 
 // ---- SessionDetailPage ------------------------------------------------------
@@ -294,7 +289,7 @@ export default function SessionDetailPage() {
           >
             {activeTab === 'overview' && <OverviewTab session={session} />}
             {activeTab === 'table'    && <TableTab session={session} />}
-            {activeTab === 'editor'   && <EditorTabStub />}
+            {activeTab === 'editor'   && <EditorTab session={session} />}
           </div>
         </>
       )}

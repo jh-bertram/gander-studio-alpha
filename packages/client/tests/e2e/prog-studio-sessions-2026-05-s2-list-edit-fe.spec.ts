@@ -218,6 +218,167 @@ test('detail page shell persists across tab switches without remounting', async 
   expect(sprintSlugAfter).toBe(sprintSlug);
 });
 
+// ─── t6b: Editor tab pre-fills with original source markdown ─────────────────
+test('Editor tab pre-fills with original source markdown', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+
+  const sessionsNav = page.locator('text=Sessions').first();
+  if (await sessionsNav.isVisible()) await sessionsNav.click();
+
+  const listPage = page.getByTestId('sessions-list-page');
+  await expect(listPage).toBeVisible({ timeout: 5000 });
+
+  const firstRow = listPage.locator('tbody tr').first();
+  const hasRows = await firstRow.isVisible().catch(() => false);
+  if (!hasRows) return; // No sessions in test environment
+
+  await firstRow.click();
+  await expect(page.getByTestId('sessions-detail-page')).toBeVisible({ timeout: 5000 });
+
+  await page.getByRole('tab', { name: 'Editor' }).click();
+  const editorTab = page.getByTestId('editor-tab');
+  await expect(editorTab).toBeVisible({ timeout: 3000 });
+
+  // Textarea must have non-empty value once raw content is loaded
+  const textarea = editorTab.locator('textarea');
+  await expect(textarea).toBeVisible({ timeout: 5000 });
+  await expect(textarea).not.toHaveValue('', { timeout: 8000 });
+  const value = await textarea.inputValue();
+  expect(value.trim().length).toBeGreaterThan(0);
+});
+
+// ─── t6b: Save edit flow — success ───────────────────────────────────────────
+test('Save edit flow — success: appending text enables save and shows Saved to path', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+
+  const sessionsNav = page.locator('text=Sessions').first();
+  if (await sessionsNav.isVisible()) await sessionsNav.click();
+
+  const listPage = page.getByTestId('sessions-list-page');
+  await expect(listPage).toBeVisible({ timeout: 5000 });
+
+  const firstRow = listPage.locator('tbody tr').first();
+  const hasRows = await firstRow.isVisible().catch(() => false);
+  if (!hasRows) return; // No sessions in test environment
+
+  await firstRow.click();
+  await expect(page.getByTestId('sessions-detail-page')).toBeVisible({ timeout: 5000 });
+
+  await page.getByRole('tab', { name: 'Editor' }).click();
+  const editorTab = page.getByTestId('editor-tab');
+  await expect(editorTab).toBeVisible({ timeout: 3000 });
+
+  const textarea = editorTab.locator('textarea');
+  await expect(textarea).toBeVisible({ timeout: 5000 });
+  await expect(textarea).not.toHaveValue('', { timeout: 8000 });
+
+  // Append a character to make the buffer dirty
+  await textarea.focus();
+  await textarea.press('End');
+  await textarea.type(' ');
+
+  // Save button should now be enabled; scroll it into view before clicking
+  const saveBtn = editorTab.getByTestId('save-edit-button');
+  await expect(saveBtn).toBeEnabled({ timeout: 2000 });
+  await saveBtn.scrollIntoViewIfNeeded();
+  await saveBtn.click({ force: true });
+
+  // Inline success block must appear with "Saved to:" and a path
+  await expect(editorTab.locator('[aria-live="polite"]')).toContainText('Saved to:', { timeout: 8000 });
+});
+
+// ─── t6b: Save edit flow — revert to original ────────────────────────────────
+test('Save edit flow — revert to original restores textarea to pre-fill value', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+
+  const sessionsNav = page.locator('text=Sessions').first();
+  if (await sessionsNav.isVisible()) await sessionsNav.click();
+
+  const listPage = page.getByTestId('sessions-list-page');
+  await expect(listPage).toBeVisible({ timeout: 5000 });
+
+  const firstRow = listPage.locator('tbody tr').first();
+  const hasRows = await firstRow.isVisible().catch(() => false);
+  if (!hasRows) return; // No sessions in test environment
+
+  await firstRow.click();
+  await expect(page.getByTestId('sessions-detail-page')).toBeVisible({ timeout: 5000 });
+
+  await page.getByRole('tab', { name: 'Editor' }).click();
+  const editorTab = page.getByTestId('editor-tab');
+  await expect(editorTab).toBeVisible({ timeout: 3000 });
+
+  const textarea = editorTab.locator('textarea');
+  await expect(textarea).toBeVisible({ timeout: 5000 });
+  await expect(textarea).not.toHaveValue('', { timeout: 8000 });
+
+  // Capture the original pre-fill value
+  const original = await textarea.inputValue();
+
+  // Modify the textarea
+  await textarea.focus();
+  await textarea.press('End');
+  await textarea.type('MODIFIED');
+
+  // Revert button — scroll into view and click
+  const revertBtn = editorTab.getByTestId('revert-button');
+  await expect(revertBtn).toBeEnabled({ timeout: 2000 });
+  await revertBtn.scrollIntoViewIfNeeded();
+  await revertBtn.click({ force: true });
+
+  // Textarea value must equal the original pre-fill
+  await expect(textarea).toHaveValue(original);
+});
+
+// ─── t6b: Analyze tab is disabled (SC8) ──────────────────────────────────────
+// NOTE: This coverage also exists in the t5a test above; included here
+// explicitly as per the t6b spec requirement (SC8 sign-off).
+test('Analyze tab is disabled — aria-disabled true and Coming in S3 title', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+
+  const sessionsNav = page.locator('text=Sessions').first();
+  if (await sessionsNav.isVisible()) await sessionsNav.click();
+
+  const listPage = page.getByTestId('sessions-list-page');
+  await expect(listPage).toBeVisible({ timeout: 5000 });
+
+  const firstRow = listPage.locator('tbody tr').first();
+  const hasRows = await firstRow.isVisible().catch(() => false);
+  if (!hasRows) return;
+
+  await firstRow.click();
+  await expect(page.getByTestId('sessions-detail-page')).toBeVisible({ timeout: 5000 });
+
+  const analyzeTab = page.getByRole('tab', { name: 'Analyze' });
+  await expect(analyzeTab).toHaveAttribute('aria-disabled', 'true');
+  await expect(analyzeTab).toHaveAttribute('title', 'Coming in S3');
+});
+
+// ─── t6b: Existing pages smoke regression (SC10) ─────────────────────────────
+test('Browse page root testid is visible when Browse mode is active', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+  await page.locator('text=Browse').first().click();
+  await expect(page.getByTestId('browse-page')).toBeVisible({ timeout: 5000 });
+});
+
+test('Compose page root testid is visible when Compose mode is active', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+  await page.locator('text=Compose').first().click();
+  await expect(page.getByTestId('compose-page')).toBeVisible({ timeout: 5000 });
+});
+
+test('Edit page root testid is visible when Edit mode is active', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+  await page.locator('text=Edit').first().click();
+  await expect(page.getByTestId('edit-page')).toBeVisible({ timeout: 5000 });
+});
+
+test('Export page root testid is visible when Export mode is active', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+  await page.locator('text=Export').first().click();
+  await expect(page.getByTestId('export-page')).toBeVisible({ timeout: 5000 });
+});
+
 // ─── Error / empty state test ─────────────────────────────────────────────────
 test('sessions list empty state renders no sessions found when list is empty', async ({ page }) => {
   await page.goto('http://localhost:5173');
