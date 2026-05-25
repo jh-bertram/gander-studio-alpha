@@ -104,7 +104,16 @@ export default function EditorTab({ session }: Props) {
           value={editBuffer}
           onChange={handleChange}
           rows={24}
-          style={{ fontFamily: 'var(--fm)', fontSize: '12px', resize: 'vertical' }}
+          style={{
+            fontFamily:  'var(--fm)',
+            fontSize:    '12px',
+            resize:      'vertical',
+            color:       'var(--w)',
+            background:  'var(--sfm)',
+            border:      '1px solid var(--bd)',
+            padding:     '10px 12px',
+            caretColor:  'var(--mt)',
+          }}
         />
       )}
 

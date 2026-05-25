@@ -379,6 +379,44 @@ test('Export page root testid is visible when Export mode is active', async ({ p
   await expect(page.getByTestId('export-page')).toBeVisible({ timeout: 5000 });
 });
 
+// ─── t6b-contrast: Editor textarea text is readable (color differs from background) ──
+test('Editor textarea text is readable (color differs from background)', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+
+  const sessionsNav = page.locator('text=SESSIONS').first();
+  if (await sessionsNav.isVisible()) await sessionsNav.click();
+
+  const listPage = page.getByTestId('sessions-list-page');
+  await expect(listPage).toBeVisible({ timeout: 5000 });
+
+  const firstRow = listPage.locator('tbody tr').first();
+  const hasRows = await firstRow.isVisible().catch(() => false);
+  if (!hasRows) return; // No sessions in test environment — skip
+
+  await firstRow.click();
+  await expect(page.getByTestId('sessions-detail-page')).toBeVisible({ timeout: 5000 });
+
+  await page.getByRole('tab', { name: 'Editor' }).click();
+  const editorTab = page.getByTestId('editor-tab');
+  await expect(editorTab).toBeVisible({ timeout: 3000 });
+
+  // Wait for the textarea to appear (it renders once raw content is available)
+  const textarea = editorTab.locator('textarea');
+  await expect(textarea).toBeVisible({ timeout: 8000 });
+
+  // Read computed styles for the textarea
+  const { color, backgroundColor } = await textarea.evaluate((el: HTMLTextAreaElement) => {
+    const cs = window.getComputedStyle(el);
+    return { color: cs.color, backgroundColor: cs.backgroundColor };
+  });
+
+  // Background must not be transparent (rgba(0,0,0,0) means the fix wasn't applied)
+  expect(backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+
+  // Text color must differ from background color so text is readable
+  expect(color).not.toBe(backgroundColor);
+});
+
 // ─── Error / empty state test ─────────────────────────────────────────────────
 test('sessions list empty state renders no sessions found when list is empty', async ({ page }) => {
   await page.goto('http://localhost:5173');
