@@ -1254,3 +1254,62 @@ Each entry records a task completion, architectural decision, or sprint state sn
     Pattern source: S2 contrast defect (textarea invisible despite audit PASS) revealed fundamental blindspot in audit-pipeline and FE spec. Fixes land at two layers: skill documentation (audit-pipeline 1.8.0) + agent spec (frontend.md 1.7.0 E2E pitfall patterns).
   </retention_keys>
 </archive_entry>
+
+<archive_entry>
+  <timestamp>2026-05-28T00:50:54Z</timestamp>
+  <task_id>hone-2026-05-27-2</task_id>
+  <event_type>HONE_SESSION</event_type>
+  <rationale>
+    Skill catalog improvement session acting on three findings from post-mortem `docs/post-mortems/prog-studio-sessions-2026-05-s2-list-edit.md` §8 (audit-pipeline / react-flow-render-smoke / commit-packet scope boundaries and new-skill candidates).
+
+    FINDINGS VERIFIED ALREADY-CLOSED (no edit this session):
+
+    (1) §8c audit-pipeline contrast gate — CLOSED 2026-05-25 via `hone-2026-05-25-1`. Audit-pipeline 1.7.0 → 1.8.0 added second VISUAL_BLINDSPOT_PRIMITIVE class documenting Shadcn + FF7 custom-palette collision pattern (root cause of S2 t6b textarea invisible-text defect). Verified in current file at lines 172 and 245. No further edit required.
+
+    (2) §8e react-flow-render-smoke scope drift — CLOSED 2026-05-25 via `hone-2026-05-25-1`. React-flow-render-smoke 1.0.0 → 1.0.1 appended Scope boundary clarification that explicitly routes non-RF UI-primitive contrast checks to a forthcoming sibling skill. Verified at line 23 in current file. No further edit required.
+
+    (3) §8c commit-packet resume/inline entry point — CLOSED 2026-05-20 via `hone-2026-05-20-1` (1.3.0 → 1.3.1 documented on-disk-only durability as third Step 4 resolution), subsequently superseded by `gander-meta-handoff-chain-phase1` bumping to 2.0.0 with substrate check rewrite. Verified; no edit required.
+
+    FINDING ESCALATED TO HUMAN (new-skill candidate):
+
+    (4) §8d component-contrast-smoke skill candidate — CONFIRMED_CREATE with human-refined rest-state scope. This session acted as escalation checkpoint; the human confirmed scope boundary after design conversation. The skill scope covers:
+      - WCAG luminance contrast (4.5:1 for normal text, 3:1 for large; threshold derived from computed font-size + font-weight)
+      - Alpha/transparency-aware background resolution (walk up DOM to find non-transparent ancestor — load-bearing fix for S2 t6b textarea with inherited bg-transparent)
+      - Color-vision-deficiency (CVD) simulation (protanopia / deuteranopia / tritanopia with post-CVD AA 3:1 threshold; original colors must hit 4.5:1)
+      - Font-size-aware threshold pick (discrete sub-check because it changes pass/fail decision)
+
+      Explicitly out-of-scope: interactive state contrasts (focus/hover/disabled/placeholder/::selection) and semantic color-meaning checks (deferred to possible sibling or audit work).
+
+      Feature sprint `gander-meta-component-contrast-smoke-skill` queued for dispatch from gander repo (skills live in gander/.claude/skills/). Closes dangling references in audit-pipeline 1.8.0 line 172 and react-flow-render-smoke 1.0.1 line 23 (both currently say "once it lands").
+
+    SIDE DISCOVERY (already resolved, non-hone outcome):
+
+    Session also discovered that HR seq-integrity hook fix follow-up was already resolved via parallel sprint `gander-meta-hook-transcript-missing-triage-fix` (gander commit efc1f80, landed 2026-05-27). Auto-memory updated; cross-listed in gander-studio-alpha event log seq:2 DISPATCH_HALT for transparency. No action required this session.
+
+    SKILLS CHANGED THIS SESSION: 0 (no SKILL.md edits — confirmation + escalation only).
+    RETIREMENT CANDIDATES: 0 presented.
+    RESEARCH DISPATCHED: 0 (confirmation of prior state + scoped new-skill escalation required no external research).
+  </rationale>
+  <dependencies>
+    hone-2026-05-25-1 (audit-pipeline 1.8.0 + react-flow-render-smoke 1.0.1 — closed §8c and §8e);
+    hone-2026-05-20-1 (commit-packet 1.3.0 → 1.3.1 — closed §8c resume variant);
+    gander-meta-handoff-chain-phase1 (commit-packet 1.3.1 → 2.0.0 substrate check rewrite);
+    prog-studio-sessions-2026-05-s2-list-edit-postmortem (post-mortem that surfaced all three findings);
+    gander-meta-hook-transcript-missing-triage-fix (parallel sprint, resolved HR seq-integrity — side discovery);
+    Session memory: auto-memory ~/.claude/projects/-home-jhber-projects-gander-studio-alpha/memory/project_sessions_program_state.md updated to mark §8 closed and HR seq-integrity resolved
+  </dependencies>
+  <retention_keys>
+    docs/agent-improvements/hone-2026-05-27-2.md (full hone report with confirmed scope for component-contrast-smoke);
+    ~/projects/gander/docs/agent-changelog.md row: ## hone-2026-05-27-2 (cross-repo changelog);
+    Skill versions at session close (unchanged except by prior hone sessions):
+      audit-pipeline v2.0.0 (schema upgrade from gander-meta-handoff-chain-phase1; preserves VISUAL_BLINDSPOT_PRIMITIVE from 1.8.0)
+      react-flow-render-smoke v1.0.1 (Scope boundary clarified; routes non-RF contrast to component-contrast-smoke)
+      commit-packet v2.0.0 (substrate check + legacy adapter from handoff-chain-phase1)
+    Queued feature sprint: gander-meta-component-contrast-smoke-skill (to be dispatched from ~/projects/gander working directory);
+    Dangling references awaiting component-contrast-smoke:
+      audit-pipeline SKILL.md line 172: "recommend the component-contrast-smoke skill once it lands"
+      react-flow-render-smoke SKILL.md line 23: "deterministic enforcement is routed to the component-contrast-smoke skill ... once it lands"
+    Follow-up action after feature sprint ships: hone session should re-read both files and confirm "once it lands" qualifiers are removed/updated to present-tense reference;
+    HR seq-integrity already resolved (gander efc1f80) — logged in event-seq 2 DISPATCH_HALT for transparency; no action taken this session
+  </retention_keys>
+</archive_entry>
