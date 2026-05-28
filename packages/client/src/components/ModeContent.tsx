@@ -25,7 +25,10 @@ export default function ModeContent() {
       style={{
         gridArea: 'mn',
         overflowY: 'auto',
-        padding: '28px',
+        paddingTop: '28px',
+        paddingRight: '28px',
+        paddingLeft: '28px',
+        paddingBottom: '56px',
       }}
     >
       {ActivePage && <ActivePage />}

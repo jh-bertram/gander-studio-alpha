@@ -92,9 +92,9 @@ body::before {
 /* App shell responsive layout */
 .app-shell {
   display: grid;
-  grid-template-columns: 250px 1fr;
+  grid-template-columns: 1fr;
   grid-template-rows: auto 1fr;
-  grid-template-areas: "hd hd" "nv mn";
+  grid-template-areas: "hd" "mn";
   min-height: 100vh;
 }
 
@@ -133,15 +133,7 @@ body::before {
 
 /* Mobile layout (max-width 640px) */
 @media (max-width: 640px) {
-  .app-shell {
-    grid-template-columns: 1fr;
-    grid-template-areas: "hd" "mn";
-  }
-  .sidebar {
-    display: none;
-  }
   #mode-content {
-    padding: 16px;
     height: calc(100vh - var(--header-h, 76px) - 56px);
   }
 }
