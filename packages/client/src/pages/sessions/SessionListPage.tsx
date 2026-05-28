@@ -1,6 +1,25 @@
+import { useEffect, useRef } from 'react';
 import type { Session } from '@gander-studio/shared';
 import { useSessions } from '../../hooks/useSessions';
+import { useAggregateStats } from '../../hooks/useAggregateStats';
 import { useSessionStore } from '../../store/session-store';
+import AgentStatPanel from '../../components/sessions/AgentStatPanel';
+import AgentStatTable from '../../components/sessions/AgentStatTable';
+
+// ---- Local constants ---------------------------------------------------------
+
+type MetricKey = 'spawns' | 'feedback_loops' | 'wall_clock_ms';
+
+// Default metrics shown in the overview aggregate panel (no analyzeStore import)
+const OVERVIEW_METRICS: MetricKey[] = ['spawns', 'feedback_loops'];
+
+// ---- Helpers ----------------------------------------------------------------
+
+function formatWallClock(ms: number | undefined): string {
+  if (ms === undefined) return '—';
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
+}
 
 // ---- PageTitle component ------------------------------------------------
 
@@ -65,12 +84,12 @@ function LoadingState() {
                 <td key={j} style={{ padding: '10px 14px' }}>
                   <div
                     style={{
-                      height:     '14px',
-                      borderRadius: '3px',
-                      background:  'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
+                      height:         '14px',
+                      borderRadius:   '3px',
+                      background:     'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
                       backgroundSize: '200% 100%',
-                      animation:   'shimmer 1.4s ease-in-out infinite',
-                      width:       j === 0 ? '70%' : '50%',
+                      animation:      'shimmer 1.4s ease-in-out infinite',
+                      width:          j === 0 ? '70%' : '50%',
                     }}
                   />
                 </td>
@@ -224,10 +243,14 @@ function handleRowKeyDown(
 
 function SessionRow({
   session,
+  isChecked,
   onSelect,
+  onToggleCheck,
 }: {
-  session: Session;
-  onSelect: () => void;
+  session:       Session;
+  isChecked:     boolean;
+  onSelect:      () => void;
+  onToggleCheck: (e: React.MouseEvent | React.KeyboardEvent) => void;
 }) {
   const gapText =
     session.gap_classes.length > 0 ? session.gap_classes.join(', ') : '—';
@@ -246,9 +269,9 @@ function SessionRow({
       }}
       onMouseEnter={(e) => {
         const row = e.currentTarget;
-        row.style.background   = 'var(--sfh)';
-        row.style.borderLeft   = '3px solid var(--mt)';
-        row.style.paddingLeft  = '0';
+        row.style.background  = 'var(--sfh)';
+        row.style.borderLeft  = '3px solid var(--mt)';
+        row.style.paddingLeft = '0';
       }}
       onMouseLeave={(e) => {
         const row = e.currentTarget;
@@ -269,6 +292,36 @@ function SessionRow({
         row.style.paddingLeft = '';
       }}
     >
+      {/* Checkbox cell — stopPropagation on BOTH click and keydown so toggling
+          selection does not trigger row→detail navigation */}
+      <td
+        style={{ padding: '10px 14px', width: '40px' }}
+        onClick={(e) => { e.stopPropagation(); }}
+        onKeyDown={(e) => { e.stopPropagation(); }}
+      >
+        <input
+          type="checkbox"
+          checked={isChecked}
+          aria-label={`Toggle selection for ${session.sprint}`}
+          onChange={() => {/* handled by onClick below */}}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleCheck(e);
+          }}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onToggleCheck(e);
+            }
+          }}
+          data-testid={`session-checkbox-${session.id}`}
+          style={{
+            accentColor: 'var(--mt)',
+            cursor:      'pointer',
+          }}
+        />
+      </td>
       <td style={TD_PRIMARY_STYLE}>{session.sprint}</td>
       <td style={TD_STYLE}>{session.date}</td>
       <td style={TD_STYLE}>{statusText}</td>
@@ -277,13 +330,136 @@ function SessionRow({
   );
 }
 
+// ---- AggregatePanel ---------------------------------------------------------
+
+function AggregatePanel({ selectedSessionIds }: { selectedSessionIds: string[] }) {
+  const { stats, isLoading, error } = useAggregateStats(selectedSessionIds);
+
+  if (selectedSessionIds.length === 0) {
+    return (
+      <div
+        data-testid="aggregate-no-sessions"
+        style={{
+          fontFamily: 'var(--fm)',
+          fontSize:   '12px',
+          color:      'var(--wm)',
+          padding:    '20px',
+          textAlign:  'center',
+          border:     '1px solid var(--bd)',
+          borderRadius: 'var(--rl)',
+          background: 'var(--sfm)',
+        }}
+      >
+        No sessions selected
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div
+        aria-busy="true"
+        data-testid="aggregate-loading"
+        style={{
+          height:         '14px',
+          borderRadius:   '3px',
+          background:     'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
+          backgroundSize: '200% 100%',
+          animation:      'shimmer 1.4s ease-in-out infinite',
+          width:          '60%',
+          margin:         '12px 0',
+        }}
+      >
+        <span className="sr-only">Loading aggregate stats…</span>
+      </div>
+    );
+  }
+
+  if (error != null) {
+    return <ErrorState error={error} />;
+  }
+
+  if (stats == null) return null;
+
+  return (
+    <div
+      data-testid="aggregate-stats-panel"
+      style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+    >
+      {/* Sibling summary: session-level wall_clock_ms (NOT per-agent) */}
+      <div
+        role="status"
+        data-testid="aggregate-wall-clock"
+        style={{
+          fontFamily: 'var(--fm)',
+          fontSize:   '12px',
+          color:      'var(--wm)',
+        }}
+      >
+        Total wall clock (sum of sessions):{' '}
+        <span style={{ color: 'var(--mt)', fontWeight: 600 }}>
+          {formatWallClock(stats.wall_clock_ms)}
+        </span>
+      </div>
+
+      {/* Per-agent panels grid */}
+      {stats.agents.length > 0 && (
+        <div
+          style={{
+            display:             'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap:                 '12px',
+          }}
+        >
+          {stats.agents.map((activity) => (
+            <AgentStatPanel
+              key={activity.agent_id}
+              activity={activity}
+              metrics={OVERVIEW_METRICS}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Agent stat table */}
+      <AgentStatTable
+        activities={stats.agents}
+        metrics={OVERVIEW_METRICS}
+      />
+    </div>
+  );
+}
+
 // ---- SessionListPage ----------------------------------------------------
 
 export default function SessionListPage() {
   const { sessions, isLoading, error } = useSessions();
-  const setSelectedSessionId = useSessionStore(
-    (s) => s.setSelectedSessionId,
-  );
+
+  // Use individual selectors to avoid object-reference churn that causes
+  // infinite re-renders in Zustand when a selector returns a new object.
+  const setSelectedSessionId    = useSessionStore((s) => s.setSelectedSessionId);
+  const selectedSessionIds      = useSessionStore((s) => s.selectedSessionIds);
+  const toggleSelectedSessionId = useSessionStore((s) => s.toggleSelectedSessionId);
+  const selectAllSessions       = useSessionStore((s) => s.selectAllSessions);
+  const clearAllSessions        = useSessionStore((s) => s.clearAllSessions);
+
+  // Track whether the initial default-selection has been applied.
+  // Prevents re-applying "all selected" when the user explicitly clears to [].
+  const initializedRef = useRef(false);
+
+  // Default: select all sessions on first load (once only)
+  useEffect(() => {
+    if (!isLoading && sessions.length > 0 && !initializedRef.current) {
+      initializedRef.current = true;
+      selectAllSessions(sessions.map((s) => s.id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, sessions.length]);
+
+  const totalCount    = sessions.length;
+  const selectedCount = selectedSessionIds.length;
+  const allSelected   = selectedCount === totalCount && totalCount > 0;
+  const noneSelected  = selectedCount === 0;
 
   return (
     <div data-testid="sessions-list-page">
@@ -296,31 +472,145 @@ export default function SessionListPage() {
       {!isLoading && error == null && sessions.length === 0 && <EmptyState />}
 
       {!isLoading && error == null && sessions.length > 0 && (
-        <table
-          aria-label="Sessions list"
-          style={{
-            width:          '100%',
-            borderCollapse: 'collapse',
-          }}
-        >
-          <thead>
-            <tr>
-              <SessionTh style={{ width: '40%' }}>Sprint</SessionTh>
-              <SessionTh style={{ width: '15%' }}>Date</SessionTh>
-              <SessionTh style={{ width: '15%' }}>Status</SessionTh>
-              <SessionTh style={{ width: '30%' }}>Gap Classes</SessionTh>
-            </tr>
-          </thead>
-          <tbody>
-            {sessions.map((session) => (
-              <SessionRow
-                key={session.id}
-                session={session}
-                onSelect={() => setSelectedSessionId(session.id)}
-              />
-            ))}
-          </tbody>
-        </table>
+        <>
+          {/* ── Selection strip ─────────────────────────────────── */}
+          <div
+            data-testid="session-selection-strip"
+            role="group"
+            aria-label="Session selection"
+            style={{
+              display:      'flex',
+              alignItems:   'center',
+              gap:          '10px',
+              marginBottom: '12px',
+              padding:      '8px 12px',
+              background:   'var(--sfm)',
+              border:       '1px solid var(--bd)',
+              borderRadius: 'var(--rl)',
+            }}
+          >
+            <button
+              type="button"
+              aria-label="Select all sessions"
+              aria-pressed={allSelected}
+              data-testid="select-all-sessions"
+              onClick={() => selectAllSessions(sessions.map((s) => s.id))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  selectAllSessions(sessions.map((s) => s.id));
+                }
+              }}
+              style={{
+                padding:      '4px 10px',
+                fontSize:     '11px',
+                fontFamily:   'var(--fb)',
+                color:        allSelected ? 'var(--mt)' : 'var(--wd)',
+                background:   'var(--sfh)',
+                border:       `1px solid ${allSelected ? 'var(--bdb)' : 'var(--bd)'}`,
+                borderRadius: 'var(--r)',
+                cursor:       'pointer',
+                fontWeight:   allSelected ? 600 : 400,
+                outline:      'none',
+              }}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              aria-label="Deselect all sessions"
+              aria-pressed={noneSelected}
+              data-testid="select-none-sessions"
+              onClick={() => clearAllSessions()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  clearAllSessions();
+                }
+              }}
+              style={{
+                padding:      '4px 10px',
+                fontSize:     '11px',
+                fontFamily:   'var(--fb)',
+                color:        noneSelected ? 'var(--mt)' : 'var(--wd)',
+                background:   'var(--sfh)',
+                border:       `1px solid ${noneSelected ? 'var(--bdb)' : 'var(--bd)'}`,
+                borderRadius: 'var(--r)',
+                cursor:       'pointer',
+                fontWeight:   noneSelected ? 600 : 400,
+                outline:      'none',
+              }}
+            >
+              None
+            </button>
+            <span
+              aria-live="polite"
+              style={{
+                fontFamily: 'var(--fm)',
+                fontSize:   '11px',
+                color:      'var(--wm)',
+              }}
+            >
+              {selectedCount} of {totalCount} sessions selected
+            </span>
+          </div>
+
+          {/* ── Aggregate stats panel ───────────────────────────── */}
+          <div
+            style={{
+              marginBottom: '24px',
+              padding:      '14px 18px',
+              background:   'var(--sfm)',
+              border:       '1px solid var(--bd)',
+              borderRadius: 'var(--rl)',
+            }}
+          >
+            <div
+              style={{
+                fontFamily:    'var(--fm)',
+                fontSize:      '10px',
+                fontWeight:    700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color:         'var(--wm)',
+                marginBottom:  '12px',
+              }}
+            >
+              Aggregate Stats
+            </div>
+            <AggregatePanel selectedSessionIds={selectedSessionIds} />
+          </div>
+
+          {/* ── Session table ───────────────────────────────────── */}
+          <table
+            aria-label="Sessions list"
+            style={{
+              width:          '100%',
+              borderCollapse: 'collapse',
+            }}
+          >
+            <thead>
+              <tr>
+                <SessionTh style={{ width: '40px' }}><span className="sr-only">Select</span></SessionTh>
+                <SessionTh style={{ width: '38%' }}>Sprint</SessionTh>
+                <SessionTh style={{ width: '15%' }}>Date</SessionTh>
+                <SessionTh style={{ width: '15%' }}>Status</SessionTh>
+                <SessionTh style={{ width: '30%' }}>Gap Classes</SessionTh>
+              </tr>
+            </thead>
+            <tbody>
+              {sessions.map((session) => (
+                <SessionRow
+                  key={session.id}
+                  session={session}
+                  isChecked={selectedSessionIds.includes(session.id)}
+                  onSelect={() => setSelectedSessionId(session.id)}
+                  onToggleCheck={() => toggleSelectedSessionId(session.id)}
+                />
+              ))}
+            </tbody>
+          </table>
+        </>
       )}
     </div>
   );
