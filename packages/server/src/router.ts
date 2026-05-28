@@ -437,7 +437,13 @@ const sessionRouter = t.router({
           try {
             const session = await parseSessionFile(filePath, dir);
             if (session.id === input.id || session.sprint === input.id) {
-              return session;
+              const eventsDir = path.join(session.source_root, 'docs', 'events');
+              // Use first whitespace-delimited token of sprint — strips parenthetical
+              // title suffixes while preserving dotted version strings (e.g. v1.2)
+              // that differ from the dash-normalised id (v1-2).
+              const sprintSlug = session.sprint.split(/\s+/)[0];
+              const events = await parseEventLogFiles(eventsDir, sprintSlug);
+              return { ...session, events };
             }
           } catch {
             continue;
@@ -478,7 +484,9 @@ const sessionRouter = t.router({
         throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
       }
       const eventsDir = path.join(foundSession.source_root, 'docs', 'events');
-      const events = await parseEventLogFiles(eventsDir, foundSession.sprint);
+      // Same slug strategy as session.get: first whitespace token of sprint.
+      const sprintSlug = foundSession.sprint.split(/\s+/)[0];
+      const events = await parseEventLogFiles(eventsDir, sprintSlug);
       return computeSessionStats(foundSession, events);
     }),
 
