@@ -51,42 +51,63 @@ test('default: all sessions selected and aggregate stats panel is visible', asyn
   expect(wallClockText).toContain('Total wall clock (sum of sessions)');
 });
 
-// ─── Test 2: Deselecting a session changes the aggregate counts ───────────────
+// ─── Test 2: Deselecting a session changes the aggregate stat value (value-delta) ─
 test('deselecting a session changes aggregate counts (headline behavior)', async ({ page }) => {
   await navigateToSessions(page);
 
-  // Wait for aggregate to fully load
+  // Wait for aggregate to fully load with all sessions selected
   const aggregatePanel = page.getByTestId('aggregate-stats-panel');
   await expect(aggregatePanel).toBeVisible({ timeout: 12000 });
 
-  // Read initial wall-clock text
+  // Read the wall-clock stat value BEFORE deselect.
+  // The element contains: "Total wall clock (sum of sessions): <span>NNN.Ns</span>"
+  // Grab the inner <span> which holds only the formatted numeric value.
   const wallClock = page.getByTestId('aggregate-wall-clock');
   await expect(wallClock).toBeVisible({ timeout: 8000 });
+  const wallClockSpan = wallClock.locator('span');
+  const statBefore = await wallClockSpan.textContent();
+  expect(statBefore).toBeTruthy();
+  expect(statBefore).not.toBe('—'); // must be a real value, not a dash placeholder
 
   // Count how many checkboxes are present
   const checkboxes = page.locator('[data-testid^="session-checkbox-"]');
   const total = await checkboxes.count();
   expect(total).toBeGreaterThan(1); // need ≥ 2 sessions to test deselect
 
-  // Uncheck the first session checkbox (use first() to avoid row-order coupling)
-  const firstCheckbox = checkboxes.first();
-  await expect(firstCheckbox).toBeChecked();
-  await firstCheckbox.click();
-  await expect(firstCheckbox).not.toBeChecked();
+  // Deselect the known session "gander-p6-moirai-skein-skills" — it has 22 agents and
+  // 19331000ms wall clock, so removing it produces a measurable decrease in the aggregate.
+  const targetCheckbox = page.getByTestId('session-checkbox-gander-p6-moirai-skein-skills');
+  await expect(targetCheckbox).toBeChecked({ timeout: 5000 });
+  await targetCheckbox.click();
+  await expect(targetCheckbox).not.toBeChecked();
 
-  // Count label must now show N-1 of N
+  // Count label must now show N-1 of N (side-effect assertion — kept from original)
   const strip = page.getByTestId('session-selection-strip');
   const countLabel = strip.locator('[aria-live="polite"]');
   const countText = await countLabel.textContent();
-  // e.g. "4 of 5 sessions selected" — just confirm not all selected anymore
+  // e.g. "17 of 18 sessions selected"
   expect(countText).not.toMatch(new RegExp(`^${total} of ${total}`));
 
-  // Aggregate panel should re-render (may flash loading then show new data)
-  // Wait for panel to return to visible state after re-fetch
+  // Aggregate panel must re-render after the deselection triggers a new fetch
   await expect(aggregatePanel).toBeVisible({ timeout: 12000 });
-
-  // DOM-presence check: the aggregate still renders after deselect
   await expect(wallClock).toBeVisible({ timeout: 8000 });
+
+  // DOM VALUE-DELTA ASSERTION (the missing guard REQVAL flagged):
+  // The wall-clock stat span must show a DIFFERENT (smaller) value after removing a session.
+  // Poll until the span text changes from the pre-deselect value (re-fetch may be async).
+  await expect(wallClockSpan).not.toHaveText(statBefore!, { timeout: 12000 });
+
+  const statAfter = await wallClockSpan.textContent();
+  expect(statAfter).toBeTruthy();
+  expect(statAfter).not.toBe('—');
+
+  // Parse the numeric part (strip trailing unit suffix like "s" or "ms") and confirm decrease.
+  const parseStat = (text: string): number => parseFloat(text.replace(/[^0-9.]/g, ''));
+  const valueBefore = parseStat(statBefore!);
+  const valueAfter  = parseStat(statAfter!);
+  expect(valueBefore).toBeGreaterThan(0);
+  expect(valueAfter).toBeGreaterThan(0);
+  expect(valueAfter).toBeLessThan(valueBefore); // deselecting a session must reduce the total
 });
 
 // ─── Test 3: Checkbox click does NOT navigate to detail ───────────────────────
