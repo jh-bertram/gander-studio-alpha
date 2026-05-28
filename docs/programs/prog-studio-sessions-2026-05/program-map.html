@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<!--
+  program-map.html — State A (pre-weave) implementation of the ProgramSprintMap pattern
+  catalog entry in ~/.claude/refs/dashboard-patterns.md.
+
+  Program: prog-studio-sessions-2026-05
+  Generated: 2026-05-06 by the moirai skill
+  Status: pre-weave (skein has not yet reconciled outcomes)
+
+  See ~/.claude/refs/dashboard-patterns.md §Named Pattern Catalog → ProgramSprintMap
+  for the canonical layout math, color tokens, and accessibility contract. This file
+  is freshly authored per the moirai DRY decision (no template reuse from team-report).
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Map — prog-studio-sessions-2026-05 (Gander Studio Sessions Mode)</title>
+  <style>
+    :root {
+      --color-bg: #0b1220;
+      --color-panel: #111a2e;
+      --color-text: #e5e7eb;
+      --color-text-dim: #9ca3af;
+      --color-edge-stroke: #6b7280;
+      --color-sprint-planned: #9ca3af;
+      --color-sprint-in-progress: #3b82f6;
+      --color-sprint-done: #22c55e;
+      --color-sprint-failed: #ef4444;
+      --color-sprint-blocked: #f59e0b;
+      --color-sprint-integration: #6366f1;
+      --color-node-text: #0b1220;
+      --color-accent: #14b8a6;
+    }
+    body {
+      margin: 0;
+      padding: 32px 24px;
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+    }
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 24px;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      letter-spacing: 0.02em;
+      color: var(--color-accent);
+    }
+    .meta {
+      color: var(--color-text-dim);
+      font-size: 13px;
+      margin: 0 0 4px;
+    }
+    .meta strong {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+    .panel {
+      background: var(--color-panel);
+      border: 1px solid #1f2a44;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset;
+    }
+    svg {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+    .node-rect:focus {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+    footer {
+      margin-top: 16px;
+      color: var(--color-text-dim);
+      font-size: 12px;
+    }
+    footer code {
+      color: var(--color-text);
+      background: #1f2a44;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Program Map — Gander Studio Sessions Mode</h1>
+      <p class="meta"><strong>Program ID:</strong> prog-studio-sessions-2026-05</p>
+      <p class="meta"><strong>Status:</strong> PLANNED &middot; <strong>State:</strong> pre-weave (State A)</p>
+      <p class="meta"><strong>Pattern:</strong> ProgramSprintMap (see ~/.claude/refs/dashboard-patterns.md)</p>
+    </header>
+
+    <section class="panel" aria-labelledby="dag-title">
+      <h2 id="dag-title" style="margin:0 0 12px; font-size:14px; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em;">Sprint Dependency DAG</h2>
+      <svg
+        role="img"
+        aria-label="Sprint dependency map — prog-studio-sessions-2026-05. 3 sprints, 3 dependency edges."
+        width="740"
+        height="170"
+        viewBox="0 0 740 170"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <marker
+            id="arrowhead"
+            viewBox="0 0 8 6"
+            refX="7"
+            refY="3"
+            markerWidth="8"
+            markerHeight="6"
+            orient="auto-start-reverse"
+          >
+            <path d="M 0 0 L 8 3 L 0 6 z" fill="var(--color-edge-stroke)" />
+          </marker>
+        </defs>
+
+        <!-- Edges: cubic Bezier, right-edge midpoint of source to left-edge midpoint of target. -->
+        <!-- s1 → s2 (200,65) → (260,65): short straight -->
+        <path
+          d="M 200 65 C 230 65, 230 65, 260 65"
+          stroke="var(--color-edge-stroke)"
+          stroke-width="1.5"
+          fill="none"
+          marker-end="url(#arrowhead)"
+          aria-hidden="true"
+        />
+        <!-- s1 → s3 (200,65) → (480,65): arcs up over s2 -->
+        <path
+          d="M 200 65 C 280 8, 400 8, 480 65"
+          stroke="var(--color-edge-stroke)"
+          stroke-width="1.5"
+          fill="none"
+          marker-end="url(#arrowhead)"
+          aria-hidden="true"
+        />
+        <!-- s2 → s3 (420,65) → (480,65): short straight -->
+        <path
+          d="M 420 65 C 450 65, 450 65, 480 65"
+          stroke="var(--color-edge-stroke)"
+          stroke-width="1.5"
+          fill="none"
+          marker-end="url(#arrowhead)"
+          aria-hidden="true"
+        />
+
+        <!-- Tier 0: s1-backend at (40, 40) -->
+        <g>
+          <rect
+            class="node-rect"
+            x="40"
+            y="40"
+            width="160"
+            height="50"
+            rx="8"
+            fill="var(--color-sprint-planned)"
+            stroke="#1f2a44"
+            stroke-width="1"
+            role="img"
+            tabindex="0"
+            aria-label="prog-studio-sessions-2026-05-s1-backend: PLANNED"
+          >
+            <title>prog-studio-sessions-2026-05-s1-backend | PLANNED | Backend pipeline: parse post-mortem markdowns + JSONL event logs into typed Session objects.</title>
+          </rect>
+          <text x="120" y="61" text-anchor="middle" font-size="12" font-weight="600" fill="var(--color-node-text)" font-family="ui-sans-serif, system-ui, sans-serif">s1-backend</text>
+          <text x="120" y="78" text-anchor="middle" font-size="10" fill="var(--color-node-text)" font-family="ui-sans-serif, system-ui, sans-serif">PLANNED</text>
+        </g>
+
+        <!-- Tier 1: s2-list-edit at (260, 40) -->
+        <g>
+          <rect
+            class="node-rect"
+            x="260"
+            y="40"
+            width="160"
+            height="50"
+            rx="8"
+            fill="var(--color-sprint-planned)"
+            stroke="#1f2a44"
+            stroke-width="1"
+            role="img"
+            tabindex="0"
+            aria-label="prog-studio-sessions-2026-05-s2-list-edit: PLANNED"
+          >
+            <title>prog-studio-sessions-2026-05-s2-list-edit | PLANNED | Frontend list + viewer + markdown editor; Sessions nav mode; reserved Analyze slot.</title>
+          </rect>
+          <text x="340" y="61" text-anchor="middle" font-size="12" font-weight="600" fill="var(--color-node-text)" font-family="ui-sans-serif, system-ui, sans-serif">s2-list-edit</text>
+          <text x="340" y="78" text-anchor="middle" font-size="10" fill="var(--color-node-text)" font-family="ui-sans-serif, system-ui, sans-serif">PLANNED</text>
+        </g>
+
+        <!-- Tier 2: s3-analyze at (480, 40) -->
+        <g>
+          <rect
+            class="node-rect"
+            x="480"
+            y="40"
+            width="160"
+            height="50"
+            rx="8"
+            fill="var(--color-sprint-planned)"
+            stroke="#1f2a44"
+            stroke-width="1"
+            role="img"
+            tabindex="0"
+            aria-label="prog-studio-sessions-2026-05-s3-analyze: PLANNED"
+          >
+            <title>prog-studio-sessions-2026-05-s3-analyze | PLANNED | Analysis surface: timeline + stat panels + sortable table + "set the table" picker.</title>
+          </rect>
+          <text x="560" y="61" text-anchor="middle" font-size="12" font-weight="600" fill="var(--color-node-text)" font-family="ui-sans-serif, system-ui, sans-serif">s3-analyze</text>
+          <text x="560" y="78" text-anchor="middle" font-size="10" fill="var(--color-node-text)" font-family="ui-sans-serif, system-ui, sans-serif">PLANNED</text>
+        </g>
+
+        <!-- Legend: 14x14 swatches, 40px from left, 20px above bottom. -->
+        <g class="legend" aria-hidden="true" transform="translate(40, 136)">
+          <g>
+            <rect x="0" y="0" width="14" height="14" rx="3" fill="var(--color-sprint-planned)" />
+            <text x="20" y="11" font-size="11" fill="var(--color-text)" font-family="ui-sans-serif, system-ui, sans-serif">PLANNED</text>
+          </g>
+          <g transform="translate(95, 0)">
+            <rect x="0" y="0" width="14" height="14" rx="3" fill="var(--color-sprint-in-progress)" />
+            <text x="20" y="11" font-size="11" fill="var(--color-text)" font-family="ui-sans-serif, system-ui, sans-serif">IN_PROGRESS</text>
+          </g>
+          <g transform="translate(215, 0)">
+            <rect x="0" y="0" width="14" height="14" rx="3" fill="var(--color-sprint-done)" />
+            <text x="20" y="11" font-size="11" fill="var(--color-text)" font-family="ui-sans-serif, system-ui, sans-serif">DONE</text>
+          </g>
+          <g transform="translate(285, 0)">
+            <rect x="0" y="0" width="14" height="14" rx="3" fill="var(--color-sprint-failed)" />
+            <text x="20" y="11" font-size="11" fill="var(--color-text)" font-family="ui-sans-serif, system-ui, sans-serif">FAILED</text>
+          </g>
+          <g transform="translate(355, 0)">
+            <rect x="0" y="0" width="14" height="14" rx="3" fill="var(--color-sprint-blocked)" />
+            <text x="20" y="11" font-size="11" fill="var(--color-text)" font-family="ui-sans-serif, system-ui, sans-serif">BLOCKED</text>
+          </g>
+          <g transform="translate(435, 0)">
+            <rect x="0" y="0" width="14" height="14" rx="3" fill="var(--color-sprint-integration)" />
+            <text x="20" y="11" font-size="11" fill="var(--color-text)" font-family="ui-sans-serif, system-ui, sans-serif">INTEGRATION</text>
+          </g>
+        </g>
+      </svg>
+    </section>
+
+    <footer>
+      <p>Edges: <code>s1-backend → s2-list-edit</code> &middot; <code>s1-backend → s3-analyze</code> &middot; <code>s2-list-edit → s3-analyze</code> (soft, nav-slot)</p>
+      <p>Manifest: <code>program.md</code> &middot; Briefs: <code>sprints/&lt;sprint-id&gt;/orchestrator_brief.md</code></p>
+    </footer>
+  </main>
+</body>
+</html>
