@@ -10,6 +10,13 @@
  *   in ~/projects/gander/docs/events/agent-events-2026-05-06.jsonl.
  *   Agent CR#1 (seq=3) is used as the deterministic orphan-SPAWN agent.
  *
+ * SC-scroll: pinned fixture session "gander-p6-moirai-skein-skills".
+ *   ORC pre-check confirmed: 29 events, span = 19699s (≈5.5h).
+ *   contentWidth >> containerWidth for this fixture → timeline-scroller scrolls.
+ *
+ * SC-units: same wide fixture ("gander-p6-moirai-skein-skills", range ≈5.5h).
+ *   axisUnit → 'h'; all tick labels must match /\+\d+(\.\d+)?h\b/.
+ *
  * SC-contrast snippet source: ~/.claude/agents/frontend.md §E2E Assertion Targeting #3.
  */
 import { test, expect } from '@playwright/test';
@@ -17,8 +24,14 @@ import { test, expect } from '@playwright/test';
 const FIXTURE_SESSION_ID = 'gander-p7-obsidian-l2-l3';
 const ORPHAN_AGENT_ID = 'CR#1';
 
-/** Navigate to the AnalyzeTab for the fixture session. */
-async function navigateToAnalyzeTab(page: import('@playwright/test').Page): Promise<void> {
+// Wide session: span 19699 s (≈5.5 h) → unit = 'h', contentWidth >> container
+const WIDE_SESSION_ID = 'gander-p6-moirai-skein-skills';
+
+/** Navigate to the AnalyzeTab for the given session id. */
+async function navigateToAnalyzeTab(
+  page: import('@playwright/test').Page,
+  sessionId: string = FIXTURE_SESSION_ID,
+): Promise<void> {
   await page.goto('http://localhost:5173');
 
   const sessionsNav = page.locator('text=SESSIONS').first();
@@ -30,7 +43,7 @@ async function navigateToAnalyzeTab(page: import('@playwright/test').Page): Prom
   await expect(listPage).toBeVisible({ timeout: 5000 });
   const fixtureRow = listPage
     .locator('tbody tr')
-    .filter({ hasText: FIXTURE_SESSION_ID })
+    .filter({ hasText: sessionId })
     .first();
   await expect(fixtureRow).toBeVisible({ timeout: 8000 });
   await fixtureRow.click();
@@ -125,4 +138,60 @@ test('SC-orphan-spawn: orphan-SPAWN agent bar has stroke-dasharray (dashed varia
   // The orphan bar must carry fill="none" (not a filled bar)
   const fillAttr = await orphanRect.getAttribute('fill');
   expect(fillAttr).toBe('none');
+});
+
+// ─── SC-scroll: wide session produces a horizontally scrollable timeline ──────
+test('SC-scroll: wide session produces scrollWidth > clientWidth on the scroller', async ({ page }) => {
+  // Navigate to the wide fixture session (19699 s span → contentWidth >> containerWidth)
+  await navigateToAnalyzeTab(page, WIDE_SESSION_ID);
+
+  // Wait for the scroller element to appear
+  const scroller = page.getByTestId('agent-timeline-scroller');
+  await expect(scroller).toBeVisible({ timeout: 8000 });
+
+  // Also confirm the SVG itself is present (DOM-presence pair for side-effect check)
+  const svg = page.getByTestId('agent-timeline-svg');
+  await expect(svg).toBeVisible({ timeout: 5000 });
+
+  // Read scrollWidth and clientWidth — scrollWidth > clientWidth means content overflows
+  const dims = await scroller.evaluate((el) => ({
+    scrollWidth: el.scrollWidth,
+    clientWidth: el.clientWidth,
+  }));
+
+  // The wide fixture must produce an SVG wider than the scroller's visible area
+  expect(dims.scrollWidth).toBeGreaterThan(dims.clientWidth);
+});
+
+// ─── SC-units: wide session x-axis ticks use hours, not raw seconds ───────────
+test('SC-units: wide session x-axis tick labels use adaptive hour unit', async ({ page }) => {
+  // The wide fixture has tAxisRange ≈ 19699 s (≈5.5 h).
+  // deriveUnit(19699 * 1000) → 'h' (90 min ≤ range < 48 h).
+  // All tick labels after tick 0 must match /\+\d+(\.\d+)?h\b/.
+  await navigateToAnalyzeTab(page, WIDE_SESSION_ID);
+
+  const svg = page.getByTestId('agent-timeline-svg');
+  await expect(svg).toBeVisible({ timeout: 8000 });
+
+  // Collect all tick text elements from the aria-hidden tick group.
+  // Tick labels are SVG <text> elements inside the axis <g aria-hidden="true">.
+  // We look for any non-zero tick that matches an hour pattern.
+  const tickTexts: string[] = await svg.evaluate((svgEl) => {
+    const texts = Array.from(svgEl.querySelectorAll('g[aria-hidden="true"] text'));
+    return texts.map((t) => t.textContent ?? '');
+  });
+
+  // Must have at least TICK_COUNT non-zero ticks
+  const nonZeroTicks = tickTexts.filter((t) => t !== '0s' && t !== '0m' && t !== '0h' && t !== '0d' && t !== '0ms' && t.length > 0);
+  expect(nonZeroTicks.length).toBeGreaterThan(0);
+
+  // Every non-zero tick must match the hour-unit adaptive pattern
+  const hourPattern = /^\+\d+(\.\d+)?h$/;
+  for (const tick of nonZeroTicks) {
+    expect(tick).toMatch(hourPattern);
+  }
+
+  // DOM presence: the SVG must have rendered bars (not empty state)
+  const barCount = await svg.locator('[data-testid^="timeline-bar-"]').count();
+  expect(barCount).toBeGreaterThan(0);
 });
