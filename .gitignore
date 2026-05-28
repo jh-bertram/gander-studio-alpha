@@ -3,3 +3,5 @@ dist/
 *.env
 loadouts/
 .DS_Store
+packages/server/sessions-edits/
+packages/client/test-results/
