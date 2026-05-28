@@ -16,41 +16,40 @@ const FIXTURE_AGENT_1 = 'PM#0';
 const FIXTURE_AGENT_2 = 'CR#1';
 
 /** Navigate to the AnalyzeTab for the fixture session. */
-async function navigateToAnalyzeTab(page: import('@playwright/test').Page): Promise<boolean> {
+async function navigateToAnalyzeTab(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('http://localhost:5173');
 
   // Navigate to Sessions mode
   const sessionsNav = page.locator('text=SESSIONS').first();
-  if (!(await sessionsNav.isVisible().catch(() => false))) return false;
+  await expect(sessionsNav).toBeVisible({ timeout: 8000 });
   await sessionsNav.click();
 
-  // Click the fixture session row
-  const sessionRow = page.locator(`[data-session-id="${FIXTURE_SESSION_ID}"]`).first();
-  const rowVisible = await sessionRow.isVisible({ timeout: 5000 }).catch(() => false);
-  if (!rowVisible) return false;
-  await sessionRow.click();
+  // Click the fixture session row (pin by sprint text — not by position)
+  const listPage = page.getByTestId('sessions-list-page');
+  await expect(listPage).toBeVisible({ timeout: 5000 });
+  const fixtureRow = listPage
+    .locator('tbody tr')
+    .filter({ hasText: FIXTURE_SESSION_ID })
+    .first();
+  await expect(fixtureRow).toBeVisible({ timeout: 8000 });
+  await fixtureRow.click();
 
-  // Click the Analyze tab
-  const analyzeTab = page.locator('[data-tab-id="analyze"]').first();
-  const tabVisible = await analyzeTab.isVisible({ timeout: 3000 }).catch(() => false);
-  if (!tabVisible) return false;
+  // Click the Analyze tab — must not be disabled now that t5a is wired
+  const detailPage = page.getByTestId('sessions-detail-page');
+  await expect(detailPage).toBeVisible({ timeout: 5000 });
+  const analyzeTab = page.getByRole('tab', { name: 'Analyze' });
+  await expect(analyzeTab).toBeVisible({ timeout: 5000 });
+  await expect(analyzeTab).not.toHaveAttribute('aria-disabled', 'true');
   await analyzeTab.click();
 
-  // Wait for SessionPicker to render
+  // Wait for SessionPicker to render — hard failure if absent (t5a is shipped)
   const picker = page.getByTestId('session-picker');
-  return picker.isVisible({ timeout: 5000 }).catch(() => false);
+  await expect(picker).toBeVisible({ timeout: 8000 });
 }
 
 // ─── Load test: SessionPicker is visible with session label ──────────────────
 test('SC-contrast: SessionPicker primary label text is visible against its background', async ({ page }) => {
-  const ready = await navigateToAnalyzeTab(page);
-  if (!ready) {
-    // Dev server may not have the fixture or AnalyzeTab not yet wired (t5a dependency)
-    // Assert the picker at minimum doesn't crash the page
-    const noError = await page.locator('[role="alert"]').count();
-    expect(noError).toBe(0); // no error boundary blowup
-    return;
-  }
+  await navigateToAnalyzeTab(page);
 
   // SC-contrast: follows ~/.claude/agents/frontend.md §E2E Assertion Targeting #3 verbatim
   const label = page.getByTestId('session-picker-session-label');
@@ -67,8 +66,7 @@ test('SC-contrast: SessionPicker primary label text is visible against its backg
 
 // ─── SC-interactions (a): all-toggle selects all agents ──────────────────────
 test('SC-interactions (a): all-toggle selects all agents', async ({ page }) => {
-  const ready = await navigateToAnalyzeTab(page);
-  if (!ready) return; // dependency not yet wired (t5a)
+  await navigateToAnalyzeTab(page);
 
   const picker = page.getByTestId('session-picker');
   await expect(picker).toBeVisible({ timeout: 5000 });
@@ -99,8 +97,7 @@ test('SC-interactions (a): all-toggle selects all agents', async ({ page }) => {
 
 // ─── SC-interactions (b): none-toggle deselects all agents ───────────────────
 test('SC-interactions (b): none-toggle deselects all agents', async ({ page }) => {
-  const ready = await navigateToAnalyzeTab(page);
-  if (!ready) return;
+  await navigateToAnalyzeTab(page);
 
   const picker = page.getByTestId('session-picker');
   await expect(picker).toBeVisible({ timeout: 5000 });
@@ -126,8 +123,7 @@ test('SC-interactions (b): none-toggle deselects all agents', async ({ page }) =
 
 // ─── SC-interactions (c) + (d): per-agent checkbox and per-metric toggle ─────
 test('SC-interactions (c+d): per-agent checkbox toggles agent; per-metric toggle removes metric', async ({ page }) => {
-  const ready = await navigateToAnalyzeTab(page);
-  if (!ready) return;
+  await navigateToAnalyzeTab(page);
 
   const picker = page.getByTestId('session-picker');
   await expect(picker).toBeVisible({ timeout: 5000 });

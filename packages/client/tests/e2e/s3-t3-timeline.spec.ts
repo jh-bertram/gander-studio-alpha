@@ -17,38 +17,40 @@ import { test, expect } from '@playwright/test';
 const FIXTURE_SESSION_ID = 'gander-p7-obsidian-l2-l3';
 const ORPHAN_AGENT_ID = 'CR#1';
 
-/** Navigate to the AnalyzeTab for the fixture session. Returns false if not ready. */
-async function navigateToAnalyzeTab(page: import('@playwright/test').Page): Promise<boolean> {
+/** Navigate to the AnalyzeTab for the fixture session. */
+async function navigateToAnalyzeTab(page: import('@playwright/test').Page): Promise<void> {
   await page.goto('http://localhost:5173');
 
   const sessionsNav = page.locator('text=SESSIONS').first();
-  if (!(await sessionsNav.isVisible().catch(() => false))) return false;
+  await expect(sessionsNav).toBeVisible({ timeout: 8000 });
   await sessionsNav.click();
 
-  const sessionRow = page.locator(`[data-session-id="${FIXTURE_SESSION_ID}"]`).first();
-  const rowVisible = await sessionRow.isVisible({ timeout: 5000 }).catch(() => false);
-  if (!rowVisible) return false;
-  await sessionRow.click();
+  // Pin by sprint text — not by position
+  const listPage = page.getByTestId('sessions-list-page');
+  await expect(listPage).toBeVisible({ timeout: 5000 });
+  const fixtureRow = listPage
+    .locator('tbody tr')
+    .filter({ hasText: FIXTURE_SESSION_ID })
+    .first();
+  await expect(fixtureRow).toBeVisible({ timeout: 8000 });
+  await fixtureRow.click();
 
-  const analyzeTab = page.locator('[data-tab-id="analyze"]').first();
-  const tabVisible = await analyzeTab.isVisible({ timeout: 3000 }).catch(() => false);
-  if (!tabVisible) return false;
+  // Click the Analyze tab — hard failure if absent (t5a is shipped)
+  const detailPage = page.getByTestId('sessions-detail-page');
+  await expect(detailPage).toBeVisible({ timeout: 5000 });
+  const analyzeTab = page.getByRole('tab', { name: 'Analyze' });
+  await expect(analyzeTab).toBeVisible({ timeout: 5000 });
+  await expect(analyzeTab).not.toHaveAttribute('aria-disabled', 'true');
   await analyzeTab.click();
 
-  // Wait for AgentTimeline SVG or empty state
+  // Wait for AgentTimeline SVG — hard failure if absent (t3 is shipped)
   const timeline = page.getByTestId('agent-timeline-svg');
-  return timeline.isVisible({ timeout: 5000 }).catch(() => false);
+  await expect(timeline).toBeVisible({ timeout: 8000 });
 }
 
 // ─── Load test: AgentTimeline SVG renders for the fixture session ─────────────
 test('Load: AgentTimeline SVG is visible for fixture session', async ({ page }) => {
-  const ready = await navigateToAnalyzeTab(page);
-  if (!ready) {
-    // AnalyzeTab not yet wired (t5a dependency) — assert no crash
-    const errors = await page.locator('[role="alert"]').count();
-    expect(errors).toBe(0);
-    return;
-  }
+  await navigateToAnalyzeTab(page);
 
   const svg = page.getByTestId('agent-timeline-svg');
   await expect(svg).toBeVisible({ timeout: 5000 });
@@ -57,12 +59,7 @@ test('Load: AgentTimeline SVG is visible for fixture session', async ({ page }) 
 
 // ─── SC-contrast: rendered SVG text label is visible against its background ───
 test('SC-contrast: AgentTimeline y-axis label text is visible against SVG background', async ({ page }) => {
-  const ready = await navigateToAnalyzeTab(page);
-  if (!ready) {
-    const errors = await page.locator('[role="alert"]').count();
-    expect(errors).toBe(0);
-    return;
-  }
+  await navigateToAnalyzeTab(page);
 
   // Locate the SVG container (the wrapping div is the styled surface)
   // SC-contrast follows ~/.claude/agents/frontend.md §E2E Assertion Targeting #3 verbatim:
@@ -102,14 +99,7 @@ test('SC-contrast: AgentTimeline y-axis label text is visible against SVG backgr
 
 // ─── SC-orphan-spawn: pinned fixture session has dashed-stroke bar for CR#1 ───
 test('SC-orphan-spawn: orphan-SPAWN agent bar has stroke-dasharray (dashed variant)', async ({ page }) => {
-  const ready = await navigateToAnalyzeTab(page);
-  if (!ready) {
-    // t5a not yet wired — report as dag_update_request in completion_packet
-    // but do not fail the test (dependency not yet wired)
-    const errors = await page.locator('[role="alert"]').count();
-    expect(errors).toBe(0);
-    return;
-  }
+  await navigateToAnalyzeTab(page);
 
   // The fixture session gander-p7-obsidian-l2-l3 has agent CR#1 with SPAWN but no COMPLETE.
   // The AgentTimeline should render a dashed-stroke rect for this agent.

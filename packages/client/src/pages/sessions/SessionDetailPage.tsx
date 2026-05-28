@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { SESSION_TABS } from '../../constants/sessions';
 import { useSessionDetail } from '../../hooks/useSessions';
 import { useSessionStore } from '../../store/session-store';
+import AnalyzeTab from './tabs/AnalyzeTab';
 import EditorTab from './tabs/EditorTab';
 import OverviewTab from './tabs/OverviewTab';
 import TableTab from './tabs/TableTab';
@@ -290,6 +291,7 @@ export default function SessionDetailPage() {
             {activeTab === 'overview' && <OverviewTab session={session} />}
             {activeTab === 'table'    && <TableTab session={session} />}
             {activeTab === 'editor'   && <EditorTab session={session} />}
+            {activeTab === 'analyze'  && <AnalyzeTab session={session} />}
           </div>
         </>
       )}

@@ -8,5 +8,5 @@ export const SESSION_TABS: SessionTabDef[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'table',    label: 'Table' },
   { id: 'editor',   label: 'Editor' },
-  { id: 'analyze',  label: 'Analyze', placeholder: true },
+  { id: 'analyze',  label: 'Analyze' },
 ];

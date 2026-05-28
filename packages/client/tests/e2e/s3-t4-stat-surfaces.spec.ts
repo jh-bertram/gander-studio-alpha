@@ -46,12 +46,17 @@ async function navigateToAnalyzeTab(page: import('@playwright/test').Page): Prom
   const detailPage = page.getByTestId('sessions-detail-page');
   await expect(detailPage).toBeVisible({ timeout: 5000 });
 
-  // Navigate to Analyze tab
+  // Navigate to Analyze tab — must not be disabled now that t5a is wired
   const analyzeTab = detailPage
     .getByRole('tab', { name: /Analyze/i })
     .or(detailPage.getByRole('button', { name: /Analyze/i }));
   await expect(analyzeTab).toBeVisible({ timeout: 5000 });
+  await expect(analyzeTab).not.toHaveAttribute('aria-disabled', 'true');
   await analyzeTab.click();
+
+  // Wait for AnalyzeTab content to appear — hard failure (t5a is shipped)
+  const analyzePanel = page.getByTestId('analyze-tab');
+  await expect(analyzePanel).toBeVisible({ timeout: 8000 });
 }
 
 // ---- Helper: ensure table view is active ------------------------------------
