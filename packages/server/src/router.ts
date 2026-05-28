@@ -14,12 +14,14 @@ import {
   SessionSchema,
   SessionStatsSchema,
   SessionRawOutputSchema,
+  AggregateStatsInputSchema,
 } from '@gander-studio/shared';
 import { parseSessionFile } from './parsers/session-parser.js';
 import { parseEventLogFiles } from './parsers/event-log-parser.js';
 import { computeSessionStats } from './parsers/session-stats.js';
 import { collectSessions } from './session-list.js';
 import { validateSaveEditPath } from './parsers/saveedit-guard.js';
+import { aggregateSessionStats } from './parsers/aggregate-stats.js';
 
 const t = initTRPC.create();
 
@@ -57,6 +59,10 @@ const ExportResultSchema = z.object({
   plannedFiles: z.array(z.string()),
   loadoutSummary: z.string(),
 });
+
+// Maximum number of sessions to fetch when building an aggregate across all sessions.
+// Large enough to span all known sessions; limits memory footprint for very large repos.
+const AGGREGATE_LIMIT = 500;
 
 // ---------------------------------------------------------------------------
 // Sub-routers
@@ -503,6 +509,36 @@ const sessionRouter = t.router({
       await mkdir(SESSIONS_EDITS_DIR, { recursive: true });
       await writeFile(target, input.content, 'utf8');
       return { success: true as const, filePath: target };
+    }),
+
+  // aggregateStats — rolls up SessionStats across a list of session IDs.
+  // Returns a single SessionStats-shaped object whose total_* fields are sums
+  // across the matched sessions. session_id is a synthetic join key.
+  aggregateStats: t.procedure
+    .input(AggregateStatsInputSchema)
+    .output(SessionStatsSchema)
+    .query(async ({ input }) => {
+      const { sessions } = await collectSessions(SESSIONS_SOURCE_DIRS, AGGREGATE_LIMIT);
+      const matched = sessions.filter((s) => input.sessionIds.includes(s.id));
+      if (matched.length === 0) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `No sessions found matching the provided IDs`,
+        });
+      }
+
+      const perSessionStats = await Promise.all(
+        matched.map(async (session) => {
+          const eventsDir = path.join(session.source_root, 'docs', 'events');
+          // Same slug strategy as getStats: first whitespace token of sprint.
+          const sprintSlug = session.sprint.split(/\s+/)[0];
+          const events = await parseEventLogFiles(eventsDir, sprintSlug);
+          return computeSessionStats(session, events);
+        }),
+      );
+
+      // Explicit parse validates the flat shape before returning to the caller.
+      return SessionStatsSchema.parse(aggregateSessionStats(perSessionStats, input.sessionIds));
     }),
 
   // getRaw — returns the raw markdown of a session's ORIGINAL source file.

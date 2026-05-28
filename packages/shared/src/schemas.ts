@@ -104,6 +104,12 @@ export type SessionRawInput = z.infer<typeof SessionRawInputSchema>;
 export const SessionRawOutputSchema = z.object({ content: z.string() });
 export type SessionRawOutput = z.infer<typeof SessionRawOutputSchema>;
 
+// AggregateStatsInputSchema — input for session.aggregateStats procedure
+export const AggregateStatsInputSchema = z.object({
+  sessionIds: z.array(z.string()).min(1),
+});
+export type AggregateStatsInput = z.infer<typeof AggregateStatsInputSchema>;
+
 // SessionStatsSchema — aggregated stats for a session
 export const SessionStatsSchema = z.object({
   session_id: z.string(),
