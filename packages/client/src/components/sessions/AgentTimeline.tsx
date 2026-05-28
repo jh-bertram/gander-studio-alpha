@@ -151,6 +151,11 @@ function buildBars(
   return bars;
 }
 
+// ─── Zoom constants ───────────────────────────────────────────────────────────
+const ZOOM_STEP = 1.5;
+const ZOOM_MIN = 0.25;
+const ZOOM_MAX = 4.0;
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function AgentTimeline({
   events,
@@ -159,6 +164,7 @@ export default function AgentTimeline({
 }: AgentTimelineProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(600);
+  const [zoomLevel, setZoomLevel] = useState<number>(1.0);
 
   // Measure container width; update on resize
   useEffect(() => {
@@ -240,13 +246,13 @@ export default function AgentTimeline({
   // ── Adaptive unit (Requirement B) — derived once from total range ─────────
   const axisUnit = deriveUnit(tAxisRange);
 
-  // ── Content width computation (Requirement A) ─────────────────────────────
-  // barArea grows modestly with time range so dense sessions get more room.
+  // ── Content width computation (Requirement A + zoom) ─────────────────────
+  // Cap the BASE area first (MAX_BAR_AREA) so multi-day sessions don't produce
+  // a 50 000px SVG at zoom 1.0.  zoomLevel then scales RELATIVE to that capped
+  // base, keeping zoom=1.0 identical to the pre-zoom HEAD behavior.
   const rangeSeconds = tAxisRange / 1000;
-  const contentBarArea = Math.max(
-    MIN_BAR_AREA,
-    Math.min(rangeSeconds * PX_PER_SECOND * 100, MAX_BAR_AREA),
-  );
+  const baseBarArea = Math.min(rangeSeconds * PX_PER_SECOND * 100, MAX_BAR_AREA);
+  const contentBarArea = Math.max(MIN_BAR_AREA, baseBarArea * zoomLevel);
   // contentWidth is never less than the measured container (no regression for
   // short sessions) but may exceed it for wide sessions → SVG scrolls.
   const contentWidth = Math.max(containerWidth, LABEL_COL_WIDTH + contentBarArea);
@@ -290,6 +296,69 @@ export default function AgentTimeline({
         overflow: 'hidden',
       }}
     >
+      {/* Zoom controls — plain div, FF7 tokens, no Shadcn */}
+      <div
+        aria-label="Zoom in/out timeline"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '6px 10px',
+          borderBottom: '1px solid var(--bd)',
+          fontFamily: 'var(--fm)',
+          fontSize: '12px',
+          color: 'var(--wd)',
+        }}
+      >
+        <button
+          type="button"
+          aria-label="Zoom out timeline"
+          disabled={zoomLevel <= ZOOM_MIN}
+          onClick={() => setZoomLevel((prev) => Math.max(ZOOM_MIN, prev / ZOOM_STEP))}
+          style={{
+            background: 'var(--sfh)',
+            color: 'var(--w)',
+            border: '1px solid var(--bd)',
+            fontFamily: 'var(--fm)',
+            fontSize: '14px',
+            lineHeight: 1,
+            padding: '2px 8px',
+            cursor: zoomLevel <= ZOOM_MIN ? 'not-allowed' : 'pointer',
+            opacity: zoomLevel <= ZOOM_MIN ? 0.4 : 1,
+            borderRadius: '3px',
+          }}
+        >
+          −
+        </button>
+        <span
+          aria-live="polite"
+          aria-atomic="true"
+          style={{ minWidth: '42px', textAlign: 'center' }}
+        >
+          {Math.round(zoomLevel * 100)}%
+        </span>
+        <button
+          type="button"
+          aria-label="Zoom in timeline"
+          disabled={zoomLevel >= ZOOM_MAX}
+          onClick={() => setZoomLevel((prev) => Math.min(ZOOM_MAX, prev * ZOOM_STEP))}
+          style={{
+            background: 'var(--sfh)',
+            color: 'var(--w)',
+            border: '1px solid var(--bd)',
+            fontFamily: 'var(--fm)',
+            fontSize: '14px',
+            lineHeight: 1,
+            padding: '2px 8px',
+            cursor: zoomLevel >= ZOOM_MAX ? 'not-allowed' : 'pointer',
+            opacity: zoomLevel >= ZOOM_MAX ? 0.4 : 1,
+            borderRadius: '3px',
+          }}
+        >
+          +
+        </button>
+      </div>
+
       {/* Horizontal scroller — SVG may exceed containerWidth for wide sessions */}
       <div
         data-testid="agent-timeline-scroller"
