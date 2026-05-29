@@ -1,50 +1,45 @@
 # AR Agent Log — latest
 
 **agent_id:** AR#3  
-**task_id:** agent-improvement-2026-04-28-1  
+**task_id:** gander-studio-p6-overview-polish-postmortem  
 **stage:** COMPLETE  
-**ts:** 2026-04-28T13:35:00Z
+**ts:** 2026-05-29T00:37:39Z
 
 **Summary:**
-Agent-improvement archive entry appended to docs/project_log.md for session agent-improvement-2026-04-28-1:
-- 2 agent-prompt improvements applied: PM v1.5.0→1.5.1 (same-file fix propagation, Step 5.5), Critic v1.4.0→1.4.1 (recipe-vs-problem-naming guidance)
-- 4 gaps deferred to "team-hygiene-hooks" HR sprint: G1 (FE silent-substitution hook), G4 (env-preflight script), G5 (FE untracked-spec hook), G6 (SendMessage documented limitation)
-- 1 outstanding hone decision: commit-packet and dispatch-task skill gating (mandatory entry point vs. documentation pattern)
-- G2 mechanism: PM adds grep+enumerate step when fixing repeated patterns in same file
-- G3 mechanism: Critic prefers problem-naming in complex audio/test/scheduler/RF domains over prescriptive recipes
-- G3 effectiveness to be monitored over next 2 sprints; escalate to hard BLOCK rule if no improvement observed
+POST_MORTEM archive entry appended to docs/project_log.md for gander-studio-p6-overview-polish sprint:
+- 2 FE visualization tweaks shipped (timeline buffer + agent grouping); both audited PASS on first submission
+- 4/4 requirements COVERED; sprint verdict: PASS
+- **Critical incident:** Critic agent corrupted event log via unauthorized Write/overwrite → seqs 5–108 destroyed unrecoverably
+- 5 protocol gaps identified: GAP-1/GAP-2 (critical, routed to gander HR for code-not-prompt fixes), GAP-3 (PM discipline), GAP-4 (codified best practice), GAP-5 (minor hygiene)
+- Recurring pattern: PM constraint-blind planning (p5 G1 + p6 G3 identical root); Critic is sole gate catching this
+- Handoff brief: docs/agent-improvements/handoff-p6-critic-eventlog-to-gander-2026-05-29.md documents escalation to gander infrastructure team
 
 **Output files written:**
-- `/home/jhber/projects/gander-studio-alpha/docs/project_log.md` (AGENT_IMPROVEMENT archive_entry appended)
-- `/home/jhber/projects/gander-studio-alpha/.claude/agents/tasks/outputs/agent-improvement-2026-04-28-1-AR-1777348697.md` (primary output)
-- `/home/jhber/projects/gander-studio-alpha/docs/agent-logs/AR/agent-improvement-2026-04-28-1-checkpoint.md` (checkpoint log)
-- `/home/jhber/projects/gander-studio-alpha/docs/events/agent-events-2026-04-27.jsonl` (COMPLETE event seq=42)
+- `/home/jhber/projects/gander-studio-alpha/docs/project_log.md` (POST_MORTEM archive_entry appended, lines 1317–1371)
+- `/home/jhber/projects/gander-studio-alpha/.claude/agents/tasks/outputs/gander-studio-p6-overview-polish-postmortem-AR-1780014200.md` (primary output)
+- `/home/jhber/projects/gander-studio-alpha/docs/agent-logs/AR/latest.md` (this checkpoint log)
 
-**Protocol Gaps Acted Upon:**
-- G2: PM same-file fix propagation (ACTED) → Step 5.5 checklist addition to PM spec
-- G3: Critic prescriptive recipes in complex domains (ACTED) → recipe-vs-problem-naming guidance to Critic spec
+**Protocol Gaps Identified (P6 POST_MORTEM):**
+- **GAP-1 (CRITICAL, code-not-prompt):** Critic agent has Write access to docs/events/*.jsonl → destroyed seqs 5–108. Route to gander HR: implement PreToolUse:Write deny-rail in settings.json + spec prohibition in critic.md, audit.md, dispatcher.md, researcher.md.
+- **GAP-2 (CRITICAL, code-not-prompt):** Event-log append race: SubagentStop hook + ORC manual logging collide → seq duplicates. Route to gander HR: ORC stops manually logging COMPLETE; make appends re-read max(seq)+1 atomically.
+- **GAP-3 (PM discipline):** PM rev0 violated documented short-session no-scroll invariant (recurrence of p5 G1). Fix: PM checklist must require invariant citation + explicit validation for existing-component modifications. Next sprint adoption check.
+- **GAP-4 (codified best practice):** Visualization e2e used width arithmetic instead of boundingBox assertions → latent tAxisMax overflow bug. FE#1 fixed. Codified: visualization e2e must use geometry assertions.
+- **GAP-5 (minor hygiene):** FE#1 left scratch spec in tests/e2e/. Reminder: debug specs must be outside tests/e2e/ or removed before COMPLETE.
 
-**Protocol Gaps Deferred (to team-hygiene-hooks HR sprint):**
-- G1: Silent-substitution-as-graceful-degradation pattern → FE Stop hook (silent-substitution-check)
-- G4: PM does not pre-flight env dependencies → env-preflight script + assign-agents integration
-- G5: FE leaves untracked scratch files → FE Stop hook (untracked-spec-check)
-- G6: ORC has no SendMessage primitive → Documented limitation, workaround in protocol
-
-**Outstanding Decision (for hone):**
-- commit-packet and dispatch-task skill gating: clarify whether both should be mandatory entry points (like assign-agents/requirements-validate) or demoted to documentation patterns
-
-**Monitoring Tasks:**
-- G3 guidance effectiveness: watch next 2 sprints for Critic behavior change; if no change, escalate to hard BLOCK gate
-- G1 recurrence: silent-substitution pattern appeared 3× in p4 (original advisory, FE fallback, env masking); escalate to BLOCKER if it recurs before hook is implemented
+**Escalation & Handoff:**
+- GAP-1/GAP-2 escalated to gander repo HR via docs/agent-improvements/handoff-p6-critic-eventlog-to-gander-2026-05-29.md
+- GAP-3 monitoring: watch p7 for PM constraint-validation adoption; escalate to hard rule if pattern recurs
+- GAP-4: no action needed (best practice codified)
+- GAP-5: update FE spec-hygiene section
 
 ---
 
 ## [STAGE 3] COMPLETE
 
-✓ Archive entry appended to docs/project_log.md (timestamp 2026-04-28T13:35:00Z)  
-✓ Output summary written to designated path  
-✓ COMPLETE event recorded to agent-events-2026-04-27.jsonl (seq=42)  
+✓ Archive entry appended to docs/project_log.md (timestamp 2026-05-29T00:37:39Z, lines 1317–1371)  
+✓ Chronological order verified (entry appended after prior closing tag at line 1315)  
+✓ Output artifact written to .claude/agents/tasks/outputs/gander-studio-p6-overview-polish-postmortem-AR-1780014200.md  
 ✓ Latest checkpoint updated  
 
-**Task duration:** ~50 minutes (SPAWN 2026-04-28T03:58:17Z → COMPLETE 2026-04-28T13:35:00Z, with research/read time)  
-**Status:** All deliverables written to disk; durability confirmed.
+**Timestamp sourced from:** SPAWN event seq 129 in docs/events/agent-events-2026-05-28.jsonl (2026-05-29T00:37:39Z)  
+**Status:** All deliverables written to disk; durability confirmed. Archive entry ready for subsequent log-consumer tools (sprint-status, post-mortem, /skein).
