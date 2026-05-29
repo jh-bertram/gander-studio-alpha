@@ -1,8 +1,7 @@
-# PM latest — see gander-studio-p2-agent-cards-rev2.md for full log
-task_id: gander-studio-p2-agent-cards (revision 3)
+# PM latest — see gander-studio-p6-overview-polish.md for full log
+task_id: gander-studio-p6-overview-polish
+revision: rev1
 stage: COMPLETE
-ts: 2026-04-01T01:15:00Z
+ts: 2026-05-28T08:46:00Z
 output_files:
-- /home/jhber/projects/gander-studio-alpha/docs/agent-logs/PM/gander-studio-p2-agent-cards-rev2.md
-- /home/jhber/projects/gander-studio-alpha/.claude/agents/tasks/outputs/gander-studio-p2-agent-cards-PM-003.md
-- /home/jhber/projects/gander-studio-alpha/.claude/agents/tasks/gander-studio-p2-agent-cards.md
+  - .claude/agents/tasks/outputs/gander-studio-p6-overview-polish-PM-rev1-1780011957.md

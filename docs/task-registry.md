@@ -1,225 +1,72 @@
 # Task Registry — Gander Studio
 
-Last updated: 2026-03-30T00:05:00Z
+Last updated: 2026-05-28T08:46:00Z
 
 ---
 
-## Sprint: gander-studio-p2-agent-cards
+## Sprint: gander-studio-p6-overview-polish
 
-**Goal:** Materia Canvas redesign — orchestrator orb becomes rectangular CardNode, orbs positioned freely on card surface, role-based color coding, LoadoutListPanel rewrite (no duplicates), cardTitle persistence.
+**Goal:** Two Sessions-mode visualization tweaks — (1) AgentTimeline right-edge buffer so the final tick label (e.g. "+2h") and orphan-bar right edges have room to render fully with a small gap before the SVG plot boundary, instead of clipping; (2) in the Sessions overview aggregate, group agent iterations (AR#0, AR#1, AR#2 → "AR") so the panel shows one card/row per base agent code instead of per-instance.
+
+**Status:** DONE — both tasks audited PASS (SA/QA/SX); REQVAL COVERED 4/4; archived. Commits `86d0303..643a66a` (1b2439a t1, 643a66a t2) on `main`, NOT yet pushed (human pushes per repo policy). Critic BLOCKED rev0 (t1 RIGHT_PAD-outside-SVG short-session scrollbar regression); rev1 PASS. INCIDENT this sprint: CR#1 truncated the event log via an errant Write (seqs 5-108 lost, unrecoverable from git); ORC reconciled the log to a clean monotonic sequence — HR/meta follow-up recommended (constrain read-only agents from writing docs/events/). Pending: human Step-4.5 browser verification.
 
 ### Rollback Point
-commit: db20a9e93719e054921f2c7a7e39d2652402f6ef
-recorded: 2026-03-30T00:05:00Z
-task_id: gander-studio-p2-agent-cards
-To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard db20a9e93719e054921f2c7a7e39d2652402f6ef
+commit: 86d0303
+recorded: 2026-05-28T21:00:00Z
+task_id: gander-studio-p6-overview-polish
+To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard 86d0303
 
-### Expectation Manifest
+### Scope notes (orchestrator reconnaissance)
+- Both tasks are FRONTEND-ONLY. No schema change, no server change. session.aggregateStats contract is untouched.
+- t1 file: packages/client/src/components/sessions/AgentTimeline.tsx (normX maps tAxisMax→contentWidth exactly; last tick is textAnchor=middle → clips; orphan bars extend to contentWidth).
+- t2 files: packages/client/src/pages/sessions/SessionListPage.tsx (AggregatePanel) + a new pure grouping util + unit test. Grouping is DISPLAY-ONLY in the overview; per-session Analyze/timeline detail (session.getStats) keeps per-instance agent_ids.
+- t2 grouping key = agent_id.split('#')[0]; defensively use whole string if no '#'. Sum all numeric fields; wall_clock_ms undefined-vs-zero handling mirrors aggregate-stats.ts.
+
+### Task Manifest
 
 | Task | Agent | Wave | Priority | Status | Blocks |
 |---|---|---|---|---|---|
-| gander-studio-p2-agent-cards-DS-001 | DS#1 | 1 | BLOCKER | PENDING | FE-001, FE-002, FE-003 |
-| gander-studio-p2-agent-cards-FE-001 | FE#1 | 2 | HIGH | PENDING | FE-002, FE-003 |
-| gander-studio-p2-agent-cards-FE-002 | FE#2 | 3 | HIGH | PENDING | FE-003 |
-| gander-studio-p2-agent-cards-FE-003 | FE#3 | 4 | HIGH | PENDING | NONE |
-| gander-studio-p2-agent-cards-DEFERRED-001 | — | deferred | NORMAL | DEFERRED | — |
+| p6-t1-timeline-buffer | FE#1 | A (parallel) | HIGH | DONE (commit 1b2439a) | NONE |
+| p6-t2-agent-grouping | FE#2 | A (parallel) | HIGH | DONE (commit 643a66a) | NONE |
 
-### Receipt checks (PM manifest)
+### Wave order
+- Wave A (parallel): p6-t1-timeline-buffer + p6-t2-agent-grouping — disjoint files, no dependency between them.
 
-**DS-001 receipt check:**
-- `CanvasNode` interface has `role: 'meta' | 'specialist' | 'skill'` field
-- `LoadoutSchema` has `cardTitle: z.string().optional()`
-- `deriveRole` helper function is present in canvas-store.ts
-- `cardTitle` and `setCardTitle` are in CanvasState
-- `npm run lint` PASS confirmed in packet
+### Key design decisions (rev1 — corrected from rev0)
+- t1: Add `RIGHT_PAD = 48` constant. GEOMETRY FIX: svg width = contentWidth (UNCHANGED — preserves short-session no-scroll floor). Introduce `plotAreaWidth = Math.max(MIN_BAR_AREA, contentBarAreaActual - RIGHT_PAD)` and `plotRight = LABEL_COL_WIDTH + plotAreaWidth` in render. normX scales by plotAreaWidth. Tick x positions use plotAreaWidth. Orphan barEndX = plotRight. Axis baseline x2 = plotRight. Result: all data/bars end RIGHT_PAD before the SVG right edge; SVG width is unchanged; no spurious horizontal scrollbar on short sessions.
+- t1 e2e: Playwright boundingBox() assertions (final tick label right edge ≤ SVG right edge; rightmost bar right edge < SVG right edge). Plus scrollWidth ≤ clientWidth assertion on short-session fixture (guards against scrollbar regression).
+- t2: Pure `groupAgentsByBaseCode(agents)` util in packages/client/src/utils/group-agents.ts. base code = agent_id.split('#')[0]. wall_clock_ms: undefined if no contributor defined; sum of defined contributors if any defined. AggregatePanel maps over grouped result for both panel grid and AgentStatTable. AgentStatPanel and AgentStatTable interfaces unchanged.
+- t2 vitest: Install vitest@^4 (NOT ^1.x — must match server's ^4.1.7 to avoid workspace peer collisions). Add vitest.config.ts with environment: node. Add "test": "vitest run" script. Run `npm test -w @gander-studio/client` for 7 unit test cases.
+- t2 e2e: Roster-agnostic — derive expected state from live tRPC response (intercept session.getStats), NOT hardcoded base code strings. Assert no /#\d+$/ labels visible; assert folded count < source count; assert at least one base code was folded from ≥2 instances.
+- No git commit by implementing agents; orchestrator commits post-audit.
 
-**FE-001 receipt check:**
-- `CardNode.tsx` exists at `packages/client/src/components/compose/CardNode.tsx`
-- `CARD_WIDTH_PX`, `CARD_HEIGHT_PX`, `CARD_HEADER_HEIGHT_PX`, `CARD_BORDER_RADIUS_PX` added to canvas.ts
-- `getMateriaColor` has optional `role` param and returns correct color per role
-- `MateriaNode` has optional `role` prop
-- No modifications to MateriaCanvas.tsx
-- `npm run lint` PASS confirmed
-
-**FE-002 receipt check:**
-- `card` node type registered in `NODE_TYPES`
-- Orchestrator CanvasNode rendered as `type: 'card'` RF node, not `type: 'materia'`
-- Card RF node has `draggable: false`, `zIndex: 0`
-- Orb nodes pass `role` through to MateriaNode
-- `data-testid="materia-canvas"` still present
-- Proximity linking still functional (no regression)
-- `npm run lint` PASS confirmed
-
-**FE-003 receipt check:**
-- Card header row rendered with `aria-label="Card: The Orchestrator"` (or matching pattern)
-- `aria-label="Select orchestrator on canvas"` NOT present in spec or component
-- Skill connected to 2 agents appears under both agents (not as orphan)
-- Skill with zero connections in unconnected section
-- Panel heading updated from "Canvas Nodes"
-- `data-testid="loadout-list-panel"` still present
-- `packages/client/tests/e2e/loadout-list-panel.spec.ts` updated
-- `npm run lint` PASS confirmed
-
-### Key design decisions
-- Orchestrator node stays in canvas-store as `id: 'orchestrator'`, `type: 'agent'` — only the React Flow render type changes to `'card'`
-- Ring initialization (220px agents, 380px skills) retained in canvas-store — positions fall within card bounds (card 900×700)
-- CardNode is non-draggable in this sprint (single card fills canvas)
-- getMateriaColor role param is optional — all existing callers continue working without change
-- Appearance config file (item 5) deferred to standalone sprint
-
----
-
-## Sprint: gander-studio-p2-canvas-link
-
-### Rollback Point
-commit: db20a9e
-recorded: 2026-03-28T00:20:00Z
-task_id: gander-studio-p2-canvas-link
-To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard db20a9e
+### Risk Flags
+- t1 geometry: plotAreaWidth approach preserves zoom math. Auditor should verify zoom-in path still works end-to-end.
+- t2 vitest@^4 workspace hoisting: npm should hoist to shared v4 binary. Auditor confirms no peer-dep warnings after install.
+- t2 e2e roster-agnostic spec: must use tRPC response interception to derive expected counts. Follow pattern in overview-aggregate.spec.ts.
+- gander-p6-moirai-skein-skills fixture session: both e2e specs use this fixture. Confirm dev server is live and event log non-empty before e2e audit dispatch.
 
 ### Expectation Manifest
-
-| Task | Agent | Wave | Status | Blocks |
-|---|---|---|---|---|
-| gander-studio-p2-canvas-link-001a | BE#1 | 1 | DISPATCHED | 001b |
-| gander-studio-p2-canvas-link-002 | UI#1 | 1 | DISPATCHED | 003a |
-| gander-studio-p2-canvas-link-003-RA | RA#1 | 1 | DISPATCHED | 003b |
-| gander-studio-p2-canvas-link-001b | FE#1 | 2 | PENDING | 003c |
-| gander-studio-p2-canvas-link-003a | FE#2 | 2 | PENDING | 003b |
-| gander-studio-p2-canvas-link-003b | FE#3 | 3 | PENDING | 003c |
-| gander-studio-p2-canvas-link-003c | FE#4 | 4 | PENDING | NONE |
-
-### Human Confirmation Gate HCG-1
-- **Status:** RESOLVED 2026-03-28
-- **Answer:** TREE — agents as root items, connected peers as indented children
-- **003c brief must specify:** LoadoutListPanel renders agents as expandable/visible root rows; their connected peers appear as indented child rows beneath them (16px additional left-padding per spec Surface 4 tree_indent)
+See `.claude/agents/tasks/outputs/gander-studio-p6-overview-polish-PM-rev1-1780011957.md` (full rev1 manifest with per-task receipt checks).
 
 ---
 
-## Sprint: gander-studio-p1-materia-canvas (Revision 1)
+## Sprint: gander-studio-p5-overview-ux
 
-**Goal:** Materia canvas drag-and-drop compose area with React Flow (@xyflow/react) — drop-on-top linking mechanic, agent+skill nodes only, hooks off canvas.
-**Status:** REVISED — awaiting RA pre-flight then FE dispatch.
-**Revision trigger:** CR#1 CRITIQUE_BLOCK (4 blockers) + human Q1/Q2 answers.
+**Goal:** Four Sessions-mode UX features — (1) AgentTimeline x-axis zoom (+/- control; realizes DEFERRED-002); (2) remove the left nav sidebar and make the bottom tab bar the always-on primary nav, reclaiming horizontal space; (3) the Sessions landing page becomes a combined all-sessions overview with an aggregate stats roll-up; (4) a session multi-select on that overview that includes/excludes sessions from the aggregate counts.
 
-| task_id | agent | priority | status | depends_on |
-|---|---|---|---|---|
-| p1-mc-RA-compat | RA#1 | BLOCKER | PENDING | — |
-| p1-mc-FE-store | FE#1 | BLOCKER | PENDING | p1-mc-RA-compat |
-| p1-mc-FE-canvas-a | FE#2 | P1 CORE | PENDING | p1-mc-FE-store |
-| p1-mc-FE-canvas-b | FE#3 | P1 CORE | PENDING | p1-mc-FE-canvas-a |
-| p1-mc-FE-canvas-c | FE#4 | P1 CORE | PENDING | p1-mc-FE-canvas-b |
-| p1-mc-FE-wire | FE#5 | P1 CORE | PENDING | p1-mc-FE-canvas-c |
+**Status:** DONE — all 4 tasks audited PASS; REQVAL COVERED 8/8; archived. Commits `824c23e..86d0303` (5: bff9cf8 t2, 3de2202 t3, 23c0e96 t1, 3a8cf8f t4, 86d0303 R-004 gap-fill) on `main`, NOT yet pushed (human pushes per repo policy). Critic BLOCKED rev0 (t2/t4 invented API shapes — G1 recurrence); rev1 PASS. Audit caught + remediated 2 runtime defects (t1 padding occlusion, t3 width-cap regression). Pending: human Step-4.5 browser verification.
 
-### Key design decisions (rev1)
-- Linking mechanic: drag-on-top proximity detection (60px threshold). No React Flow handles.
-- CanvasNode.type: `'agent' | 'skill'` only. No hook nodes.
-- handleSave data sources: name + hooks from compose-store; agents + skills from canvas-store.
-- handleLoad: composeStore.loadLoadout({agents:[], skills:[], hooks: lo.hooks}) then canvasStore.loadFromLoadout(lo).
-- Three-unit chain interaction frontmatter writing: OUT OF SCOPE. Follow-up sprint: p1-mc-follow-up-interactions.
+### Rollback Point
+commit: 824c23eda63f7b4f12624a55980803ac696cc777
+recorded: 2026-05-28T20:05:24Z
+task_id: gander-studio-p5-overview-ux
+To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard 824c23eda63f7b4f12624a55980803ac696cc777
 
----
+### Task Manifest
 
-## Expectation Manifest
-
-```xml
-<expectation_manifest>
-  <sprint_id>gander-studio-p1-materia-canvas-rev1</sprint_id>
-  <generated>2026-03-16T10:30:00Z</generated>
-  <assignments>
-    <assignment>
-      <task_id>p1-mc-RA-compat</task_id>
-      <agent>RA#1</agent>
-      <expected_tag>research_dossier</expected_tag>
-      <expected_file>.claude/agents/tasks/outputs/p1-mc-RA-compat-RA-*.md</expected_file>
-      <blocks>p1-mc-FE-store, p1-mc-FE-canvas-a, p1-mc-FE-canvas-b, p1-mc-FE-canvas-c, p1-mc-FE-wire</blocks>
-      <receipt_check>
-        <item>@xyflow/react React 19 support: clear YES or NO answer</item>
-        <item>Install command present</item>
-        <item>CSS import path present (component-scoped, not global)</item>
-        <item>If NO: alternative library identified with rationale</item>
-      </receipt_check>
-    </assignment>
-    <assignment>
-      <task_id>p1-mc-FE-store</task_id>
-      <agent>FE#1</agent>
-      <expected_tag>ui_packet</expected_tag>
-      <expected_file>.claude/agents/tasks/outputs/p1-mc-FE-store-FE-*.md</expected_file>
-      <blocks>p1-mc-FE-canvas-a</blocks>
-      <receipt_check>
-        <item>CanvasNode type is 'agent' | 'skill' — NO 'hook' in union</item>
-        <item>selectLoadoutPayload confirmed to return hooks: [] always</item>
-        <item>loadFromLoadout accepts hooks param but ignores it for node creation</item>
-        <item>tsc --noEmit confirmed passing</item>
-        <item>No import from @xyflow/react</item>
-      </receipt_check>
-    </assignment>
-    <assignment>
-      <task_id>p1-mc-FE-canvas-a</task_id>
-      <agent>FE#2</agent>
-      <expected_tag>ui_packet</expected_tag>
-      <expected_file>.claude/agents/tasks/outputs/p1-mc-FE-canvas-a-FE-*.md</expected_file>
-      <blocks>p1-mc-FE-canvas-b</blocks>
-      <receipt_check>
-        <item>canvas.ts constants list includes CANVAS_PROXIMITY_THRESHOLD_PX = 60</item>
-        <item>getMateriaColor() returns CSS var strings, not hex</item>
-        <item>MateriaNode has NO React Flow Handle elements</item>
-        <item>MateriaNodeData uses 'agent' | 'skill' for nodeType — no 'hook'</item>
-        <item>tsc --noEmit confirmed passing</item>
-      </receipt_check>
-    </assignment>
-    <assignment>
-      <task_id>p1-mc-FE-canvas-b</task_id>
-      <agent>FE#3</agent>
-      <expected_tag>ui_packet</expected_tag>
-      <expected_file>.claude/agents/tasks/outputs/p1-mc-FE-canvas-b-FE-*.md</expected_file>
-      <blocks>p1-mc-FE-canvas-c</blocks>
-      <receipt_check>
-        <item>MateriaCanvas.tsx created</item>
-        <item>Playwright spec at packages/client/src/tests/compose/materia-canvas.spec.ts</item>
-        <item>CSS import path from RA dossier used — NOT in globals.css or main.tsx</item>
-        <item>No palette sidebar, no drag-to-canvas, no edge creation in this deliverable</item>
-        <item>tsc --noEmit confirmed passing</item>
-        <item>Orchestrator node visible on mount confirmed</item>
-      </receipt_check>
-    </assignment>
-    <assignment>
-      <task_id>p1-mc-FE-canvas-c</task_id>
-      <agent>FE#4</agent>
-      <expected_tag>ui_packet</expected_tag>
-      <expected_file>.claude/agents/tasks/outputs/p1-mc-FE-canvas-c-FE-*.md</expected_file>
-      <blocks>p1-mc-FE-wire</blocks>
-      <receipt_check>
-        <item>Drop-on-top proximity detection described (ref saves pre-drag pos, snap on overlap)</item>
-        <item>No React Flow Handle elements</item>
-        <item>Edge style: stroke var(--mt), no arrowhead confirmed</item>
-        <item>Palette drag coordinate transform utility named</item>
-        <item>tsc --noEmit confirmed passing</item>
-      </receipt_check>
-    </assignment>
-    <assignment>
-      <task_id>p1-mc-FE-wire</task_id>
-      <agent>FE#5</agent>
-      <expected_tag>ui_packet</expected_tag>
-      <expected_file>.claude/agents/tasks/outputs/p1-mc-FE-wire-FE-*.md</expected_file>
-      <blocks>NONE</blocks>
-      <receipt_check>
-        <item>handleSave: name from compose-store, agents/skills from canvas-store, hooks from compose-store — explicitly confirmed</item>
-        <item>handleLoad: composeStore.loadLoadout with agents:[] skills:[] first, then canvasStore.loadFromLoadout</item>
-        <item>ValidationWarnings uses canvas-store node counts, not compose-store arrays</item>
-        <item>No packages/server/ or packages/shared/ files modified</item>
-        <item>tsc --noEmit all three packages confirmed passing</item>
-      </receipt_check>
-    </assignment>
-  </assignments>
-</expectation_manifest>
-```
-
----
-
-## Previous Sprints
-
-| sprint | status |
-|---|---|
-| gander-studio-p2 | AUDIT PASS (2026-03-16T00:30:13Z) |
-| gander-studio-p3 | AUDIT PASS (2026-03-16T00:30:13Z) |
+| Task | Agent | Wave | Priority | Status | Blocks |
+|---|---|---|---|---|---|
+| p5-t1-sidebar-removal | FE#1 | A | HIGH | PENDING | NONE |
+| p5-t2-aggregate-stats-be | BE#1 | A | HIGH | PENDING | p5-t4-overview-aggregate |
+| p5-t3-timeline-zoom | FE#2 | A | NORMAL | PENDING | NONE |
