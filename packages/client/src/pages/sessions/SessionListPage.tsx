@@ -5,6 +5,7 @@ import { useAggregateStats } from '../../hooks/useAggregateStats';
 import { useSessionStore } from '../../store/session-store';
 import AgentStatPanel from '../../components/sessions/AgentStatPanel';
 import AgentStatTable from '../../components/sessions/AgentStatTable';
+import { groupAgentsByBaseCode } from '../../utils/group-agents';
 
 // ---- Local constants ---------------------------------------------------------
 
@@ -381,6 +382,10 @@ function AggregatePanel({ selectedSessionIds }: { selectedSessionIds: string[] }
 
   if (stats == null) return null;
 
+  // Group agent iterations (e.g. AR#0, AR#1, AR#2) into single base-code entries ("AR")
+  // for display in the overview panel. Server data and per-session detail views are untouched.
+  const groupedAgents = groupAgentsByBaseCode(stats.agents);
+
   return (
     <div
       data-testid="aggregate-stats-panel"
@@ -402,8 +407,8 @@ function AggregatePanel({ selectedSessionIds }: { selectedSessionIds: string[] }
         </span>
       </div>
 
-      {/* Per-agent panels grid */}
-      {stats.agents.length > 0 && (
+      {/* Per-agent panels grid — grouped by base code */}
+      {groupedAgents.length > 0 && (
         <div
           style={{
             display:             'grid',
@@ -411,7 +416,7 @@ function AggregatePanel({ selectedSessionIds }: { selectedSessionIds: string[] }
             gap:                 '12px',
           }}
         >
-          {stats.agents.map((activity) => (
+          {groupedAgents.map((activity) => (
             <AgentStatPanel
               key={activity.agent_id}
               activity={activity}
@@ -421,9 +426,9 @@ function AggregatePanel({ selectedSessionIds }: { selectedSessionIds: string[] }
         </div>
       )}
 
-      {/* Agent stat table */}
+      {/* Agent stat table — grouped by base code */}
       <AgentStatTable
-        activities={stats.agents}
+        activities={groupedAgents}
         metrics={OVERVIEW_METRICS}
       />
     </div>
