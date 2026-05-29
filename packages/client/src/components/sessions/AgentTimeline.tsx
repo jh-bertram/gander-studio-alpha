@@ -34,6 +34,7 @@ const LABEL_MAX_CHARS = 14;
 const MIN_BAR_AREA = TICK_COUNT * 120;  // 600px — readable floor
 const MAX_BAR_AREA = 4000;              // cap so multi-day sessions aren't 50 000px
 const PX_PER_SECOND = 0.3;             // modest growth per second of range
+const RIGHT_PAD = 48;                  // px reserved at right of plot area for label breathing room
 
 // ─── Unit type ────────────────────────────────────────────────────────────────
 type AxisUnit = 'ms' | 's' | 'm' | 'h' | 'd';
@@ -237,9 +238,11 @@ export default function AgentTimeline({
     .map((b) => b.completeTs as number);
 
   const tAxisMin = Math.min(...allSpawnTs);
+  // tAxisMax must cover all data points — include spawn timestamps so that
+  // agents spawning after the last COMPLETE event still render within the axis range.
   const tAxisMax =
     allCompleteTs.length > 0
-      ? Math.max(...allCompleteTs)
+      ? Math.max(Math.max(...allCompleteTs), Math.max(...allSpawnTs))
       : Math.max(...allSpawnTs) + 1;
   const tAxisRange = tAxisMax - tAxisMin || 1;
 
@@ -257,13 +260,19 @@ export default function AgentTimeline({
   // short sessions) but may exceed it for wide sessions → SVG scrolls.
   const contentWidth = Math.max(containerWidth, LABEL_COL_WIDTH + contentBarArea);
   const contentBarAreaActual = contentWidth - LABEL_COL_WIDTH;
+  // Fold RIGHT_PAD inside the plot area so data ends RIGHT_PAD before the SVG right edge.
+  // svg width = contentWidth is UNCHANGED — no scrollbar introduced for short sessions.
+  const plotAreaWidth = Math.max(MIN_BAR_AREA, contentBarAreaActual - RIGHT_PAD);
+  const plotRight = LABEL_COL_WIDTH + plotAreaWidth;
 
   const nRows = bars.length;
   const svgHeight = TOP_PAD + nRows * ROW_HEIGHT + AXIS_HEIGHT;
 
-  // Normalise x position / width to content bar area (not container width)
+  // Normalise x position / width to plot area (plotAreaWidth, not contentBarAreaActual).
+  // tAxisMax maps to plotRight (= LABEL_COL_WIDTH + plotAreaWidth), which is RIGHT_PAD
+  // before the SVG right edge (contentWidth). This prevents bar and tick clipping.
   function normX(ts: number): number {
-    return LABEL_COL_WIDTH + ((ts - tAxisMin) / tAxisRange) * contentBarAreaActual;
+    return LABEL_COL_WIDTH + ((ts - tAxisMin) / tAxisRange) * plotAreaWidth;
   }
 
   // ── Tick labels ───────────────────────────────────────────────────────────
@@ -271,7 +280,7 @@ export default function AgentTimeline({
   for (let i = 0; i <= TICK_COUNT; i++) {
     const frac = i / TICK_COUNT;
     ticks.push({
-      x: LABEL_COL_WIDTH + frac * contentBarAreaActual,
+      x: LABEL_COL_WIDTH + frac * plotAreaWidth,
       label: formatOffset(frac * tAxisRange, axisUnit),
     });
   }
@@ -377,7 +386,7 @@ export default function AgentTimeline({
           <line
             x1={LABEL_COL_WIDTH}
             y1={axisBaselineY}
-            x2={contentWidth}
+            x2={plotRight}
             y2={axisBaselineY}
             stroke="var(--bdb)"
             strokeWidth={1}
@@ -407,10 +416,10 @@ export default function AgentTimeline({
             const rowCenterY = rowTop + ROW_HEIGHT / 2;
             const barY = rowCenterY - BAR_HEIGHT / 2;
 
-            // Bar x / width — use contentWidth for orphan right-edge
+            // Bar x / width — use plotRight for orphan right-edge (RIGHT_PAD before SVG edge)
             const barX = normX(bar.spawnTs);
             const barEndX = bar.isOrphan
-              ? contentWidth
+              ? plotRight
               : normX(bar.completeTs as number);
             const rawWidth = barEndX - barX;
             const barWidth = Math.max(rawWidth, MIN_BAR_WIDTH);
