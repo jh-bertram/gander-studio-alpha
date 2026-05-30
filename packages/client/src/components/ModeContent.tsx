@@ -6,6 +6,7 @@ import ComposePage from '../pages/ComposePage';
 import EditPage from '../pages/EditPage';
 import ExportPage from '../pages/ExportPage';
 import SessionsRouter from '../pages/sessions/SessionsRouter';
+import GraphPage from '../pages/GraphPage';
 
 const PAGE_MAP: Record<AppMode, React.ComponentType> = {
   browse: BrowsePage,
@@ -13,6 +14,7 @@ const PAGE_MAP: Record<AppMode, React.ComponentType> = {
   edit: EditPage,
   export: ExportPage,
   sessions: SessionsRouter,
+  graph: GraphPage,
 };
 
 export default function ModeContent() {

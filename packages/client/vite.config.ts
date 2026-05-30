@@ -64,4 +64,8 @@ export default defineConfig({
       },
     },
   },
+  // @dagrejs/dagre is a CJS module — pre-bundle so Vite ESM dev server serves it correctly
+  optimizeDeps: {
+    include: ['@dagrejs/dagre'],
+  },
 });
