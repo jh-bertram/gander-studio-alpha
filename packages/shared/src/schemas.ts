@@ -125,3 +125,115 @@ export const SessionStatsSchema = z.object({
   event_count: z.number(),
 });
 export type SessionStats = z.infer<typeof SessionStatsSchema>;
+
+// ---------------------------------------------------------------------------
+// ConnectivityGraph — output of the connectivity analyzer (spec §4)
+// Real-file nullability authority: /home/jhber/projects/gander/docs/connectivity-graph.json
+// ---------------------------------------------------------------------------
+
+const NodeTypeSchema = z.enum(['agent', 'skill', 'rule', 'ref', 'hook', 'eval', 'claudemd']);
+
+const EdgeTypeSchema = z.enum([
+  'spawns',
+  'references_skill',
+  'invokes_skill',
+  'triggers_hook',
+  'imports_ref',
+  'improves_agent',
+  'improves_skill',
+  'evaluated_by',
+  'communicates_with',
+]);
+
+// Node data — fields that the real analyzer emits as explicit null MUST be .nullable().optional()
+// Verified 2026-05-30 against connectivity-graph.json (N=77 nodes):
+//   tier:    ALL 13 agent nodes emit "tier": null  → .nullable().optional()
+//   version: 1/13 agent nodes (database) emit "version": null → .nullable().optional()
+//   skill.version: 6/38 skill nodes omit version key entirely (not null) → .optional() only
+// All other optional fields are simply absent (key missing) when not applicable → .optional() only
+const ConnectivityNodeDataSchema = z.object({
+  label: z.string(),
+  filePath: z.string(),
+  nodeType: NodeTypeSchema,
+  confidence: z.enum(['DETECTED', 'INFERRED']),
+  // agent-specific: emitted as explicit null when not in frontmatter
+  version: z.string().nullable().optional(),        // null on database agent; absent on skill/rule/ref nodes
+  tier: z.string().nullable().optional(),           // null on ALL 13 agent nodes; absent on all other node types
+  description: z.string().optional(),
+  communicates_with: z.array(z.string()).optional(),
+  // rule/ref-specific
+  size_lines: z.number().optional(),
+  // hook-specific
+  event_type: z.string().optional(),
+  matcher: z.string().optional(),
+  // eval-specific
+  agent_under_test: z.string().optional(),
+  // claudemd-specific
+  scope: z.enum(['user', 'project']).optional(),
+});
+
+export const ConnectivityNodeSchema = z.object({
+  id: z.string(),
+  type: NodeTypeSchema,
+  position: z.object({ x: z.number(), y: z.number() }),
+  data: ConnectivityNodeDataSchema,
+});
+
+// Edge data — no fields emit explicit null in the real file (verified 2026-05-30)
+const ConnectivityEdgeDataSchema = z.object({
+  edgeType: EdgeTypeSchema,
+  confidence: z.enum(['DETECTED', 'INFERRED']),
+  dataSource: z.string(),
+  rawMatch: z.string().optional(),
+});
+
+export const ConnectivityEdgeSchema = z.object({
+  id: z.string(),
+  source: z.string(),
+  target: z.string(),
+  type: EdgeTypeSchema,
+  label: z.string().optional(),
+  data: ConnectivityEdgeDataSchema,
+});
+
+// Diagnostic record schemas
+const DeadReferenceSchema = z.object({
+  edgeId: z.string(),
+  source: z.string(),
+  target: z.string(),
+  edgeType: EdgeTypeSchema,
+  dataSource: z.string(),
+});
+
+const OrphanNodeSchema = z.object({
+  id: z.string(),
+  type: NodeTypeSchema,
+});
+
+const OverCoupledNodeSchema = z.object({
+  id: z.string(),
+  type: NodeTypeSchema,
+  inDegree: z.number(),
+  threshold: z.number(),
+});
+
+const MissingEdgeSchema = z.object({
+  source: z.string(),
+  target: z.string(),
+  reason: z.literal('declared_communicates_with_but_no_edge_detected'),
+});
+
+export const ConnectivityGraphSchema = z.object({
+  generated: z.string(),
+  gander_root: z.string(),
+  schema_version: z.literal('1.0'),
+  nodes: z.array(ConnectivityNodeSchema),
+  edges: z.array(ConnectivityEdgeSchema),
+  diagnostics: z.object({
+    dead_references: z.array(DeadReferenceSchema),
+    orphan_nodes: z.array(OrphanNodeSchema),
+    over_coupled: z.array(OverCoupledNodeSchema),
+    missing_edges: z.array(MissingEdgeSchema),
+  }),
+});
+export type ConnectivityGraph = z.infer<typeof ConnectivityGraphSchema>;

@@ -15,6 +15,8 @@ import {
   SessionStatsSchema,
   SessionRawOutputSchema,
   AggregateStatsInputSchema,
+  ConnectivityGraphSchema,
+  type ConnectivityGraph,
 } from '@gander-studio/shared';
 import { parseSessionFile } from './parsers/session-parser.js';
 import { parseEventLogFiles } from './parsers/event-log-parser.js';
@@ -584,6 +586,51 @@ const sessionRouter = t.router({
 });
 
 // ---------------------------------------------------------------------------
+// Connectivity router
+// ---------------------------------------------------------------------------
+
+const connectivityRouter = t.router({
+  getGraph: t.procedure
+    .input(z.object({ outputFile: z.string().optional() }))
+    .output(ConnectivityGraphSchema)
+    .query(async ({ input }): Promise<ConnectivityGraph> => {
+      const resolved = input.outputFile
+        ? path.join(GANDER_ROOT, input.outputFile)
+        : path.join(GANDER_ROOT, 'docs', 'connectivity-graph.json');
+
+      guardPath(resolved);
+
+      let raw: string;
+      try {
+        raw = await readFile(resolved, 'utf8');
+      } catch (err) {
+        const code = (err as NodeJS.ErrnoException).code;
+        if (code === 'ENOENT') {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Connectivity graph not found — run the analyzer first' });
+        }
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Operation failed' });
+      }
+
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to parse connectivity graph JSON' });
+      }
+
+      const result = ConnectivityGraphSchema.safeParse(parsed);
+      if (!result.success) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Connectivity graph validation failed: ${result.error.message}`,
+        });
+      }
+
+      return result.data;
+    }),
+});
+
+// ---------------------------------------------------------------------------
 // App router
 // ---------------------------------------------------------------------------
 
@@ -595,6 +642,7 @@ export const appRouter = t.router({
   loadout: loadoutRouter,
   export: exportRouter,
   session: sessionRouter,
+  connectivity: connectivityRouter,
 });
 
 export type AppRouter = typeof appRouter;
