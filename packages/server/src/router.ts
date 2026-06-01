@@ -17,6 +17,8 @@ import {
   AggregateStatsInputSchema,
   ConnectivityGraphSchema,
   type ConnectivityGraph,
+  ProgressionEntrySchema,
+  type ProgressionEntry,
 } from '@gander-studio/shared';
 import { parseSessionFile } from './parsers/session-parser.js';
 import { parseEventLogFiles } from './parsers/event-log-parser.js';
@@ -24,6 +26,7 @@ import { computeSessionStats } from './parsers/session-stats.js';
 import { collectSessions } from './session-list.js';
 import { validateSaveEditPath } from './parsers/saveedit-guard.js';
 import { aggregateSessionStats } from './parsers/aggregate-stats.js';
+import { parseLedgerContent } from './parsers/progression-parser.js';
 
 const t = initTRPC.create();
 
@@ -631,6 +634,33 @@ const connectivityRouter = t.router({
 });
 
 // ---------------------------------------------------------------------------
+// Progression router
+// ---------------------------------------------------------------------------
+
+const progressionRouter = t.router({
+  getLedger: t.procedure
+    .output(z.array(ProgressionEntrySchema))
+    .query(async (): Promise<ProgressionEntry[]> => {
+      const ledgerPath = path.join(GANDER_ROOT, 'docs', 'progression-ledger.md');
+
+      guardPath(ledgerPath);
+
+      let raw: string;
+      try {
+        raw = await readFile(ledgerPath, 'utf8');
+      } catch (err) {
+        const code = (err as NodeJS.ErrnoException).code;
+        if (code === 'ENOENT') {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Progression ledger not found' });
+        }
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Operation failed' });
+      }
+
+      return parseLedgerContent(raw);
+    }),
+});
+
+// ---------------------------------------------------------------------------
 // App router
 // ---------------------------------------------------------------------------
 
@@ -643,6 +673,7 @@ export const appRouter = t.router({
   export: exportRouter,
   session: sessionRouter,
   connectivity: connectivityRouter,
+  progression: progressionRouter,
 });
 
 export type AppRouter = typeof appRouter;

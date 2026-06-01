@@ -237,3 +237,27 @@ export const ConnectivityGraphSchema = z.object({
   }),
 });
 export type ConnectivityGraph = z.infer<typeof ConnectivityGraphSchema>;
+
+// ---------------------------------------------------------------------------
+// Progression Ledger — verbatim from ~/.claude/refs/progression-ledger-schema.md §4
+// Single source of truth: progression-ledger-schema.md version 1.0.0
+// ---------------------------------------------------------------------------
+
+export const SurfaceSchema = z.enum([
+  "Agents", "Skills", "Rules", "CLAUDE.md",
+  "Refs", "Hooks", "Evals", "Connectivity"
+]);
+
+export const XpGainSchema = z.object({
+  surface: SurfaceSchema,
+  delta: z.string().min(1),
+});
+
+export const ProgressionEntrySchema = z.object({
+  sprint_id: z.string().min(1),
+  xp_gained: z.array(XpGainSchema),
+  levels_advanced: z.array(z.string()),
+  new_capabilities: z.array(z.string()),
+});
+
+export type ProgressionEntry = z.infer<typeof ProgressionEntrySchema>;
