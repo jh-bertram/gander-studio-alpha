@@ -13,4 +13,5 @@ export const NAV_ITEMS: NavItemDef[] = [
   { mode: 'export', label: 'Export', dotColor: 'var(--mb)' },
   { mode: 'sessions', label: 'Sessions', dotColor: 'var(--mp)' },
   { mode: 'graph', label: 'Graph', dotColor: 'var(--mr)' },
+  { mode: 'progression', label: 'Progression', dotColor: 'var(--mo)' },
 ];
