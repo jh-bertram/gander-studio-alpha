@@ -1,6 +1,43 @@
 # Task Registry — Gander Studio
 
-Last updated: 2026-05-28T08:46:00Z
+Last updated: 2026-06-01T18:25:08Z
+
+---
+
+## Sprint: gander-studio-p5b-progression-viz
+
+**Goal:** Phase 5 Sprint B of the Gander progression rollout — Studio `/progression` route + `progression.getLedger` tRPC. BE builds a Zod `ProgressionEntrySchema` + `progression.getLedger` procedure that reads `${GANDER_ROOT}/docs/progression-ledger.md`, parses the JSONL-in-markdown entries per the consumer contract `~/.claude/refs/progression-ledger-schema.md` v1.0.0, validates, and returns. FE builds a `/progression` React route rendering per-surface XP history. Architectural precedent: Phase 2 graph viz (`connectivity.getGraph` + `GraphPage.tsx`).
+
+**Status:** DONE — human-VERIFIED at Step 4.5 (OK, 2026-06-01); pending human push. Assigned from gander (Phase 5 was SPLIT 2026-06-01; Sprint A = ledger in gander repo DONE, Sprint B = this Studio viz, DONE). Success gate met: AUD#2 ran a live Playwright walkthrough — `/progression` renders 6 real per-surface XP entries, target sprint_ids visible, **zero console errors** (screenshot `packages/client/test-results/audit-progression-snap.png`). Pipeline: PM#0 (3 tasks/2 waves) → CR#1 PASS (0 blockers, 3 warnings) → PM#2 plan_amendment → Wave 1 [UI#1 ∥ BE#1] → AUD#1 PASS → commit 49badc1 → Wave 2 [FE#1] → **AUD#2 PASS** (one non-blocking MINOR advisory: e2e Test 2 `getByText('SURFACE COVERAGE')` collided with a ledger delta substring under Playwright strict mode) → FE#2 selector remediation (4 heading locators → `getByRole('heading',…)`, test-file-only, verified 3/3 Playwright green live; no AUD#3 — proportionate accept of the auditor's own prescribed fix) → commit cdfed98. REQVAL COVERED 5/5. Commits 49badc1 (BE) + cdfed98 (FE) on main, NOT yet pushed (human push pending per repo policy).
+
+### Rollback Point
+commit: 09c632df88fbb84796c11cc5d4961e15feb75783
+recorded: 2026-06-01T18:25:08Z
+task_id: gander-studio-p5b-progression-viz
+To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard 09c632df88fbb84796c11cc5d4961e15feb75783
+
+---
+
+## Sprint: gander-studio-p7-graph-viz
+
+**Goal:** Phase 2 of the Gander progression rollout — Studio `/graph` mode + `connectivity.getGraph` tRPC. Build the `ConnectivityGraphSchema` (Zod, mirroring analyzer-spec §4) + `connectivityRouter.getGraph` (reads `${GANDER_ROOT}/docs/connectivity-graph.json`, validates, returns), a new `'graph'` AppMode + nav wiring, and a React Flow renderer (dagre layout, node/edge-type filter sidebar, DETECTED/INFERRED distinction) that consumes the procedure. Phase 1's Studio tRPC stub was never delivered, so this sprint builds both the schema and the procedure.
+
+**Status:** DONE — human-VERIFIED at Step 4.5 (OK, 2026-05-30). Both tasks audited PASS (p7-t1-be AUD#1; p7-t3-fe AUD#3 after 1 remediation); REQVAL COVERED 10/10; archived. Commits `ed94ba4` (BE) + `ccad6df` (FE) on `main`, **NOT yet pushed** (human pushes per repo policy — push `a8212f7..ccad6df`). Plan: PM rev0 → CR#1 BLOCK (tier:null) → rev1 → CR#2 PASS+1 WARNING → amend1 (FE SC3 grep). Jidoka skipped. Phase 2 of the Gander progression rollout is DONE. Follow-up: DEFERRED-P7-1 (remove dead-code Sidebar.tsx).
+
+### Rollback Point
+commit: a8212f75dff0e561f4bc0606bdf203ee5d21684d
+recorded: 2026-05-30T22:45:00Z
+task_id: gander-studio-p7-graph-viz
+To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard a8212f75dff0e561f4bc0606bdf203ee5d21684d
+
+### Plan artifacts
+- PM rev1 (effective): `.claude/agents/tasks/outputs/gander-studio-p7-graph-viz-PM-rev1-1780180585.md`
+- PM amend1 (FE SC3 → `grep -c "var(--m"` == 6): `.claude/agents/tasks/outputs/gander-studio-p7-graph-viz-PM-amend1-1780181082.md`
+- Critic PASS: `.claude/agents/tasks/outputs/gander-studio-p7-graph-viz-CR-rev1-1780180951.md`
+
+### Key facts (orchestrator + Critic reconnaissance)
+- BE: schema nullability authority is the REAL on-disk graph, not just spec §4 — `tier: null` (13 agents) AND `version: null` (database agent) must be `.nullable().optional()`; diff every field. guardPath called on the resolved READ path (direction-agnostic GANDER_ROOT containment — Critic verified correct).
+- FE: navigation is mode-based (`AppMode` union ↔ `PAGE_MAP: Record<AppMode,…>` is compiler-exhaustive); adding `'graph'` forces the map entry. `@xyflow/react` v12.10.1 installed; `dagre`/`@dagrejs/dagre` NOT installed (FE adds). Real graph N=77 (NOT the plan's N≤30 gate) — no node cap permitted. §5d: pass nodes/edges directly; only display `style` injection + dagre position mutation allowed. tRPC `AppRouter` type propagates automatically (Critic verified the re-export chain).
 
 ---
 
