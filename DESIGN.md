@@ -180,7 +180,7 @@ The table below is the authoritative contract for the `@layer base` `:root` rema
 | `--secondary` | `var(--sfh)` | `#1a3530` | Secondary button surface; deepest visible surface |
 | `--muted` | `var(--sfm)` | `#122420` | Muted/disabled region background; not used for text |
 | `--accent` | `var(--sfh)` | `#1a3530` | Accent region background — hover chip, selected row |
-| `--destructive` | `var(--redb)` | `#cf3c3c` | Destructive action color; ~4.8:1 on `--void` — AA |
+| `--destructive` | `var(--redb)` | `#cf3c3c` | Destructive action color; 4.07:1 on `--void` — **below AA for normal text** (see DEFERRED-006) |
 
 **Border, input, and ring tokens**
 
@@ -322,6 +322,6 @@ The `--mtd` (dim variant, currently `#3a6f8a`) should also be lightened proporti
 | Primary / ring | `--mt` #6db0c8 (after p3) | `--sfh` (#1a3530) | 5.38:1 | AA |
 | Primary / ring | `--mt` #6db0c8 (after p3) | `--void` (#070d0c) | 8.12:1 | AA+ |
 | Button text (primary-foreground on primary) | `--void` (#070d0c) | `--mt` #6db0c8 | 8.12:1 | AA+ |
-| Destructive | `--redb` (#cf3c3c) | `--void` (#070d0c) | ~4.8:1 | AA |
+| Destructive | `--redb` (#cf3c3c) | `--void` (#070d0c) | 4.07:1 | **below AA** (see DEFERRED-006) |
 | Intel blue chart | `--mb` (#4a90d9) | `--void` (#070d0c) | ~4.7:1 | AA |
 | Impl green chart | `--mg` (#4caf7d) | `--void` (#070d0c) | ~5.1:1 | AA |

@@ -45,6 +45,7 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import type { Agent, Skill } from '@gander-studio/shared';
+import ShimmerBox from '@/components/ui/shimmer-box';
 
 // saveStub removed — replaced with real trpc.agent.save / trpc.skill.save mutations below
 
@@ -1214,16 +1215,8 @@ export default function EditPage() {
 
       {/* Loading skeleton */}
       {isLoading && (
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            marginTop: '12px',
-            borderRadius: 'var(--r)',
-            background: 'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 1.4s infinite',
-          }}
+        <ShimmerBox
+          style={{ flex: 1, minHeight: 0, marginTop: '12px', borderRadius: 'var(--r)' }}
         />
       )}
 

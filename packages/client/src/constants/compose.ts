@@ -4,22 +4,20 @@
 
 import type { AgentRole } from '../constants/agent-roles';
 import {
-  META_AGENTS as COMMAND_AGENTS,
-  SPECIALIST_AGENTS as IMPL_AGENTS,
+  META_AGENTS,
+  SPECIALIST_AGENTS,
   GATE_AGENTS,
-  EXTERNAL_AGENTS as INTEL_AGENTS,
+  EXTERNAL_AGENTS,
+  INTEL_AGENTS,
   META_FRAGMENTS,
   SPECIALIST_FRAGMENTS,
   GATE_FRAGMENTS,
   EXTERNAL_FRAGMENTS,
+  INTEL_FRAGMENTS,
 } from '../constants/agent-roles';
 
-export const BROWSER_PANEL_WIDTH_PX = 320;
 export const SAVE_SUCCESS_DURATION_MS = 1200;
 export const POPOVER_MAX_HEIGHT_PX = 200;
-
-// Skeleton pulse counts per section during loading state
-export const BROWSER_SKELETON_COUNT = 4;
 
 // Warning chip color tokens (expressed as CSS var references, not raw values)
 export const WARNING_CHIP_BG = 'rgba(232,200,64,0.10)';
@@ -30,9 +28,6 @@ export const REMOVE_HOVER_BG = 'rgba(207,60,60,0.10)';
 
 // Slot item divider — very subtle teal tint
 export const SLOT_ITEM_DIVIDER = 'rgba(84,153,181,0.12)';
-
-// Browser item hover background
-export const BROWSER_ITEM_HOVER_BG = 'rgba(84,153,181,0.06)';
 
 // Saved loadout item hover
 export const SAVED_LOADOUT_HOVER_BG = 'rgba(84,153,181,0.08)';
@@ -49,6 +44,7 @@ export const INVALID_INPUT_BORDER = 'rgba(207,60,60,0.50)';
 // ─────────────────────────────────────────────────────────────────────────────
 // Materia color helper
 // Returns a CSS custom property string based on agent name or item type.
+// Canonical role→color: browse.ts AGENT_MATERIA (DESIGN.md DR-B / SEAM-07).
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function getMateriaColor(
@@ -63,25 +59,27 @@ export function getMateriaColor(
       case 'specialist': return 'var(--mg)';
       case 'gate':       return 'var(--mr)';
       case 'external':   return 'var(--mp)';
+      case 'intel':      return 'var(--mb)';
       case 'skill':      return 'var(--mb)';
     }
   }
-  // Fallback: existing name-based logic (backwards-compatible — all callers without role still work)
+  // Fallback: name-based logic (backwards-compatible — all callers without role still work)
   if (type === 'skill') return 'var(--mb)';
   if (type === 'hook')  return 'var(--mo)';
 
   const lower = name.toLowerCase();
-  // COMMAND_AGENTS ≡ META_AGENTS (imported aliased); META_AGENTS un-aliased branch was removed as dead code.
-  if (COMMAND_AGENTS.has(lower)) return 'var(--my)';
-  if (IMPL_AGENTS.has(lower))    return 'var(--mg)';
-  if (GATE_AGENTS.has(lower))    return 'var(--mr)';
-  if (INTEL_AGENTS.has(lower))   return 'var(--mb)';
+  if (META_AGENTS.has(lower))       return 'var(--my)';
+  if (SPECIALIST_AGENTS.has(lower)) return 'var(--mg)';
+  if (GATE_AGENTS.has(lower))       return 'var(--mr)';
+  if (EXTERNAL_AGENTS.has(lower))   return 'var(--mp)';
+  if (INTEL_AGENTS.has(lower))      return 'var(--mb)';
 
   // Fallback: match by partial name fragments
   if (META_FRAGMENTS.some((f) => lower.includes(f)))        return 'var(--my)';
   if (SPECIALIST_FRAGMENTS.some((f) => lower.includes(f)))  return 'var(--mg)';
   if (GATE_FRAGMENTS.some((f) => lower.includes(f)))        return 'var(--mr)';
-  if (EXTERNAL_FRAGMENTS.some((f) => lower.includes(f)))    return 'var(--mb)';
+  if (EXTERNAL_FRAGMENTS.some((f) => lower.includes(f)))    return 'var(--mp)';
+  if (INTEL_FRAGMENTS.some((f) => lower.includes(f)))       return 'var(--mb)';
 
   return 'var(--wm)';
 }

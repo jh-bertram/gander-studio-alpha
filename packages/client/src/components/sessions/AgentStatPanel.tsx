@@ -1,9 +1,8 @@
 import type { ReactElement } from 'react';
 import type { AgentActivity } from '@gander-studio/shared';
+import { type MetricKey, formatWallClock } from '../../utils/session-metrics';
 
 // ---- Types -------------------------------------------------------------------
-
-type MetricKey = 'spawns' | 'feedback_loops' | 'wall_clock_ms';
 
 interface Props {
   activity: AgentActivity;
@@ -18,12 +17,6 @@ const METRIC_LABEL: Record<MetricKey, string> = {
   feedback_loops: 'Feedback Loops',
   wall_clock_ms:  'Wall Clock',
 };
-
-function formatWallClock(ms: number | undefined): string {
-  if (ms === undefined) return '—'; // em dash
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-}
 
 function getMetricValue(activity: AgentActivity, key: MetricKey): string {
   if (key === 'wall_clock_ms') return formatWallClock(activity.wall_clock_ms);

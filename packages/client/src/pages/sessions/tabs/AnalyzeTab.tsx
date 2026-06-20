@@ -17,6 +17,8 @@ import SessionPicker from '../../../components/sessions/SessionPicker';
 import AgentTimeline from '../../../components/sessions/AgentTimeline';
 import AgentStatPanel from '../../../components/sessions/AgentStatPanel';
 import AgentStatTable from '../../../components/sessions/AgentStatTable';
+import ErrorState from '../../../components/ui/error-state';
+import ShimmerBox from '../../../components/ui/shimmer-box';
 
 // ---- Types ------------------------------------------------------------------
 
@@ -26,7 +28,7 @@ interface AnalyzeTabProps {
 
 type ViewMode = 'panel' | 'table';
 
-// ---- Loading affordance (mirrors SessionDetailPage.tsx lines 51-102) ---------
+// ---- Loading affordance -----------------------------------------------------
 
 function AnalyzeLoadingState(): React.JSX.Element {
   return (
@@ -36,66 +38,8 @@ function AnalyzeLoadingState(): React.JSX.Element {
       style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '16px' }}
     >
       <span className="sr-only">Loading analysis data…</span>
-      <div
-        style={{
-          height:         '18px',
-          width:          '40%',
-          borderRadius:   '3px',
-          background:     'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
-          backgroundSize: '200% 100%',
-          animation:      'shimmer 1.4s ease-in-out infinite',
-        }}
-      />
-      <div
-        style={{
-          height:         '12px',
-          width:          '25%',
-          borderRadius:   '3px',
-          background:     'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
-          backgroundSize: '200% 100%',
-          animation:      'shimmer 1.4s ease-in-out infinite',
-        }}
-      />
-    </div>
-  );
-}
-
-// ---- Error affordance (mirrors SessionDetailPage.tsx lines 9-47) -------------
-
-function AnalyzeErrorState({ error }: { error: unknown }): React.JSX.Element {
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'string'
-        ? error
-        : 'Failed to load analysis data.';
-
-  return (
-    <div
-      role="alert"
-      style={{
-        borderLeft:   '3px solid var(--redb)',
-        background:   'var(--sfm)',
-        borderRadius: 'var(--rl)',
-        padding:      '14px 18px',
-      }}
-    >
-      <div
-        style={{
-          fontFamily:    'var(--fm)',
-          fontSize:      '10px',
-          color:         'var(--redb)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.12em',
-          fontWeight:    700,
-          marginBottom:  '6px',
-        }}
-      >
-        LOAD ERROR
-      </div>
-      <div style={{ fontFamily: 'var(--fm)', fontSize: '12px', color: 'var(--wd)' }}>
-        {message}
-      </div>
+      <ShimmerBox style={{ height: '18px', width: '40%', borderRadius: '3px' }} />
+      <ShimmerBox style={{ height: '12px', width: '25%', borderRadius: '3px' }} />
     </div>
   );
 }
@@ -132,7 +76,11 @@ export default function AnalyzeTab({ session }: AnalyzeTabProps): React.JSX.Elem
     >
       {isLoading && <AnalyzeLoadingState />}
 
-      {!isLoading && error != null && <AnalyzeErrorState error={error} />}
+      {!isLoading && error != null && (
+        // MERGE SC6: AnalyzeTab uses 'Failed to load analysis data.' (cold-path copy differs from
+        // the other 3 ErrorState sites' default 'An unexpected error occurred.').
+        <ErrorState error={error} fallbackMessage="Failed to load analysis data." />
+      )}
 
       {!isLoading && error == null && stats != null && (
         <>

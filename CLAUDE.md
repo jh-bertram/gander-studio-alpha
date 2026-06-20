@@ -38,19 +38,35 @@ See `.env.example` for reference.
 
 ```
 packages/
-├── shared/src/schemas.ts    — Zod schemas (Agent, Skill, Hook, Loadout, Export)
+├── shared/src/schemas.ts    — Zod schemas (Agent, Skill, Hook, Loadout, Export, Session, Connectivity, Planning, Program, Progression)
 ├── server/src/
-│   ├── router.ts            — 12 tRPC procedures
+│   ├── router.ts            — 22 tRPC procedures
 │   ├── env.ts               — Environment config
-│   └── parsers/             — File system parsers for agents, skills, hooks
+│   └── parsers/             — File system parsers for agents, skills, hooks, sessions, events, stats, connectivity, planning, program, progression
 └── client/src/
-    ├── pages/               — BrowsePage, ComposePage, EditPage, ExportPage
-    ├── store/               — Zustand stores (ui, browse, compose, edit)
+    ├── pages/               — BrowsePage, ComposePage, EditPage, ExportPage, SessionListPage, SessionDetailPage, GraphPage, ProgressionPage, PlanningPage, ProgramsPage
+    ├── store/               — Zustand stores (ui, browse, compose, edit, canvas, session-picker)
     ├── components/          — UI components + Shadcn primitives
     ├── constants/           — Design tokens, navigation, per-page constants
     ├── hooks/               — Data fetching hooks
     └── globals.css          — FF7 Remake Intergrade design tokens + Shadcn base
 ```
+
+## Surfaces
+
+| Mode | Route | Page Component |
+|------|-------|----------------|
+| Browse | `/` (default) | BrowsePage — agent/skill/hook card grid |
+| Compose | compose | ComposePage — React Flow materia canvas |
+| Edit | edit | EditPage — markdown editor (agents/skills) |
+| Export | export | ExportPage — export loadout to disk |
+| Sessions | sessions | SessionListPage / SessionDetailPage — sprint post-mortem viewer + editor |
+| Graph | graph | GraphPage — React Flow connectivity graph |
+| Progression | progression | ProgressionPage — XP ledger timeline |
+| Planning | planning | PlanningPage — backlog + sprint planning surface |
+| Programs | programs | ProgramsPage — program DAG viewer |
+
+Navigation: `BottomTabBar` (role="tablist", 9 tabs, role="tab" on each button).
 
 ## Design Language
 
@@ -65,22 +81,35 @@ FF7 Remake Intergrade — Mako Teal primary palette. Design tokens are CSS custo
 
 ## tRPC Procedures
 
+22 procedures across 10 routers (verified against `packages/server/src/router.ts`):
+
 ```
-health           GET
-agent.list       GET  → Agent[]
-agent.get        GET  → Agent
-agent.save       MUT  → { success, filePath }
-skill.list       GET  → Skill[]
-skill.get        GET  → Skill
-skill.save       MUT  → { success, filePath }
-hook.list        GET  → Hook[]
-loadout.list     GET  → Loadout[]
-loadout.save     MUT  → { success, name }
-loadout.delete   MUT  → { success }
-export.spawn     MUT  → { targetPath, plannedFiles, loadoutSummary }
+health                    GET  → 'ok'
+agent.list                GET  → Agent[]
+agent.get                 GET  → Agent
+agent.save                MUT  → { success, filePath }
+skill.list                GET  → Skill[]
+skill.get                 GET  → Skill
+skill.save                MUT  → { success, filePath }
+hook.list                 GET  → Hook[]
+loadout.list              GET  → Loadout[]
+loadout.save              MUT  → { success, name }
+loadout.delete            MUT  → { success }
+export.spawn              MUT  → { targetPath, plannedFiles, loadoutSummary }
+session.list              GET  → Session[]
+session.get               GET  → Session (with events)
+session.getStats          GET  → SessionStats
+session.saveEdit          MUT  → { success, filePath }
+session.aggregateStats    GET  → AggregateStats
+session.getRaw            GET  → { content, filePath }
+connectivity.getGraph     GET  → ConnectivityGraph
+planning.list             GET  → PlanningListOutput
+program.getDag            GET  → ProgramGetDagOutput
+progression.getLedger     GET  → ProgressionEntry[]
 ```
 
 ## Known Issues
 
-- `npm audit`: 4 high severity vulns in `serialize-javascript` via `workbox-build` (build-time only, no runtime exposure)
+- `npm audit --omit=dev`: 21 vulnerabilities (2 low, 10 moderate, 9 high) in production dependencies after reclassifying 7 build-tooling packages to devDependencies in `prog-studio-vision-2026-06-s5-DELETE`. Full audit (including devDeps): 23 vulns — 2 criticals in `serialize-javascript` via `workbox-build` (build-time only, no runtime exposure).
 - Chunk size warning: main JS bundle ~700KB (includes React + tRPC + Zustand)
+- `--redb` contrast: `#cf3c3c` at 4.07:1 on `--void` is below WCAG AA for normal text — tracked as DEFERRED-006.

@@ -14,21 +14,13 @@ export const CANVAS_PROXIMITY_THRESHOLD_PX = 60;      // max center-to-center px
 // Edge styling
 export const EDGE_STROKE_COLOR = 'var(--mt)';
 export const EDGE_STROKE_WIDTH = 2;
-export const EDGE_GLOW = '0 0 6px rgba(84,153,181,0.5)';  // teal glow — matches --gt family
 export const EDGE_FILTER = 'drop-shadow(0px 0px 4px var(--bdb))';
-
-// Canvas layout radii (must match canvas-store.ts values — keep in sync)
-export const AGENT_RING_RADIUS_PX = 220;
-export const SKILL_RING_RADIUS_PX = 380;
 
 // Z-indexes
 export const Z_CANVAS_NODE = 10;
-export const Z_CANVAS_EDGE = 5;
-export const Z_PALETTE = 20;
 
 // Palette
 export const PALETTE_WIDTH_PX = 200;
-export const PALETTE_SEARCH_DEBOUNCE_MS = 150;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Glassy orb gradient stops

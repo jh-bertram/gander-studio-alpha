@@ -57,6 +57,37 @@ const STUDIO_ROOT = path.resolve(
 // Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Scan SESSIONS_SOURCE_DIRS for a session matching `id` (by session.id or session.sprint).
+ * Returns `{ session, dir }` when found, or `null` when not found.
+ * Skips unparseable files silently (same as per-caller behaviour).
+ */
+async function findSessionById(
+  id: string,
+): Promise<{ session: Session; dir: string } | null> {
+  for (const dir of SESSIONS_SOURCE_DIRS) {
+    const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
+    let entries: string[];
+    try {
+      entries = await readdir(postMortemsDir);
+    } catch {
+      continue;
+    }
+    for (const file of entries.filter((e) => e.endsWith('.md'))) {
+      const filePath = path.join(postMortemsDir, file);
+      try {
+        const session = await parseSessionFile(filePath, dir);
+        if (session.id === id || session.sprint === id) {
+          return { session, dir };
+        }
+      } catch {
+        continue;
+      }
+    }
+  }
+  return null;
+}
+
 function guardPath(filePath: string): void {
   const resolved = path.resolve(filePath);
   const root = path.resolve(GANDER_ROOT);
@@ -498,61 +529,25 @@ const sessionRouter = t.router({
     .input(z.object({ id: z.string() }))
     .output(SessionSchema)
     .query(async ({ input }) => {
-      for (const dir of SESSIONS_SOURCE_DIRS) {
-        const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
-        let entries: string[];
-        try {
-          entries = await readdir(postMortemsDir);
-        } catch {
-          continue;
-        }
-        for (const file of entries.filter((e) => e.endsWith('.md'))) {
-          const filePath = path.join(postMortemsDir, file);
-          try {
-            const session = await parseSessionFile(filePath, dir);
-            if (session.id === input.id || session.sprint === input.id) {
-              const eventsDir = path.join(session.source_root, 'docs', 'events');
-              const events = await resolveSessionEvents(eventsDir, session, 'session.get');
-              return { ...session, events };
-            }
-          } catch {
-            continue;
-          }
-        }
+      const found = await findSessionById(input.id);
+      if (!found) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
       }
-      throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
+      const { session } = found;
+      const eventsDir = path.join(session.source_root, 'docs', 'events');
+      const events = await resolveSessionEvents(eventsDir, session, 'session.get');
+      return { ...session, events };
     }),
 
   getStats: t.procedure
     .input(z.object({ id: z.string() }))
     .output(SessionStatsSchema)
     .query(async ({ input }) => {
-      let foundSession = null as Session | null;
-      for (const dir of SESSIONS_SOURCE_DIRS) {
-        const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
-        let entries: string[];
-        try {
-          entries = await readdir(postMortemsDir);
-        } catch {
-          continue;
-        }
-        for (const file of entries.filter((e) => e.endsWith('.md'))) {
-          const filePath = path.join(postMortemsDir, file);
-          try {
-            const session = await parseSessionFile(filePath, dir);
-            if (session.id === input.id || session.sprint === input.id) {
-              foundSession = session;
-              break;
-            }
-          } catch {
-            continue;
-          }
-        }
-        if (foundSession) break;
-      }
-      if (!foundSession) {
+      const found = await findSessionById(input.id);
+      if (!found) {
         throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
       }
+      const { session: foundSession } = found;
       const eventsDir = path.join(foundSession.source_root, 'docs', 'events');
       const events = await resolveSessionEvents(eventsDir, foundSession, 'session.getStats');
       return computeSessionStats(foundSession, events);
@@ -613,49 +608,33 @@ const sessionRouter = t.router({
     .input(SessionRawInputSchema)
     .output(SessionRawOutputSchema)
     .query(async ({ input }) => {
-      for (const dir of SESSIONS_SOURCE_DIRS) {
-        const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
-        let entries: string[];
+      const found = await findSessionById(input.id);
+      if (!found) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
+      }
+      const { session } = found;
+      // Prefer edit file in SESSIONS_EDITS_DIR when it exists (D6 round-trip).
+      // Re-runs validateSaveEditPath to guard against path traversal.
+      let editedFilePath: string | undefined;
+      let content: string;
+      try {
+        const editTarget = validateSaveEditPath(session.id, SESSIONS_EDITS_DIR);
+        const editContent = await readFile(editTarget, 'utf8');
+        // Edit file exists and readable — use it
+        content = editContent;
+        editedFilePath = editTarget;
+      } catch {
+        // Edit file absent or unreadable — fall back to original source
         try {
-          entries = await readdir(postMortemsDir);
+          content = await readFile(session.filePath, 'utf8');
         } catch {
-          continue;
-        }
-        for (const file of entries.filter((e) => e.endsWith('.md'))) {
-          const filePath = path.join(postMortemsDir, file);
-          try {
-            const session = await parseSessionFile(filePath, dir);
-            if (session.id === input.id || session.sprint === input.id) {
-              // Prefer edit file in SESSIONS_EDITS_DIR when it exists (D6 round-trip).
-              // Re-runs validateSaveEditPath to guard against path traversal.
-              let editedFilePath: string | undefined;
-              let content: string;
-              try {
-                const editTarget = validateSaveEditPath(session.id, SESSIONS_EDITS_DIR);
-                const editContent = await readFile(editTarget, 'utf8');
-                // Edit file exists and readable — use it
-                content = editContent;
-                editedFilePath = editTarget;
-              } catch {
-                // Edit file absent or unreadable — fall back to original source
-                try {
-                  content = await readFile(session.filePath, 'utf8');
-                } catch {
-                  throw new TRPCError({
-                    code: 'INTERNAL_SERVER_ERROR',
-                    message: 'Operation failed',
-                  });
-                }
-              }
-              return { content, editedFilePath };
-            }
-          } catch (err) {
-            if (err instanceof TRPCError) throw err;
-            continue;
-          }
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Operation failed',
+          });
         }
       }
-      throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
+      return { content, editedFilePath };
     }),
 });
 

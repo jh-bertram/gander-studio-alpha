@@ -4,6 +4,7 @@ import { Textarea } from '../../../components/ui/textarea';
 import { useSessionRaw } from '../../../hooks/useSessionRaw';
 import { useSessionSave } from '../../../hooks/useSessionSave';
 import { useSessionStore } from '../../../store/session-store';
+import ShimmerBox from '../../../components/ui/shimmer-box';
 
 interface Props {
   session: Session;
@@ -65,18 +66,11 @@ export default function EditorTab({ session }: Props) {
 
       {/* Loading skeleton while raw content is being fetched */}
       {rawLoading && (
-        <div
+        <ShimmerBox
           aria-busy="true"
-          style={{
-            height:         '200px',
-            borderRadius:   'var(--rl)',
-            background:     'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
-            backgroundSize: '200% 100%',
-            animation:      'shimmer 1.4s ease-in-out infinite',
-          }}
-        >
-          <span className="sr-only">Loading session content…</span>
-        </div>
+          srLabel="Loading session content…"
+          style={{ height: '200px', borderRadius: 'var(--rl)' }}
+        />
       )}
 
       {/* Raw-fetch error state */}

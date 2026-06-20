@@ -1,6 +1,6 @@
 import type { AppMode } from '../store/ui-store';
 
-export interface NavItemDef {
+interface NavItemDef {
   mode: AppMode;
   label: string;
   dotColor: string;

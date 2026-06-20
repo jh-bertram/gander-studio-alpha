@@ -3,8 +3,8 @@ import type { z } from 'zod';
 import type { LoadoutSchema } from '@gander-studio/shared';
 import {
   AgentRole,
-  META_AGENTS, SPECIALIST_AGENTS, GATE_AGENTS, EXTERNAL_AGENTS,
-  META_FRAGMENTS, SPECIALIST_FRAGMENTS, GATE_FRAGMENTS, EXTERNAL_FRAGMENTS,
+  META_AGENTS, SPECIALIST_AGENTS, GATE_AGENTS, EXTERNAL_AGENTS, INTEL_AGENTS,
+  META_FRAGMENTS, SPECIALIST_FRAGMENTS, GATE_FRAGMENTS, EXTERNAL_FRAGMENTS, INTEL_FRAGMENTS,
 } from '../constants/agent-roles';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -64,11 +64,13 @@ export function deriveRole(name: string, type: 'agent' | 'skill'): AgentRole {
   if (SPECIALIST_AGENTS.has(lower)) return 'specialist';
   if (GATE_AGENTS.has(lower))       return 'gate';
   if (EXTERNAL_AGENTS.has(lower))   return 'external';
+  if (INTEL_AGENTS.has(lower))      return 'intel';
   // Fallback: partial-name fragments
   if (META_FRAGMENTS.some((f) => lower.includes(f)))        return 'meta';
   if (SPECIALIST_FRAGMENTS.some((f) => lower.includes(f)))  return 'specialist';
   if (GATE_FRAGMENTS.some((f) => lower.includes(f)))        return 'gate';
   if (EXTERNAL_FRAGMENTS.some((f) => lower.includes(f)))    return 'external';
+  if (INTEL_FRAGMENTS.some((f) => lower.includes(f)))       return 'intel';
   return 'specialist'; // default fallback for unrecognised agent names
 }
 

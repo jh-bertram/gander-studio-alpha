@@ -7,6 +7,7 @@ import SkillCard from '../components/browse/SkillCard';
 import HookCard from '../components/browse/HookCard';
 import SkeletonCard from '../components/browse/SkeletonCard';
 import DrilldownPanel, { type DrilldownItem } from '../components/browse/DrilldownPanel';
+import ErrorState from '../components/ui/error-state';
 
 // ---- Page title labels --------------------------------------------------
 
@@ -87,52 +88,6 @@ function SkeletonGrid() {
       {Array.from({ length: 6 }).map((_, i) => (
         <SkeletonCard key={i} />
       ))}
-    </div>
-  );
-}
-
-// ---- ErrorState ---------------------------------------------------------
-
-function ErrorState({ error }: { error: unknown }) {
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'string'
-        ? error
-        : 'An unexpected error occurred.';
-
-  return (
-    <div
-      role="alert"
-      style={{
-        borderLeft:   '3px solid var(--redb)',
-        background:   'var(--sfm)',
-        borderRadius: 'var(--rl)',
-        padding:      '14px 18px',
-      }}
-    >
-      <div
-        style={{
-          fontFamily:    'var(--fm)',
-          fontSize:      '10px',
-          color:         'var(--redb)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.12em',
-          fontWeight:    700,
-          marginBottom:  '6px',
-        }}
-      >
-        LOAD ERROR
-      </div>
-      <div
-        style={{
-          fontFamily: 'var(--fm)',
-          fontSize:   '12px',
-          color:      'var(--wd)',
-        }}
-      >
-        {message}
-      </div>
     </div>
   );
 }
@@ -265,9 +220,9 @@ export default function BrowsePage() {
 
           {showHooks && hooks.length > 0 && (
             <div style={HOOK_GRID_STYLE} aria-label="Hooks">
-              {hooks.map((hook) => (
+              {hooks.map((hook, i) => (
                 <HookCard
-                  key={hook.matcher}
+                  key={`${hook.event}-${hook.matcher}-${i}`}
                   hook={hook}
                 />
               ))}

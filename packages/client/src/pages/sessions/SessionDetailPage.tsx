@@ -6,46 +6,8 @@ import AnalyzeTab from './tabs/AnalyzeTab';
 import EditorTab from './tabs/EditorTab';
 import OverviewTab from './tabs/OverviewTab';
 import TableTab from './tabs/TableTab';
-
-// ---- ErrorState -------------------------------------------------------------
-
-function ErrorState({ error }: { error: unknown }) {
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'string'
-        ? error
-        : 'An unexpected error occurred.';
-
-  return (
-    <div
-      role="alert"
-      style={{
-        borderLeft:   '3px solid var(--redb)',
-        background:   'var(--sfm)',
-        borderRadius: 'var(--rl)',
-        padding:      '14px 18px',
-      }}
-    >
-      <div
-        style={{
-          fontFamily:    'var(--fm)',
-          fontSize:      '10px',
-          color:         'var(--redb)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.12em',
-          fontWeight:    700,
-          marginBottom:  '6px',
-        }}
-      >
-        LOAD ERROR
-      </div>
-      <div style={{ fontFamily: 'var(--fm)', fontSize: '12px', color: 'var(--wd)' }}>
-        {message}
-      </div>
-    </div>
-  );
-}
+import ErrorState from '../../components/ui/error-state';
+import ShimmerBox from '../../components/ui/shimmer-box';
 
 // ---- LoadingState -----------------------------------------------------------
 
@@ -57,26 +19,8 @@ function LoadingState() {
     >
       <span className="sr-only">Loading session…</span>
       {/* Skeleton header */}
-      <div
-        style={{
-          height:         '18px',
-          width:          '45%',
-          borderRadius:   '3px',
-          background:     'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
-          backgroundSize: '200% 100%',
-          animation:      'shimmer 1.4s ease-in-out infinite',
-        }}
-      />
-      <div
-        style={{
-          height:         '12px',
-          width:          '20%',
-          borderRadius:   '3px',
-          background:     'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
-          backgroundSize: '200% 100%',
-          animation:      'shimmer 1.4s ease-in-out infinite',
-        }}
-      />
+      <ShimmerBox style={{ height: '18px', width: '45%', borderRadius: '3px' }} />
+      <ShimmerBox style={{ height: '12px', width: '20%', borderRadius: '3px' }} />
       {/* Spinner */}
       <div
         style={{
