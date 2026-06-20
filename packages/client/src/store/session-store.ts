@@ -11,6 +11,9 @@ export interface SessionState {
   originalContent:      string;
   lastSaveResult:       { filePath: string } | null;
   lastSaveError:        string | null;
+  // D3: tracks the session id for which editBuffer was last seeded.
+  // Used by useSessionRaw to detect session switches and reset the buffer.
+  seededForId:          string | null;
 
   setSelectedSessionId:    (id: string | null) => void;
   setSelectedSessionIds:   (ids: string[]) => void;
@@ -22,6 +25,10 @@ export interface SessionState {
   setOriginalContent:      (content: string) => void;
   setLastSaveResult:       (result: { filePath: string } | null) => void;
   setLastSaveError:        (error: string | null) => void;
+  // D3: reset editBuffer + originalContent when the active session changes.
+  // Clears seededForId so useSessionRaw will re-seed on next data arrival.
+  resetEditBufferForSession: () => void;
+  setSeededForId:          (id: string | null) => void;
 }
 
 export const useSessionStore = create<SessionState>()((set) => ({
@@ -33,6 +40,7 @@ export const useSessionStore = create<SessionState>()((set) => ({
   originalContent:      '',
   lastSaveResult:       null,
   lastSaveError:        null,
+  seededForId:          null,
 
   setSelectedSessionId:  (selectedSessionId)  => set({ selectedSessionId }),
   setSelectedSessionIds: (selectedSessionIds) => set({ selectedSessionIds }),
@@ -57,4 +65,12 @@ export const useSessionStore = create<SessionState>()((set) => ({
   setOriginalContent: (originalContent)  => set({ originalContent }),
   setLastSaveResult:  (lastSaveResult)   => set({ lastSaveResult }),
   setLastSaveError:   (lastSaveError)    => set({ lastSaveError }),
+
+  // D3: Reset the editor buffers when the user navigates to a different session.
+  // Clears seededForId so useSessionRaw will re-seed from server data for the new id.
+  // SC7 is preserved: this is called on session CHANGE (navigation), not on save error.
+  resetEditBufferForSession: () =>
+    set({ editBuffer: '', originalContent: '', seededForId: null }),
+
+  setSeededForId: (seededForId) => set({ seededForId }),
 }));

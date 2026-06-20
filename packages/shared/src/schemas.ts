@@ -101,7 +101,13 @@ export type Session = z.infer<typeof SessionSchema>;
 export const SessionRawInputSchema = z.object({ id: z.string() });
 export type SessionRawInput = z.infer<typeof SessionRawInputSchema>;
 
-export const SessionRawOutputSchema = z.object({ content: z.string() });
+export const SessionRawOutputSchema = z.object({
+  content: z.string(),
+  // Present when the client has previously saved an edit via session.saveEdit;
+  // the path is the absolute path of the edit file inside SESSIONS_EDITS_DIR.
+  // Absent when no edit exists (original source file was returned).
+  editedFilePath: z.string().optional(),
+});
 export type SessionRawOutput = z.infer<typeof SessionRawOutputSchema>;
 
 // AggregateStatsInputSchema — input for session.aggregateStats procedure

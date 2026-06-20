@@ -1,8 +1,8 @@
-import React, { useState, useId, useEffect, useRef } from 'react';
+import React, { useState, useId, useEffect, useRef, useMemo } from 'react';
 import type { z } from 'zod';
 import type { LoadoutSchema } from '@gander-studio/shared';
 import { trpc } from '../trpc';
-import { useComposeStore } from '../store/compose-store';
+import { useCanvasStore, selectLoadoutPayload } from '../store/canvas-store';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import {
@@ -70,7 +70,24 @@ function StatChip({ label, bg, bd, color }: StatChipProps) {
 // ─── ExportPage ────────────────────────────────────────────────────────────────
 
 export default function ExportPage() {
-  const { currentLoadout } = useComposeStore();
+  // SEAM-05: compose-store addAgent/addSkill/addHook are dead (zero call sites since
+  // canvas migration). Source the loadout from canvas-store instead.
+  // Dead compose-store actions for s5 deletion: addAgent, addSkill, addHook.
+  // NOTE: selectLoadoutPayload returns hooks:[] because canvas does not model hooks
+  // as nodes. The compose-store removeHook path (compose-store.ts:94) still exists
+  // for potential future hook-node canvas support; we do not drop it here.
+  // Stable slice selectors — selecting primitive slices avoids the infinite
+  // re-render loop that useCanvasStore(selectLoadoutPayload) would cause in
+  // Zustand v5. selectLoadoutPayload returns a new object on every call, which
+  // changes the `getSnapshot` return value on every render under useSyncExternalStore.
+  // Instead, select stable array references and derive the payload via useMemo so
+  // React only re-renders when nodes or edges actually change.
+  const nodes = useCanvasStore((s) => s.nodes);
+  const edges = useCanvasStore((s) => s.edges);
+  const canvasPayload = useMemo(
+    () => selectLoadoutPayload({ nodes, edges } as Parameters<typeof selectLoadoutPayload>[0]),
+    [nodes, edges],
+  );
 
   // ── Local state ──────────────────────────────────────────────────────────────
   const [basePath, setBasePath] = useState('');
@@ -108,10 +125,11 @@ export default function ExportPage() {
     basePath.length > 0 && !BASE_PATH_PATTERN.test(basePath);
   const isDirNameInvalid =
     targetDirName.length > 0 && !TARGET_DIR_PATTERN.test(targetDirName);
+  // Canvas hooks are always [] (canvas does not model hooks as nodes).
+  // A non-empty loadout requires at least one agent or skill on the canvas.
   const isLoadoutEmpty =
-    currentLoadout.agents.length === 0 &&
-    currentLoadout.skills.length === 0 &&
-    currentLoadout.hooks.length === 0;
+    canvasPayload.agents.length === 0 &&
+    canvasPayload.skills.length === 0;
 
   const canExport =
     !isLoadoutEmpty &&
@@ -141,12 +159,16 @@ export default function ExportPage() {
   function handleExport(): void {
     if (!canExport) return;
 
+    // Use real canvas data: agents, skills, and edges (connections).
+    // hooks: canvas-store.ts:204 hardcodes hooks:[] — canvas does not model
+    // hooks as nodes, so hooks are always empty in exports from this surface.
+    // (SEAM-05 hooks_disposition: documented-empty — canvas does not model hooks)
     const loadout: Loadout = {
-      name: currentLoadout.name || 'unnamed',
-      agents: currentLoadout.agents,
-      skills: currentLoadout.skills,
-      hooks: currentLoadout.hooks,
-      connections: [],
+      name: canvasPayload.agents[0] ?? 'unnamed',
+      agents: canvasPayload.agents,
+      skills: canvasPayload.skills,
+      hooks: canvasPayload.hooks,
+      connections: canvasPayload.connections,
       createdAt: new Date().toISOString(),
     };
 
@@ -222,23 +244,24 @@ export default function ExportPage() {
                 marginBottom: '10px',
               }}
             >
-              {currentLoadout.name || 'unnamed'}
+              {canvasPayload.agents[0] ?? 'unnamed'}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               <StatChip
-                label={`${currentLoadout.agents.length} agents`}
+                label={`${canvasPayload.agents.length} agents`}
                 bg={AGENTS_CHIP_BG}
                 bd={AGENTS_CHIP_BD}
                 color="var(--mg)"
               />
               <StatChip
-                label={`${currentLoadout.skills.length} skills`}
+                label={`${canvasPayload.skills.length} skills`}
                 bg={SKILLS_CHIP_BG}
                 bd={SKILLS_CHIP_BD}
                 color="var(--mb)"
               />
+              {/* hooks: canvas does not model hooks as nodes; always 0 */}
               <StatChip
-                label={`${currentLoadout.hooks.length} hooks`}
+                label={`${canvasPayload.hooks.length} hooks`}
                 bg={HOOKS_CHIP_BG}
                 bd={HOOKS_CHIP_BD}
                 color="var(--mo)"

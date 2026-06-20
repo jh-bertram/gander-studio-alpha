@@ -13,6 +13,7 @@ import {
   ExportInputSchema,
   SessionSchema,
   SessionStatsSchema,
+  SessionRawInputSchema,
   SessionRawOutputSchema,
   AggregateStatsInputSchema,
   ConnectivityGraphSchema,
@@ -51,6 +52,36 @@ function sanitizeName(name: string): string {
     throw new TRPCError({ code: 'BAD_REQUEST', message: 'Name contains no valid characters' });
   }
   return clean;
+}
+
+/**
+ * Resolve event-log entries for a session using a two-stage slug strategy:
+ *
+ *  1. PRIMARY: first whitespace-delimited token of session.sprint. Strips
+ *     parenthetical title suffixes (e.g. "v1.2 (some-session)") while
+ *     preserving dotted-version strings ("v1.2" ≠ "v1-2" after toSlug).
+ *  2. FALLBACK: session.id (toSlug(filename-stem)) when primary yields 0 matches.
+ *     Required for prose-H1 Format B sessions where sprint prose like
+ *     "Gander Studio P2 + P3" produces primary="Gander" which never matches
+ *     lowercase task_ids like "gander-studio-p2-p3-t1".
+ *
+ * Emits a console.warn when falling back so zero-match sessions are observable.
+ */
+async function resolveSessionEvents(
+  eventsDir: string,
+  session: { sprint: string; id: string },
+  callerLabel: string,
+): Promise<import('@gander-studio/shared').EventLogEntry[]> {
+  const sprintSlug = session.sprint.split(/\s+/)[0];
+  let events = await parseEventLogFiles(eventsDir, sprintSlug);
+  if (events.length === 0 && session.id !== sprintSlug) {
+    console.warn(
+      `[${callerLabel}] sprintSlug "${sprintSlug}" matched 0 events for session "${session.id}"; ` +
+      `retrying with session.id as slug fallback`,
+    );
+    events = await parseEventLogFiles(eventsDir, session.id);
+  }
+  return events;
 }
 
 // ---------------------------------------------------------------------------
@@ -449,11 +480,7 @@ const sessionRouter = t.router({
             const session = await parseSessionFile(filePath, dir);
             if (session.id === input.id || session.sprint === input.id) {
               const eventsDir = path.join(session.source_root, 'docs', 'events');
-              // Use first whitespace-delimited token of sprint — strips parenthetical
-              // title suffixes while preserving dotted version strings (e.g. v1.2)
-              // that differ from the dash-normalised id (v1-2).
-              const sprintSlug = session.sprint.split(/\s+/)[0];
-              const events = await parseEventLogFiles(eventsDir, sprintSlug);
+              const events = await resolveSessionEvents(eventsDir, session, 'session.get');
               return { ...session, events };
             }
           } catch {
@@ -495,9 +522,7 @@ const sessionRouter = t.router({
         throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
       }
       const eventsDir = path.join(foundSession.source_root, 'docs', 'events');
-      // Same slug strategy as session.get: first whitespace token of sprint.
-      const sprintSlug = foundSession.sprint.split(/\s+/)[0];
-      const events = await parseEventLogFiles(eventsDir, sprintSlug);
+      const events = await resolveSessionEvents(eventsDir, foundSession, 'session.getStats');
       return computeSessionStats(foundSession, events);
     }),
 
@@ -535,9 +560,7 @@ const sessionRouter = t.router({
       const perSessionStats = await Promise.all(
         matched.map(async (session) => {
           const eventsDir = path.join(session.source_root, 'docs', 'events');
-          // Same slug strategy as getStats: first whitespace token of sprint.
-          const sprintSlug = session.sprint.split(/\s+/)[0];
-          const events = await parseEventLogFiles(eventsDir, sprintSlug);
+          const events = await resolveSessionEvents(eventsDir, session, 'session.aggregateStats');
           return computeSessionStats(session, events);
         }),
       );
@@ -546,11 +569,12 @@ const sessionRouter = t.router({
       return SessionStatsSchema.parse(aggregateSessionStats(perSessionStats, input.sessionIds));
     }),
 
-  // getRaw — returns the raw markdown of a session's ORIGINAL source file.
+  // getRaw — returns the raw markdown of a session file, preferring the edited
+  // version in SESSIONS_EDITS_DIR when one exists (round-trip for saveEdit).
   // Client input: id only (never filePath — path-traversal prevention).
-  // Always reads session.filePath (original source), never editedFilePath.
+  // Priority: SESSIONS_EDITS_DIR/{id}.md (if present, path-guarded) > session.filePath (original).
   getRaw: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(SessionRawInputSchema)
     .output(SessionRawOutputSchema)
     .query(async ({ input }) => {
       for (const dir of SESSIONS_SOURCE_DIRS) {
@@ -566,17 +590,28 @@ const sessionRouter = t.router({
           try {
             const session = await parseSessionFile(filePath, dir);
             if (session.id === input.id || session.sprint === input.id) {
-              // Read the ORIGINAL source file (session.filePath), not editedFilePath.
+              // Prefer edit file in SESSIONS_EDITS_DIR when it exists (D6 round-trip).
+              // Re-runs validateSaveEditPath to guard against path traversal.
+              let editedFilePath: string | undefined;
               let content: string;
               try {
-                content = await readFile(session.filePath, 'utf8');
-              } catch (err) {
-                throw new TRPCError({
-                  code: 'INTERNAL_SERVER_ERROR',
-                  message: (err as Error).message,
-                });
+                const editTarget = validateSaveEditPath(session.id, SESSIONS_EDITS_DIR);
+                const editContent = await readFile(editTarget, 'utf8');
+                // Edit file exists and readable — use it
+                content = editContent;
+                editedFilePath = editTarget;
+              } catch {
+                // Edit file absent or unreadable — fall back to original source
+                try {
+                  content = await readFile(session.filePath, 'utf8');
+                } catch {
+                  throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Operation failed',
+                  });
+                }
               }
-              return { content };
+              return { content, editedFilePath };
             }
           } catch (err) {
             if (err instanceof TRPCError) throw err;

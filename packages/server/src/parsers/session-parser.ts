@@ -168,8 +168,9 @@ function parseAgentActivity(body: string): AgentActivity[] {
     if (ts !== null) bucket.timestamps.push(ts);
   }
 
-  // Compute feedback_loops: count consecutive same-agent SPAWN rows immediately
-  // following a CRITIQUE_BLOCK or AUDIT_FAIL row.
+  // Compute feedback_loops: count SPAWN rows immediately following a CRITIQUE_BLOCK
+  // or AUDIT_FAIL row, attributed to the spawned agent. SEAM-04 (2026-06-20): no
+  // same-agent gate — the block carries the critic/auditor id, not the remediated agent.
   const feedbackLoopsByAgent = new Map<string, number>();
   for (let i = 0; i < eventRows.length; i++) {
     const cur = eventRows[i];
