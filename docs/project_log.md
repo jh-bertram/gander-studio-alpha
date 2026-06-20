@@ -2072,3 +2072,26 @@ Each entry records a task completion, architectural decision, or sprint state sn
     Sprint status: PASS (all tasks audited, all requirements covered, commits verified, zero post-delivery bugs)
   </retention_keys>
 </archive_entry>
+
+<archive_entry>
+  <timestamp>2026-06-20T22:54:27Z</timestamp>
+  <task_id>prog-studio-vision-2026-06-postmortem</task_id>
+  <event_type>POST_MORTEM</event_type>
+  <rationale>Gander Studio Vision 5-sprint program (prog-studio-vision-2026-06) completed autonomously in one /zoey session and merged to main via PR #1 (commit 745f5d7). Program executed s1 token-root-fix → s2 fix-broken-surfaces (with ORC live-e2e remediation of s2 D1 Zustand infinite-loop) → s3 agent-os-legibility (first-pass clean plan) → s5 cleanup-docs (carrying s3 missed-file fixup, Critic BLOCKed on over-deletion) → s4 juice-pass (final). Zero defects shipped to the human; build/lint clean (lint 0), server tests 108/108, per-sprint e2e all green + live-proven. Dominant finding: a recurring static-audit-passes-but-runtime/spec-broken pattern (4 instances: s2 Zustand loop, s1 contrast-smoke false-fail, s3 missed import, s2 authored-not-executed e2e) — all caught by ORC's own live verification, NOT by the per-sprint SA/QA/SX audit gate. Counter-positive evidence: the Critic plan-gate BLOCKed 4/5 plans with substantive findings (s5 SESSION_TABS over-deletion catch was the single most impactful gate action); s4 AUD#2 exemplary (live-instrumented OscillatorNode.start to prove mute+reduced-motion invariant). Recommendation: formalize the static→live pipeline gate (make live Playwright gating not advisory for FE diffs), add commit-packet import-closure HALT (untracked new imports), add env-preflight client-port/spec-base-URL check, codify scoped-commit completeness in standards.md, and operationalize the 3 new-skill candidates (sprint-verify-close, orc-live-runtime-gate, sibling-file-overlap-serialize). All findings captured at `docs/after-actions/prog-studio-vision-2026-06.md` §6–10 with 5 priority rule-delta proposals and 4 eval-gap candidates.</rationale>
+  <dependencies>prog-studio-vision-2026-06 (sprint program); gander-studio-meta-fable-eval (pre-program recon validating Fable's 8/8 load-bearing claims); moirai decomposition (program-definition); skein-report (7-seam reconciliation)</dependencies>
+  <retention_keys>
+    after-action: `docs/after-actions/prog-studio-vision-2026-06.md`
+    Program state: all 5 siblings (s1 s2 s3 s5 s4) delivered + audited PASS + ORC-live-re-verified + committed + merged to main 745f5d7
+    Commits: s1 61c6906 + contrast fixup 8890eb1, s2 ebaa0f8, s3 fc8e18d + missed-file fixup 981b20a, s5 ccf13a6, s4 e226e96
+    Runtime defects caught by ORC live-e2e: (1) s2 D1 ExportPage Zustand unstable-selector infinite loop (root cause: useCanvasStore returning fresh object ref each call; fix: stable slices + useMemo); (2) s1 contrast-smoke spec wrong base-URL :3001 vs :5173 (false 4/6 fail, contrast itself correct AA; fix: BASE→5173); (3) s3 missed SprintNode.tsx import (untracked file present locally; fix at s5 staging 981b20a); (4) s2 Playwright tier-1 authored specs skipped then returned PASS
+    Protocol gaps §6 (a–e): audit-pipeline live-e2e gating (HARD GATE hook), commit-packet import-closure HALT, env-preflight client-port/spec-base-URL, scoped-commit completeness, Zustand selector lint + ESLint rule, accelerant observability coarser than base-plan
+    Rule proposals §9: 5 priority items (audit-pipeline live-Playwright gating HIGH, commit-packet import-closure HIGH, env-preflight client-port MEDIUM, standards.md scoped-commit MEDIUM, standards.md runtime-gate verification HIGH)
+    Eval gaps §10: 4 candidates (audit-pipeline render-loop/selector class, audit-pipeline authored-not-executed specs, env-preflight client/spec-base-URL, commit-packet import-closure)
+    Skill analysis §8: moirai VALUABLE (5-sibling DAG + seams), workflow-accelerant VALUABLE (throughput + base-plan parity preserved), commit-packet PARTIAL_VALUE (scoped-add complete only if packet files_created complete; s3 omission shows gap)
+    Skills needing content-quality update: audit-pipeline (clarify live-Playwright gating), commit-packet (add import-closure check), env-preflight (add client-port + spec-base-URL)
+    New-skill candidates (§8d): sprint-verify-close (ORC deterministic verify+commit pattern, 5× observed, MEDIUM effort), orc-live-runtime-gate (ORC post-audit live-e2e recheck pattern, 5× observed, MEDIUM effort), sibling-file-overlap-serialize (s3→s5 serialization detection, 1× observed, LOW effort)
+    Connectivity: no connectivity-analyzer run this sprint; manual verification passed (lint 0, build clean, all 7 seams STITCHED); recommend running analyzer over merged main to confirm no dangling refs from s5 deletions
+    Pre-existing defect: 56 Sidebar-spec e2e failures (stale specs targeting Sidebar nav removed in p7-1 before this program); s5 fixed 6, introduced 0 (stash-differential proven); flagged for suite-hardening sprint
+    QA protocol summary: per-sprint audit gate runs SA (standards/tsc/no-any), QA (advisory Playwright), SX (security) on static diff; ORC's manual live-e2e runs were the unguarded safety net, not a system rule
+  </retention_keys>
+</archive_entry>
