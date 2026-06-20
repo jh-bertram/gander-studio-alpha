@@ -8,11 +8,10 @@
  * contrast bump (--wm 0.38->0.55, --mt #5499b5->#6db0c8).
  *
  * IMPORTANT — DEV SERVER REQUIRED:
- *   This spec MUST run against http://localhost:3001 (full dev server with
- *   production-palette surface context). Do NOT run it against bare Vite client
- *   port 5173 — the Shadcn @layer base tokens are resolved by the full build
- *   pipeline and production palette must be active for contrast to be accurate.
- *   Reference: component-contrast-smoke SKILL §DEV-SERVER-CONSTRAINT L239-243.
+ *   This spec runs against http://localhost:5173 (Vite dev client). The tRPC
+ *   API server on port 3001 serves only JSON — CSS tokens are absent there.
+ *   The Shadcn @layer base tokens and FF7 palette are loaded by Vite along
+ *   with globals.css, so port 5173 is the correct surface for contrast checks.
  *   RUN HEADED: `npx playwright test prog-studio-vision-s1-contrast-smoke --headed`
  *
  * WCAG MATH — transcribed from component-contrast-smoke SKILL:
@@ -32,16 +31,32 @@ import { test, expect } from '@playwright/test';
 
 // ---- WCAG helpers (component-contrast-smoke SKILL transcription) -------------
 
-/** Parse a CSS color string to [r,g,b,a] in 0-1 range. Handles rgb/rgba only. */
+/** Parse a CSS color string to [r,g,b,a] in 0-1 range. Handles rgb/rgba and #rrggbb/#rgb hex. */
 function parseColor(css: string): [number, number, number, number] {
+  // rgb/rgba
   const m = css.match(/rgba?\((\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)(?:,\s*(\d+(?:\.\d+)?))?\)/);
-  if (!m) return [0, 0, 0, 1];
-  return [
-    parseFloat(m[1]) / 255,
-    parseFloat(m[2]) / 255,
-    parseFloat(m[3]) / 255,
-    m[4] !== undefined ? parseFloat(m[4]) : 1,
-  ];
+  if (m) {
+    return [
+      parseFloat(m[1]) / 255,
+      parseFloat(m[2]) / 255,
+      parseFloat(m[3]) / 255,
+      m[4] !== undefined ? parseFloat(m[4]) : 1,
+    ];
+  }
+  // #rrggbb or #rgb hex
+  const hex6 = css.match(/^#([0-9a-fA-F]{6})$/);
+  if (hex6) {
+    const v = parseInt(hex6[1], 16);
+    return [(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255, 1];
+  }
+  const hex3 = css.match(/^#([0-9a-fA-F]{3})$/);
+  if (hex3) {
+    const r = parseInt(hex3[1][0], 16) * 17;
+    const g = parseInt(hex3[1][1], 16) * 17;
+    const b = parseInt(hex3[1][2], 16) * 17;
+    return [r / 255, g / 255, b / 255, 1];
+  }
+  return [0, 0, 0, 1];
 }
 
 /** sRGB channel linearisation per WCAG 2.1 */
@@ -91,7 +106,9 @@ async function resolveBackground(
 
 // ---- Navigation helpers -------------------------------------------------------
 
-const BASE = 'http://localhost:3001';
+// Port 5173 is the Vite dev client where globals.css tokens are loaded.
+// Port 3001 is the tRPC API server (JSON only — no HTML/CSS).
+const BASE = 'http://localhost:5173';
 
 async function gotoPage(page: import('@playwright/test').Page, path: string): Promise<void> {
   await page.goto(`${BASE}${path}`);
