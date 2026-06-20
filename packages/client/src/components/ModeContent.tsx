@@ -8,6 +8,8 @@ import ExportPage from '../pages/ExportPage';
 import SessionsRouter from '../pages/sessions/SessionsRouter';
 import GraphPage from '../pages/GraphPage';
 import ProgressionPage from '../pages/ProgressionPage';
+import PlanningPage from '../pages/PlanningPage';
+import ProgramDagPage from '../pages/ProgramDagPage';
 
 const PAGE_MAP: Record<AppMode, React.ComponentType> = {
   browse: BrowsePage,
@@ -17,6 +19,8 @@ const PAGE_MAP: Record<AppMode, React.ComponentType> = {
   sessions: SessionsRouter,
   graph: GraphPage,
   progression: ProgressionPage,
+  planning: PlanningPage,
+  programs: ProgramDagPage,
 };
 
 export default function ModeContent() {

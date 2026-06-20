@@ -17,9 +17,16 @@ import {
   SessionRawOutputSchema,
   AggregateStatsInputSchema,
   ConnectivityGraphSchema,
+  PlanningListInputSchema,
+  PlanningListOutputSchema,
+  ProgramGetDagInputSchema,
+  ProgramGetDagOutputSchema,
   type ConnectivityGraph,
-  ProgressionEntrySchema,
   type ProgressionEntry,
+  type SessionStats,
+  type Session,
+  type EventLogEntry,
+  ProgressionEntrySchema,
 } from '@gander-studio/shared';
 import { parseSessionFile } from './parsers/session-parser.js';
 import { parseEventLogFiles } from './parsers/event-log-parser.js';
@@ -28,8 +35,23 @@ import { collectSessions } from './session-list.js';
 import { validateSaveEditPath } from './parsers/saveedit-guard.js';
 import { aggregateSessionStats } from './parsers/aggregate-stats.js';
 import { parseLedgerContent } from './parsers/progression-parser.js';
+import { parsePlanningBacklog } from './parsers/planning-parser.js';
+import { parseProgramDags } from './parsers/program-dag-parser.js';
+import { fileURLToPath } from 'node:url';
 
 const t = initTRPC.create();
+
+// ---------------------------------------------------------------------------
+// Studio root — the gander-studio-alpha repo root (NOT GANDER_ROOT).
+// Planning and program.md files live here, not in the agent gander repo.
+// Resolves 3 levels up from packages/server/src/router.ts → repo root.
+// ---------------------------------------------------------------------------
+// router.ts lives at packages/server/src/router.ts
+// dirname(router.ts) = packages/server/src → 3 levels up = studio root
+const STUDIO_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..', '..', '..',
+);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -71,7 +93,7 @@ async function resolveSessionEvents(
   eventsDir: string,
   session: { sprint: string; id: string },
   callerLabel: string,
-): Promise<import('@gander-studio/shared').EventLogEntry[]> {
+): Promise<EventLogEntry[]> {
   const sprintSlug = session.sprint.split(/\s+/)[0];
   let events = await parseEventLogFiles(eventsDir, sprintSlug);
   if (events.length === 0 && session.id !== sprintSlug) {
@@ -268,13 +290,23 @@ const exportRouter = t.router({
     .input(ExportInputSchema)
     .output(ExportResultSchema)
     .mutation(async ({ input }) => {
+      const exportBaseResolved = path.resolve(EXPORT_BASE_DIR);
       if (input.targetBasePath !== undefined) {
         const resolved = path.resolve(input.targetBasePath);
         if (resolved !== input.targetBasePath || !resolved.startsWith('/')) {
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetBasePath must be an absolute normalised path' });
         }
+        // Enforce containment: targetBasePath must be inside or equal to EXPORT_BASE_DIR
+        if (resolved !== exportBaseResolved && !resolved.startsWith(exportBaseResolved + path.sep)) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'targetBasePath must be inside EXPORT_BASE_DIR' });
+        }
       }
       const targetPath = path.join(input.targetBasePath ?? EXPORT_BASE_DIR, input.targetDirName);
+      // Double-check the fully-resolved target stays within EXPORT_BASE_DIR
+      const targetResolved = path.resolve(targetPath);
+      if (targetResolved !== exportBaseResolved && !targetResolved.startsWith(exportBaseResolved + path.sep)) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Export target resolves outside EXPORT_BASE_DIR' });
+      }
       const { loadout } = input;
 
       // Track (sourcePath, destPath) pairs alongside plannedFiles
@@ -495,7 +527,7 @@ const sessionRouter = t.router({
     .input(z.object({ id: z.string() }))
     .output(SessionStatsSchema)
     .query(async ({ input }) => {
-      let foundSession = null as import('@gander-studio/shared').Session | null;
+      let foundSession = null as Session | null;
       for (const dir of SESSIONS_SOURCE_DIRS) {
         const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
         let entries: string[];
@@ -557,13 +589,17 @@ const sessionRouter = t.router({
         });
       }
 
-      const perSessionStats = await Promise.all(
+      // allSettled-and-skip: a single bad session file must not 500 the aggregate
+      const perSessionSettled = await Promise.allSettled(
         matched.map(async (session) => {
           const eventsDir = path.join(session.source_root, 'docs', 'events');
           const events = await resolveSessionEvents(eventsDir, session, 'session.aggregateStats');
           return computeSessionStats(session, events);
         }),
       );
+      const perSessionStats = perSessionSettled
+        .filter((r): r is PromiseFulfilledResult<SessionStats> => r.status === 'fulfilled')
+        .map((r) => r.value);
 
       // Explicit parse validates the flat shape before returning to the caller.
       return SessionStatsSchema.parse(aggregateSessionStats(perSessionStats, input.sessionIds));
@@ -669,6 +705,32 @@ const connectivityRouter = t.router({
 });
 
 // ---------------------------------------------------------------------------
+// Planning router
+// ---------------------------------------------------------------------------
+
+const planningRouter = t.router({
+  list: t.procedure
+    .input(PlanningListInputSchema)
+    .output(PlanningListOutputSchema)
+    .query(async () => {
+      return parsePlanningBacklog(STUDIO_ROOT);
+    }),
+});
+
+// ---------------------------------------------------------------------------
+// Program router
+// ---------------------------------------------------------------------------
+
+const programRouter = t.router({
+  getDag: t.procedure
+    .input(ProgramGetDagInputSchema)
+    .output(ProgramGetDagOutputSchema)
+    .query(async ({ input }) => {
+      return parseProgramDags(STUDIO_ROOT, input.programId);
+    }),
+});
+
+// ---------------------------------------------------------------------------
 // Progression router
 // ---------------------------------------------------------------------------
 
@@ -709,6 +771,8 @@ export const appRouter = t.router({
   session: sessionRouter,
   connectivity: connectivityRouter,
   progression: progressionRouter,
+  planning: planningRouter,
+  program: programRouter,
 });
 
 export type AppRouter = typeof appRouter;

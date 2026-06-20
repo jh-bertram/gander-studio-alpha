@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type AppMode = 'browse' | 'compose' | 'edit' | 'export' | 'sessions' | 'graph' | 'progression';
+export type AppMode = 'browse' | 'compose' | 'edit' | 'export' | 'sessions' | 'graph' | 'progression' | 'planning' | 'programs';
 
 interface UIState {
   activeMode: AppMode;

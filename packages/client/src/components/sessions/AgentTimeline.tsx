@@ -1,5 +1,6 @@
 /**
- * AgentTimeline — inline SVG Gantt-style timeline for agent SPAWN→COMPLETE bars.
+ * AgentTimeline — inline SVG Gantt-style timeline for agent SPAWN→COMPLETE bars
+ * plus per-ev-type event markers (SEAM-06 substrate).
  *
  * Pattern: AgentSpawnTimeline (approved by human at sprint dispatch; see
  * s3-t1-ui-spec-UI-1779932400.md §new_pattern_proposal).
@@ -16,6 +17,34 @@
  *   (ms < 90 s → s; 90 s ≤ range < 90 min → m; 90 min ≤ range < 48 h → h;
  *   range ≥ 48 h → d) and applied consistently to every tick label and the
  *   per-bar spawn-offset aria-label.
+ *
+ * ─── SEAM-06: Per-ev-type visual encoding contract ──────────────────────────
+ * This encoding table is the substrate s4 will decorate with role-colors.
+ * s3 defines SHAPE + ACCESSIBLE LABEL only — no role->color mapping yet.
+ *
+ * | ev type         | Shape    | SVG primitive       | Token        | Lane |
+ * |-----------------|----------|---------------------|--------------|------|
+ * | SPAWN           | Bar      | <rect> (bar)        | --mt         | bar  |
+ * | COMPLETE        | Bar end  | <rect> (bar)        | --mt         | bar  |
+ * | AUDIT_PASS      | Circle   | <circle>            | --mg (green) | top  |
+ * | AUDIT_FAIL      | Diamond  | <polygon> 4-pt      | --redb (red) | top  |
+ * | CRITIQUE_PASS   | Triangle | <polygon> up-tri    | --mg (green) | top  |
+ * | CRITIQUE_BLOCK  | Inv-tri  | <polygon> dn-tri    | --my (yellow)| top  |
+ * | RESUME          | Arrow    | <polygon> right-arr | --mb (blue)  | top  |
+ * | FAIL            | X        | two <line> diagonals| --mr (red)   | top  |
+ * | COMMIT          | Square   | <rect> small        | --mb (blue)  | top  |
+ * | RATIFICATION    | Circle   | <circle> dashed     | --mp (purple)| top  |
+ * | REQVAL_COVERED  | Check    | <polyline> tick     | --mg (green) | top  |
+ * | REQVAL_RESOLVED | Check    | <polyline> tick     | --cgr (cyan) | top  |
+ * | NOTE            | Dot      | <circle> small      | --mo (orange)| top  |
+ * | * (all others)  | Dot      | <circle> tiny       | --wm (muted) | top  |
+ *
+ * "top" lane: marker center placed at barY - MARKER_LANE_OFFSET (above the bar rect).
+ * "bar" lane: the existing SPAWN→COMPLETE rect.
+ *
+ * feedback_loops: NOT counted here. SEAM-04 (s2) owns counting. CRITIQUE_BLOCK +
+ * AUDIT_FAIL are rendered as point markers only — no accumulator logic.
+ * ────────────────────────────────────────────────────────────────────────────
  */
 import { useRef, useEffect, useState } from 'react';
 import type { EventLogEntry } from '@gander-studio/shared';
@@ -36,6 +65,10 @@ const MAX_BAR_AREA = 4000;              // cap so multi-day sessions aren't 50 0
 const PX_PER_SECOND = 0.3;             // modest growth per second of range
 const RIGHT_PAD = 48;                  // px reserved at right of plot area for label breathing room
 
+// ─── Marker geometry constants (SEAM-06) ─────────────────────────────────────
+const MARKER_SIZE = 5;                 // half-size in px for marker shapes
+const MARKER_LANE_OFFSET = 10;        // px above bar center for marker center-Y
+
 // ─── Unit type ────────────────────────────────────────────────────────────────
 type AxisUnit = 'ms' | 's' | 'm' | 'h' | 'd';
 
@@ -47,6 +80,15 @@ interface AgentBar {
   spawnTs: number;
   completeTs: number | undefined;
   isOrphan: boolean;
+}
+
+/** A point-in-time event marker on an agent's row (non-SPAWN/COMPLETE ev types). */
+interface AgentMarker {
+  agentId: string;
+  ev: string;
+  ts: number;
+  seq: number;
+  edgeLabel: string;
 }
 
 interface AgentTimelineProps {
@@ -152,6 +194,266 @@ function buildBars(
   return bars;
 }
 
+/**
+ * Build point-in-time markers for all non-SPAWN/COMPLETE events that are
+ * attributed to one of the selectedAgentIds.
+ *
+ * feedback_loops: CRITIQUE_BLOCK and AUDIT_FAIL are rendered here as point
+ * markers only. Counting is done by SEAM-04 (session-stats.ts) — NOT here.
+ */
+function buildMarkers(
+  events: EventLogEntry[],
+  selectedAgentIds: string[],
+): AgentMarker[] {
+  const agentIdSet = new Set(selectedAgentIds);
+  const markers: AgentMarker[] = [];
+
+  for (const e of events) {
+    // Skip the two ev types that map to the bar rect — they are already rendered
+    if (e.ev === 'SPAWN' || e.ev === 'COMPLETE') continue;
+    if (!agentIdSet.has(e.agent_id)) continue;
+
+    markers.push({
+      agentId: e.agent_id,
+      ev: e.ev,
+      ts: new Date(e.ts).getTime(),
+      seq: e.seq,
+      edgeLabel: e.edge_label ?? '',
+    });
+  }
+
+  return markers;
+}
+
+// ─── SEAM-06 marker encoding helpers ─────────────────────────────────────────
+
+/**
+ * Map ev type to FF7 CSS token string (fill/stroke color).
+ * Role-to-color mapping is deferred to s4/SEAM-03.
+ * This maps ev SEMANTIC CATEGORY → token only.
+ */
+function evColor(ev: string): string {
+  switch (ev) {
+    case 'AUDIT_PASS':
+    case 'CRITIQUE_PASS':
+    case 'REQVAL_COVERED':
+    case 'REQVAL_RESOLVED':
+      return 'var(--mg)';     // green — pass/covered
+    case 'AUDIT_FAIL':
+    case 'FAIL':
+    case '_GAP_UNRECOVERABLE':
+      return 'var(--redb)';   // red — failure
+    case 'CRITIQUE_BLOCK':
+    case 'DISPATCH_BLOCKED':
+      return 'var(--my)';     // yellow — blocked/warn
+    case 'RESUME':
+    case 'COMMIT':
+    case 'PUSH':
+    case 'BACKFILL_SCAN':
+      return 'var(--mb)';     // blue — progress/action
+    case 'RATIFICATION':
+    case 'POLICY_RATIFIED':
+    case 'GATE':
+    case 'GATE_EXIT':
+    case 'GATE_RATIFY':
+    case 'GATE_RUN_PASS':
+    case 'GATE_RUN_COVERED':
+      return 'var(--mp)';     // purple — governance
+    case 'NOTE':
+    case 'PM_PREFLIGHT':
+    case 'GAP_REQUEST':
+    case 'HONE_SESSION':
+    case 'POST_MORTEM':
+    case 'JIDOKA_PASS':
+    case 'JIDOKA_REPLAN':
+    case 'JIDOKA_REPARTITION':
+    case 'GHOST_CONFIRMED':
+    case 'REQVAL':
+    case 'DECISION_BRIEF_REVIEW_PASS_WITH_WARNINGS':
+      return 'var(--mo)';     // orange — informational
+    default:
+      return 'var(--wm)';     // muted — unknown ev type
+  }
+}
+
+/**
+ * Accessible short label for an ev type.
+ * Used in aria-label and SVG <title>.
+ */
+function evLabel(ev: string): string {
+  const map: Record<string, string> = {
+    AUDIT_PASS:       'Audit pass',
+    AUDIT_FAIL:       'Audit fail',
+    CRITIQUE_PASS:    'Critique pass',
+    CRITIQUE_BLOCK:   'Critique block',
+    RESUME:           'Resumed',
+    FAIL:             'Failed',
+    COMMIT:           'Commit',
+    PUSH:             'Push',
+    RATIFICATION:     'Ratification',
+    POLICY_RATIFIED:  'Policy ratified',
+    REQVAL_COVERED:   'Reqval covered',
+    REQVAL_RESOLVED:  'Reqval resolved',
+    REQVAL:           'Reqval',
+    NOTE:             'Note',
+    PM_PREFLIGHT:     'PM preflight',
+    GAP_REQUEST:      'Gap request',
+    GATE:             'Gate',
+    GATE_EXIT:        'Gate exit',
+    GATE_RATIFY:      'Gate ratify',
+    GATE_RUN_PASS:    'Gate run pass',
+    GATE_RUN_COVERED: 'Gate run covered',
+    GHOST_CONFIRMED:  'Ghost confirmed',
+    BACKFILL_SCAN:    'Backfill scan',
+    HONE_SESSION:     'Hone session',
+    POST_MORTEM:      'Post-mortem',
+    DISPATCH_BLOCKED: 'Dispatch blocked',
+    JIDOKA_PASS:      'Jidoka pass',
+    JIDOKA_REPLAN:    'Jidoka replan',
+    JIDOKA_REPARTITION: 'Jidoka repartition',
+    DECISION_BRIEF_REVIEW_PASS_WITH_WARNINGS: 'Decision brief pass (w/ warnings)',
+    _GAP_UNRECOVERABLE: 'Gap unrecoverable',
+  };
+  return map[ev] ?? ev;
+}
+
+/**
+ * Render a single marker SVG element at (cx, cy).
+ * Shape encodes ev type per the SEAM-06 contract table.
+ * All shapes use the same MARKER_SIZE constant.
+ * No inline style= on elements with overlapping Tailwind (SVG attrs only).
+ */
+function MarkerShape({
+  ev,
+  cx,
+  cy,
+  color,
+  testId,
+}: {
+  ev: string;
+  cx: number;
+  cy: number;
+  color: string;
+  testId: string;
+}): React.JSX.Element {
+  const s = MARKER_SIZE;
+
+  switch (ev) {
+    // Diamond — AUDIT_FAIL, FAIL, _GAP_UNRECOVERABLE
+    case 'AUDIT_FAIL':
+    case 'FAIL':
+    case '_GAP_UNRECOVERABLE':
+      return (
+        <polygon
+          points={`${cx},${cy - s} ${cx + s},${cy} ${cx},${cy + s} ${cx - s},${cy}`}
+          fill={color}
+          data-testid={testId}
+          aria-hidden="true"
+        />
+      );
+
+    // Circle — AUDIT_PASS
+    case 'AUDIT_PASS':
+      return (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={s}
+          fill={color}
+          data-testid={testId}
+          aria-hidden="true"
+        />
+      );
+
+    // Up-triangle — CRITIQUE_PASS, REQVAL_COVERED, REQVAL_RESOLVED
+    case 'CRITIQUE_PASS':
+    case 'REQVAL_COVERED':
+    case 'REQVAL_RESOLVED':
+      return (
+        <polygon
+          points={`${cx},${cy - s} ${cx + s},${cy + s} ${cx - s},${cy + s}`}
+          fill={color}
+          data-testid={testId}
+          aria-hidden="true"
+        />
+      );
+
+    // Down-triangle — CRITIQUE_BLOCK, DISPATCH_BLOCKED
+    case 'CRITIQUE_BLOCK':
+    case 'DISPATCH_BLOCKED':
+      return (
+        <polygon
+          points={`${cx},${cy + s} ${cx + s},${cy - s} ${cx - s},${cy - s}`}
+          fill={color}
+          data-testid={testId}
+          aria-hidden="true"
+        />
+      );
+
+    // Right-arrow — RESUME, BACKFILL_SCAN
+    case 'RESUME':
+    case 'BACKFILL_SCAN':
+      return (
+        <polygon
+          points={`${cx - s},${cy - s} ${cx + s},${cy} ${cx - s},${cy + s}`}
+          fill={color}
+          data-testid={testId}
+          aria-hidden="true"
+        />
+      );
+
+    // Small square — COMMIT, PUSH
+    case 'COMMIT':
+    case 'PUSH':
+      return (
+        <rect
+          x={cx - s + 1}
+          y={cy - s + 1}
+          width={(s - 1) * 2}
+          height={(s - 1) * 2}
+          fill={color}
+          data-testid={testId}
+          aria-hidden="true"
+        />
+      );
+
+    // Dashed circle — RATIFICATION, POLICY_RATIFIED, GATE, GATE_EXIT, GATE_RATIFY, GATE_RUN_*
+    case 'RATIFICATION':
+    case 'POLICY_RATIFIED':
+    case 'GATE':
+    case 'GATE_EXIT':
+    case 'GATE_RATIFY':
+    case 'GATE_RUN_PASS':
+    case 'GATE_RUN_COVERED':
+      return (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={s}
+          fill="none"
+          stroke={color}
+          strokeWidth={1.5}
+          strokeDasharray="3 2"
+          data-testid={testId}
+          aria-hidden="true"
+        />
+      );
+
+    // Default — small dot for NOTE, PM_PREFLIGHT, GAP_REQUEST, etc.
+    default:
+      return (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={Math.max(2, s - 2)}
+          fill={color}
+          data-testid={testId}
+          aria-hidden="true"
+        />
+      );
+  }
+}
+
 // ─── Zoom constants ───────────────────────────────────────────────────────────
 const ZOOM_STEP = 1.5;
 const ZOOM_MIN = 0.25;
@@ -185,6 +487,7 @@ export default function AgentTimeline({
 
   // ── Data preparation ──────────────────────────────────────────────────────
   const bars = buildBars(events, selectedAgentIds);
+  const markers = buildMarkers(events, selectedAgentIds);
 
   // Empty states
   if (selectedAgentIds.length === 0) {
@@ -294,6 +597,14 @@ export default function AgentTimeline({
   // ── Axis baseline y ───────────────────────────────────────────────────────
   const axisBaselineY = TOP_PAD + nRows * ROW_HEIGHT;
 
+  // ── Group markers by agentId for O(1) lookup during render ───────────────
+  const markersByAgent = new Map<string, AgentMarker[]>();
+  for (const m of markers) {
+    const list = markersByAgent.get(m.agentId) ?? [];
+    list.push(m);
+    markersByAgent.set(m.agentId, list);
+  }
+
   return (
     <div
       ref={containerRef}
@@ -366,6 +677,34 @@ export default function AgentTimeline({
         >
           +
         </button>
+        {/* SEAM-06 legend — compact inline, s4 will expand/style */}
+        <span
+          aria-hidden="true"
+          style={{
+            marginLeft: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontSize: '10px',
+            color: 'var(--wm)',
+          }}
+        >
+          <svg width={10} height={10} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+            <circle cx={5} cy={5} r={4} fill="var(--mg)" />
+          </svg>pass
+          <svg width={10} height={10} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+            <polygon points="5,1 9,9 1,9" fill="var(--my)" />
+          </svg>block
+          <svg width={10} height={10} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+            <polygon points="5,1 9,9 1,9" fill="var(--redb)" />
+          </svg>fail
+          <svg width={10} height={10} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+            <polygon points="1,5 5,1 9,5 5,9" fill="var(--redb)" />
+          </svg>audit-fail
+          <svg width={10} height={10} aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+            <polygon points="1,5 9,1 9,9" fill="var(--mb)" />
+          </svg>resume
+        </span>
       </div>
 
       {/* Horizontal scroller — SVG may exceed containerWidth for wide sessions */}
@@ -436,6 +775,12 @@ export default function AgentTimeline({
 
             const titleText = `${bar.agentId} | edge: ${bar.edgeLabel} | seq: ${bar.spawnSeq} | ${durationLabel}`;
 
+            // Markers for this agent
+            const agentMarkers = markersByAgent.get(bar.agentId) ?? [];
+
+            // Marker lane center-Y: above the bar rect
+            const markerCY = barY - MARKER_LANE_OFFSET;
+
             return (
               <g key={bar.agentId} aria-hidden="false">
                 {/* Y-axis label — aria-hidden, covered by bar g aria-label */}
@@ -499,6 +844,37 @@ export default function AgentTimeline({
                     />
                   )}
                 </g>
+
+                {/* ── Event markers (SEAM-06) ── */}
+                {agentMarkers.map((marker) => {
+                  // Clamp marker to plot area — never beyond plotRight (RIGHT_PAD preserved)
+                  const mx = Math.min(normX(marker.ts), plotRight);
+                  const color = evColor(marker.ev);
+                  const label = evLabel(marker.ev);
+                  const offsetLabel = formatOffset(marker.ts - tAxisMin, axisUnit);
+                  const markerAriaLabel = `${label} — ${bar.agentId} at ${offsetLabel} (seq ${marker.seq})`;
+                  const markerTestId = `timeline-marker-${bar.agentId}-${marker.ev}-${marker.seq}`;
+
+                  return (
+                    <g
+                      key={`${marker.ev}-${marker.seq}`}
+                      role="img"
+                      tabIndex={0}
+                      aria-label={markerAriaLabel}
+                      data-testid={`timeline-marker-group-${bar.agentId}-${marker.ev}-${marker.seq}`}
+                      data-ev={marker.ev}
+                    >
+                      <title>{`${label}: ${bar.agentId}, seq ${marker.seq}, ${offsetLabel}`}</title>
+                      <MarkerShape
+                        ev={marker.ev}
+                        cx={mx}
+                        cy={markerCY}
+                        color={color}
+                        testId={markerTestId}
+                      />
+                    </g>
+                  );
+                })}
               </g>
             );
           })}

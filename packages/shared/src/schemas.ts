@@ -267,3 +267,114 @@ export const ProgressionEntrySchema = z.object({
 });
 
 export type ProgressionEntry = z.infer<typeof ProgressionEntrySchema>;
+
+// ---------------------------------------------------------------------------
+// Planning Backlog — output of planning.list procedure
+// Sources: docs/deferred-work.md (DEFERRED-NNN items) + docs/task-registry.md (sprint rows)
+// ---------------------------------------------------------------------------
+
+export const PlanningItemSchema = z.object({
+  /** Identifier: DEFERRED-NNN slug or sprint task_id */
+  id: z.string(),
+  /** Short title / heading text */
+  title: z.string(),
+  /** 'deferred' | 'done' | 'sprint-goal' | 'sprint-task' */
+  kind: z.enum(['deferred', 'done', 'sprint-goal', 'sprint-task']),
+  /** Full text body of the item */
+  body: z.string(),
+  /** Schedule-as line (deferred items only) */
+  scheduleAs: z.string().optional(),
+  /** Sprint this item belongs to */
+  sprint: z.string(),
+  /** ISO-8601 resolution date for done items */
+  resolvedAt: z.string().optional(),
+  /** Rollback commit sha (sprint items only) */
+  rollbackCommit: z.string().optional(),
+});
+export type PlanningItem = z.infer<typeof PlanningItemSchema>;
+
+export const PlanningSprintSchema = z.object({
+  /** Sprint id, e.g. "gander-studio-p7-graph-viz" */
+  sprint: z.string(),
+  /** Sprint goal text */
+  goal: z.string().optional(),
+  /** Sprint status string */
+  status: z.string().optional(),
+  /** All items in this sprint */
+  items: z.array(PlanningItemSchema),
+});
+export type PlanningSprint = z.infer<typeof PlanningSprintSchema>;
+
+export const PlanningListInputSchema = z.object({});
+export type PlanningListInput = z.infer<typeof PlanningListInputSchema>;
+
+export const PlanningListOutputSchema = z.object({
+  sprints: z.array(PlanningSprintSchema),
+  /** Number of source files that failed to parse (allSettled-skipped) */
+  skipped: z.number(),
+});
+export type PlanningListOutput = z.infer<typeof PlanningListOutputSchema>;
+
+// ---------------------------------------------------------------------------
+// Program DAG — output of program.getDag procedure
+// Source: docs/programs/*/program.md markdown tables
+// Node shape is compatible with React Flow (id, type, position, data).
+// ---------------------------------------------------------------------------
+
+export const ProgramDagNodeDataSchema = z.object({
+  label: z.string(),
+  goal: z.string(),
+  tier: z.number(),
+  /** Sprint status if resolvable from roster */
+  status: z.string().optional(),
+  dependsOn: z.array(z.string()),
+});
+
+export const ProgramDagNodeSchema = z.object({
+  id: z.string(),
+  type: z.literal('sprint'),
+  /** Position is set to {x:0,y:0}; dagre lays it out on the client */
+  position: z.object({ x: z.number(), y: z.number() }),
+  data: ProgramDagNodeDataSchema,
+});
+export type ProgramDagNode = z.infer<typeof ProgramDagNodeSchema>;
+
+export const ProgramDagEdgeSchema = z.object({
+  id: z.string(),
+  source: z.string(),
+  target: z.string(),
+  type: z.literal('dependency'),
+});
+export type ProgramDagEdge = z.infer<typeof ProgramDagEdgeSchema>;
+
+export const ProgramDagSeamSchema = z.object({
+  seam_id: z.string(),
+  from_sprint: z.string(),
+  to_sprint: z.string(),
+  artifact: z.string(),
+  format: z.string().optional(),
+  contract: z.string().optional(),
+});
+export type ProgramDagSeam = z.infer<typeof ProgramDagSeamSchema>;
+
+export const ProgramDagSchema = z.object({
+  /** program_id from frontmatter */
+  programId: z.string(),
+  /** Program title */
+  title: z.string(),
+  nodes: z.array(ProgramDagNodeSchema),
+  edges: z.array(ProgramDagEdgeSchema),
+  seams: z.array(ProgramDagSeamSchema),
+  /** Number of program.md files that failed to parse (allSettled-skipped) */
+  skipped: z.number(),
+});
+export type ProgramDag = z.infer<typeof ProgramDagSchema>;
+
+export const ProgramGetDagInputSchema = z.object({
+  /** Optional: restrict to a single program_id */
+  programId: z.string().optional(),
+});
+export type ProgramGetDagInput = z.infer<typeof ProgramGetDagInputSchema>;
+
+export const ProgramGetDagOutputSchema = z.array(ProgramDagSchema);
+export type ProgramGetDagOutput = z.infer<typeof ProgramGetDagOutputSchema>;
