@@ -5,6 +5,7 @@ import { trpc } from '../trpc';
 import { useCanvasStore, selectLoadoutPayload } from '../store/canvas-store';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { playChime } from '../hooks/useLinkSound';
 import {
   EXPORT_SUCCESS_DURATION_MS,
   TARGET_DIR_PATTERN,
@@ -144,6 +145,8 @@ export default function ExportPage() {
       setResult({ targetPath: data.targetPath, plannedFiles: data.plannedFiles });
       setErrorMessage(null);
       setExportStatus('success');
+      // s4-p6 wave-2: success chime — gated by mute in useLinkSound
+      playChime();
 
       successTimerRef.current = setTimeout(() => {
         setExportStatus('idle');

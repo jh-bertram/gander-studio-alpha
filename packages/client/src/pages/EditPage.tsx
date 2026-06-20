@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import { Loader2 } from 'lucide-react';
 import { trpc } from '@/trpc';
 import { useEditStore } from '@/store/edit-store';
+import { playChime } from '@/hooks/useLinkSound';
 import {
   SAVE_SUCCESS_DURATION_MS,
   PREVIEW_DEBOUNCE_MS,
@@ -1007,6 +1008,8 @@ export default function EditPage() {
   const onSaveSuccess = useCallback(() => {
     setSaveStatus('saved');
     setIsDirty(false);
+    // s4-p6 wave-2: success chime — gated by mute in useLinkSound
+    playChime();
     if (saveSuccessTimer.current) clearTimeout(saveSuccessTimer.current);
     saveSuccessTimer.current = setTimeout(() => {
       setSaveStatus('idle');

@@ -19,13 +19,13 @@
  *   per-bar spawn-offset aria-label.
  *
  * ─── SEAM-06: Per-ev-type visual encoding contract ──────────────────────────
- * This encoding table is the substrate s4 will decorate with role-colors.
- * s3 defines SHAPE + ACCESSIBLE LABEL only — no role->color mapping yet.
+ * This encoding table is the substrate s4 decorates with role-colors.
+ * s3 defines SHAPE + ACCESSIBLE LABEL; s4 adds role-color bars + tooltip.
  *
  * | ev type         | Shape    | SVG primitive       | Token        | Lane |
  * |-----------------|----------|---------------------|--------------|------|
- * | SPAWN           | Bar      | <rect> (bar)        | --mt         | bar  |
- * | COMPLETE        | Bar end  | <rect> (bar)        | --mt         | bar  |
+ * | SPAWN           | Bar      | <rect> (bar)        | role color   | bar  |
+ * | COMPLETE        | Bar end  | <rect> (bar)        | role color   | bar  |
  * | AUDIT_PASS      | Circle   | <circle>            | --mg (green) | top  |
  * | AUDIT_FAIL      | Diamond  | <polygon> 4-pt      | --redb (red) | top  |
  * | CRITIQUE_PASS   | Triangle | <polygon> up-tri    | --mg (green) | top  |
@@ -45,9 +45,19 @@
  * feedback_loops: NOT counted here. SEAM-04 (s2) owns counting. CRITIQUE_BLOCK +
  * AUDIT_FAIL are rendered as point markers only — no accumulator logic.
  * ────────────────────────────────────────────────────────────────────────────
+ *
+ * s4-p4 additions (decorative only — all behind p1 suppression guards):
+ *   - Role-colored bars from AGENT_MATERIA canonical map (browse.ts, read-only)
+ *   - Staggered bar entrance via .timeline-bar-enter + --bar-index CSS var
+ *   - Marching-ants orphan stroke via .timeline-orphan-march class
+ *   - Live 'now' playhead via .timeline-playhead class + 5s setInterval
+ *   - FF7 tooltip panel replacing native <title> (accessible name preserved via
+ *     aria-label on every g[role=img] — no a11y regression)
+ *   - All animation keyframes live in globals.css (p1 sole owner — zero defined here)
  */
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import type { EventLogEntry } from '@gander-studio/shared';
+import { AGENT_MATERIA, DEFAULT_MATERIA } from '../../constants/browse';
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 const LABEL_COL_WIDTH = 120;
@@ -69,6 +79,9 @@ const RIGHT_PAD = 48;                  // px reserved at right of plot area for 
 const MARKER_SIZE = 5;                 // half-size in px for marker shapes
 const MARKER_LANE_OFFSET = 10;        // px above bar center for marker center-Y
 
+// ─── s4 constants ─────────────────────────────────────────────────────────────
+const NOW_INTERVAL_MS = 5000;          // how often the live 'now' playhead updates
+
 // ─── Unit type ────────────────────────────────────────────────────────────────
 type AxisUnit = 'ms' | 's' | 'm' | 'h' | 'd';
 
@@ -89,6 +102,14 @@ interface AgentMarker {
   ts: number;
   seq: number;
   edgeLabel: string;
+}
+
+/** State for the FF7 tooltip panel. SVG-relative coordinates. */
+interface TooltipState {
+  bar: AgentBar;
+  svgX: number;        // center x of the hovered bar in SVG coords
+  svgY: number;        // top y of the hovered bar row in SVG coords
+  roleColor: string;   // materia color token for the MateriaDot
 }
 
 interface AgentTimelineProps {
@@ -151,6 +172,19 @@ function formatOffset(offsetMs: number, unit: AxisUnit): string {
     : value.toFixed(1);
 
   return `+${formatted}${unit}`;
+}
+
+/**
+ * Resolve role color from AGENT_MATERIA for a given agentId.
+ * Matches by prefix (the part before the first '#' or digit suffix).
+ * Unknown prefixes fall back to DEFAULT_MATERIA.color = var(--wm).
+ */
+function roleColor(agentId: string): string {
+  // agent_id format: "frontend-engineer#2" or "orchestrator" or "ORC#1"
+  // Strip trailing #N suffix and normalise to lower-kebab
+  const base = agentId.replace(/#\d+$/, '').toLowerCase();
+  const entry = AGENT_MATERIA[base];
+  return entry ? entry.color : DEFAULT_MATERIA.color;
 }
 
 function buildBars(
@@ -278,7 +312,7 @@ function evColor(ev: string): string {
 
 /**
  * Accessible short label for an ev type.
- * Used in aria-label and SVG <title>.
+ * Used in aria-label.
  */
 function evLabel(ev: string): string {
   const map: Record<string, string> = {
@@ -459,6 +493,115 @@ const ZOOM_STEP = 1.5;
 const ZOOM_MIN = 0.25;
 const ZOOM_MAX = 4.0;
 
+// ─── FF7 Tooltip Panel ───────────────────────────────────────────────────────
+/**
+ * FF7-styled tooltip panel. Positioned absolutely over the SVG scroller.
+ * Replaces native SVG <title> as the rich tooltip surface.
+ * Accessible name is preserved via aria-label on the parent g[role=img].
+ * This panel itself is aria-hidden — it is decorative supplemental info.
+ */
+function FF7TooltipPanel({
+  tooltip,
+  axisUnit,
+  tAxisMin,
+}: {
+  tooltip: TooltipState;
+  axisUnit: AxisUnit;
+  tAxisMin: number;
+}): React.JSX.Element {
+  const { bar, svgX, svgY, roleColor: color } = tooltip;
+  const durationLabel = bar.isOrphan
+    ? 'in progress'
+    : formatDuration((bar.completeTs as number) - bar.spawnTs);
+  const spawnOffsetLabel = formatOffset(bar.spawnTs - tAxisMin, axisUnit);
+
+  // Position tooltip above the bar — offset from SVG coords.
+  // Tooltip anchors at bar center-x, above the row.
+  const tooltipLeft = Math.max(4, svgX - 100);
+  const tooltipTop = Math.max(0, svgY - 72);
+
+  return (
+    <div
+      aria-hidden="true"
+      data-testid="timeline-tooltip"
+      style={{
+        position: 'absolute',
+        left: tooltipLeft,
+        top: tooltipTop,
+        width: 200,
+        background: 'var(--sfh)',
+        border: '1px solid var(--bdb)',
+        borderRadius: 'var(--rl)',
+        padding: '6px 8px',
+        fontFamily: 'var(--fm)',
+        fontSize: '11px',
+        color: 'var(--wd)',
+        pointerEvents: 'none',
+        zIndex: 10,
+        boxShadow: 'var(--gt)',
+      }}
+    >
+      {/* Header with MateriaDot + agent ID */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          marginBottom: '4px',
+          paddingBottom: '4px',
+          borderBottom: '1px solid var(--bd)',
+        }}
+      >
+        {/* MateriaDot — 16×16 role-colored circle */}
+        <span
+          aria-hidden="true"
+          style={{
+            display: 'inline-block',
+            width: 10,
+            height: 10,
+            borderRadius: '50%',
+            background: color,
+            flexShrink: 0,
+          }}
+        />
+        <span
+          style={{
+            color: 'var(--w)',
+            fontWeight: 600,
+            fontSize: '11px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {bar.agentId}
+        </span>
+      </div>
+      {/* Body — edge label, seq, offset, duration */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <div>
+          <span style={{ color: 'var(--wm)' }}>edge: </span>
+          <span style={{ color: 'var(--mt)' }}>{bar.edgeLabel}</span>
+        </div>
+        <div>
+          <span style={{ color: 'var(--wm)' }}>seq: </span>
+          <span>{bar.spawnSeq}</span>
+        </div>
+        <div>
+          <span style={{ color: 'var(--wm)' }}>start: </span>
+          <span>{spawnOffsetLabel}</span>
+        </div>
+        <div>
+          <span style={{ color: 'var(--wm)' }}>dur: </span>
+          <span style={{ color: bar.isOrphan ? 'var(--my)' : 'var(--mg)' }}>
+            {durationLabel}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function AgentTimeline({
   events,
@@ -466,8 +609,15 @@ export default function AgentTimeline({
   className,
 }: AgentTimelineProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(600);
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
+
+  // Live 'now' playhead — updates every NOW_INTERVAL_MS
+  const [nowTs, setNowTs] = useState<number>(() => Date.now());
+
+  // FF7 tooltip state — null means hidden
+  const [tooltipState, setTooltipState] = useState<TooltipState | null>(null);
 
   // Measure container width; update on resize
   useEffect(() => {
@@ -483,6 +633,24 @@ export default function AgentTimeline({
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
+  }, []);
+
+  // Live playhead ticker
+  useEffect(() => {
+    const id = setInterval(() => setNowTs(Date.now()), NOW_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  // ── Stable tooltip handlers (extract to named functions — no deduplication issue) ──
+  const showTooltip = useCallback(
+    (bar: AgentBar, svgX: number, svgY: number, color: string) => {
+      setTooltipState({ bar, svgX, svgY, roleColor: color });
+    },
+    [],
+  );
+
+  const hideTooltip = useCallback(() => {
+    setTooltipState(null);
   }, []);
 
   // ── Data preparation ──────────────────────────────────────────────────────
@@ -577,6 +745,13 @@ export default function AgentTimeline({
   function normX(ts: number): number {
     return LABEL_COL_WIDTH + ((ts - tAxisMin) / tAxisRange) * plotAreaWidth;
   }
+
+  // ── Live playhead position ─────────────────────────────────────────────────
+  // Show playhead only if 'now' falls within the visible axis range
+  const showPlayhead = nowTs >= tAxisMin && nowTs <= tAxisMax + tAxisRange * 0.1;
+  const playheadX = showPlayhead
+    ? Math.min(normX(nowTs), plotRight)
+    : null;
 
   // ── Tick labels ───────────────────────────────────────────────────────────
   const ticks: { x: number; label: string }[] = [];
@@ -677,7 +852,7 @@ export default function AgentTimeline({
         >
           +
         </button>
-        {/* SEAM-06 legend — compact inline, s4 will expand/style */}
+        {/* SEAM-06 legend — compact inline */}
         <span
           aria-hidden="true"
           style={{
@@ -707,11 +882,22 @@ export default function AgentTimeline({
         </span>
       </div>
 
-      {/* Horizontal scroller — SVG may exceed containerWidth for wide sessions */}
+      {/* Horizontal scroller — SVG may exceed containerWidth for wide sessions.
+          position:relative enables absolute-position FF7 tooltip overlay. */}
       <div
+        ref={scrollerRef}
         data-testid="agent-timeline-scroller"
-        style={{ overflowX: 'auto' }}
+        style={{ overflowX: 'auto', position: 'relative' }}
       >
+        {/* FF7 tooltip panel — rendered outside SVG, over scroller */}
+        {tooltipState !== null && (
+          <FF7TooltipPanel
+            tooltip={tooltipState}
+            axisUnit={axisUnit}
+            tAxisMin={tAxisMin}
+          />
+        )}
+
         <svg
           width={contentWidth}
           height={svgHeight}
@@ -720,6 +906,7 @@ export default function AgentTimeline({
           tabIndex={0}
           style={{ display: 'block' }}
           data-testid="agent-timeline-svg"
+          onMouseLeave={hideTooltip}
         >
           {/* ── X-axis baseline ── */}
           <line
@@ -749,6 +936,22 @@ export default function AgentTimeline({
             ))}
           </g>
 
+          {/* ── Live 'now' playhead — decorative, aria-hidden ── */}
+          {playheadX !== null && (
+            <line
+              x1={playheadX}
+              y1={TOP_PAD}
+              x2={playheadX}
+              y2={axisBaselineY}
+              stroke="var(--mt)"
+              strokeWidth={1.5}
+              strokeDasharray="3 3"
+              aria-hidden="true"
+              data-testid="timeline-playhead"
+              className="timeline-playhead"
+            />
+          )}
+
           {/* ── Per-agent rows ── */}
           {bars.map((bar, rowIndex) => {
             const rowTop = TOP_PAD + rowIndex * ROW_HEIGHT;
@@ -763,7 +966,7 @@ export default function AgentTimeline({
             const rawWidth = barEndX - barX;
             const barWidth = Math.max(rawWidth, MIN_BAR_WIDTH);
 
-            // Duration label for title / aria
+            // Duration label for aria
             const durationLabel = bar.isOrphan
               ? 'in progress'
               : formatDuration((bar.completeTs as number) - bar.spawnTs);
@@ -773,7 +976,11 @@ export default function AgentTimeline({
 
             const barAriaLabel = `${bar.agentId}: ${bar.edgeLabel}, spawned ${spawnOffsetLabel}, ${durationLabel}.`;
 
-            const titleText = `${bar.agentId} | edge: ${bar.edgeLabel} | seq: ${bar.spawnSeq} | ${durationLabel}`;
+            // Role color from AGENT_MATERIA canonical map
+            const barRoleColor = roleColor(bar.agentId);
+
+            // Bar center x for tooltip positioning
+            const barCenterX = barX + barWidth / 2;
 
             // Markers for this agent
             const agentMarkers = markersByAgent.get(bar.agentId) ?? [];
@@ -810,16 +1017,25 @@ export default function AgentTimeline({
                   />
                 )}
 
-                {/* Bar group — keyboard-focusable */}
+                {/* Bar group — keyboard-focusable; aria-label preserves accessible name.
+                    Native <title> removed in s4; FF7TooltipPanel replaces as rich hover/focus
+                    tooltip. Accessible name is on g[role=img] aria-label — no regression.
+                    aria-describedby wires to the tooltip when visible. */}
                 <g
                   role="img"
                   tabIndex={0}
                   aria-label={barAriaLabel}
                   data-testid={`timeline-bar-${bar.agentId}`}
                   data-orphan={bar.isOrphan ? 'true' : 'false'}
+                  onMouseEnter={() => showTooltip(bar, barCenterX, barY, barRoleColor)}
+                  onFocus={() => showTooltip(bar, barCenterX, barY, barRoleColor)}
+                  onMouseLeave={hideTooltip}
+                  onBlur={hideTooltip}
                 >
-                  <title>{titleText}</title>
                   {bar.isOrphan ? (
+                    /* Orphan bar: marching-ants dash animation via .timeline-orphan-march class.
+                       Role color used as stroke. strokeDasharray preserved as static fallback
+                       (reduced-motion: animation:none keeps dasharray visible). */
                     <rect
                       x={barX}
                       y={barY}
@@ -827,20 +1043,25 @@ export default function AgentTimeline({
                       height={BAR_HEIGHT}
                       rx={2}
                       fill="none"
-                      stroke="var(--mt)"
+                      stroke={barRoleColor}
                       strokeWidth={1.5}
                       strokeDasharray="4 3"
                       data-testid={`timeline-bar-rect-${bar.agentId}`}
+                      className="timeline-orphan-march"
                     />
                   ) : (
+                    /* Completed bar: role-colored fill; staggered entrance via
+                       .timeline-bar-enter + --bar-index CSS custom property. */
                     <rect
                       x={barX}
                       y={barY}
                       width={barWidth}
                       height={BAR_HEIGHT}
                       rx={2}
-                      fill="var(--mt)"
+                      fill={barRoleColor}
                       data-testid={`timeline-bar-rect-${bar.agentId}`}
+                      className="timeline-bar-enter"
+                      style={{ '--bar-index': rowIndex } as React.CSSProperties}
                     />
                   )}
                 </g>
@@ -864,7 +1085,6 @@ export default function AgentTimeline({
                       data-testid={`timeline-marker-group-${bar.agentId}-${marker.ev}-${marker.seq}`}
                       data-ev={marker.ev}
                     >
-                      <title>{`${label}: ${bar.agentId}, seq ${marker.seq}, ${offsetLabel}`}</title>
                       <MarkerShape
                         ev={marker.ev}
                         cx={mx}

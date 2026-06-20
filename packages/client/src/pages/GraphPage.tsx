@@ -18,10 +18,34 @@ import { trpc } from '../trpc';
 import { NODE_TYPES_LIST, EDGE_TYPES_LIST, NODE_TYPE_COLORS } from '../constants/graph';
 import GraphNode from '../components/graph/GraphNode';
 import FilterSidebar from '../components/graph/FilterSidebar';
+import { playTick } from '../hooks/useLinkSound';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
+
+/** Graph-scoped CSS for hover neighborhood highlight.
+ *  All sprint animation classes live in globals.css (s4-p1 sole owner).
+ *  Reduced-motion: globals.css suppression block applies transition-duration:0.01ms
+ *  universally, so these CSS transitions are suppressed automatically.
+ */
+const GRAPH_STYLES = `
+  /* ReactFlow wraps each node in .react-flow__node — apply opacity/filter there */
+  .react-flow__node.graph-node-dimmed {
+    opacity: 0.25;
+    transition: opacity 150ms ease;
+  }
+  .react-flow__node.graph-node-highlighted {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px var(--mt));
+    transition: opacity 150ms ease, filter 150ms ease;
+  }
+  .react-flow__node.graph-node-neighbor {
+    opacity: 0.85;
+    transition: opacity 150ms ease;
+  }
+`;
+
 const NODE_WIDTH = 180;
 const NODE_HEIGHT = 60;
 const DAGRE_RANKDIR = 'LR';
@@ -77,6 +101,9 @@ function GraphPageInner(): React.ReactElement {
   const [edgeFilters, setEdgeFilters] = useState<Set<string>>(
     () => new Set(EDGE_TYPES_LIST)
   );
+
+  // Hover state — null when no node is hovered
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
   // Toggle handlers (stable references via useCallback)
   const handleToggleNode = useCallback((nodeType: string) => {
@@ -155,6 +182,47 @@ function GraphPageInner(): React.ReactElement {
         filteredNodeIds.has(e.target)
     );
   }, [layoutedEdges, edgeFilters, filteredNodeIds]);
+
+  // ── Neighborhood highlight — compute which nodes are "neighbors" of hovered node.
+  // A neighbor is the hovered node itself, or any node connected by a visible edge.
+  const neighborIds = useMemo<Set<string>>(() => {
+    if (hoveredNodeId === null) return new Set<string>();
+    const ids = new Set<string>([hoveredNodeId]);
+    for (const edge of filteredEdges) {
+      if (edge.source === hoveredNodeId) ids.add(edge.target);
+      if (edge.target === hoveredNodeId) ids.add(edge.source);
+    }
+    return ids;
+  }, [hoveredNodeId, filteredEdges]);
+
+  // ── Apply neighborhood dim to nodes and entrance animation
+  // Injects `className` on each node: 'graph-node-dimmed' when not a neighbor during hover.
+  // 'graph-node-highlighted' on the hovered node itself.
+  const styledNodes = useMemo<Node[]>(() => {
+    return filteredNodes.map((node) => {
+      if (hoveredNodeId === null) {
+        // No hover — clear any hover classes, keep entrance class
+        return { ...node, className: 'graph-node-enter' };
+      }
+      if (node.id === hoveredNodeId) {
+        return { ...node, className: 'graph-node-enter graph-node-highlighted' };
+      }
+      if (neighborIds.has(node.id)) {
+        return { ...node, className: 'graph-node-enter graph-node-neighbor' };
+      }
+      return { ...node, className: 'graph-node-enter graph-node-dimmed' };
+    });
+  }, [filteredNodes, hoveredNodeId, neighborIds]);
+
+  // ── Hover handlers — typed inline to match ReactFlow's onNodeMouseEnter signature
+  const handleNodeMouseEnter = useCallback((_event: React.MouseEvent, node: Node) => {
+    setHoveredNodeId(node.id);
+    playTick();
+  }, []);
+
+  const handleNodeMouseLeave = useCallback((_event: React.MouseEvent) => {
+    setHoveredNodeId(null);
+  }, []);
 
   // ── Shared wrapper styles
   const wrapperStyle: React.CSSProperties = {
@@ -317,17 +385,21 @@ function GraphPageInner(): React.ReactElement {
 
   return (
     <div style={wrapperStyle}>
+      {/* Scoped CSS for hover neighborhood highlight (s4-p6 wave-2) */}
+      <style>{GRAPH_STYLES}</style>
       {/* Canvas zone */}
       <div
         style={{ flex: 1, height: '100%', minWidth: 0, position: 'relative' }}
         aria-label="Agent connectivity graph"
       >
         <ReactFlow
-          nodes={filteredNodes}
+          nodes={styledNodes}
           edges={filteredEdges}
           nodeTypes={NODE_TYPES_MAP}
           fitView
           style={{ background: 'var(--void)' }}
+          onNodeMouseEnter={handleNodeMouseEnter}
+          onNodeMouseLeave={handleNodeMouseLeave}
         >
           <Background
             color="var(--bdb)"

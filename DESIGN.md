@@ -325,3 +325,77 @@ The `--mtd` (dim variant, currently `#3a6f8a`) should also be lightened proporti
 | Destructive | `--redb` (#cf3c3c) | `--void` (#070d0c) | 4.07:1 | **below AA** (see DEFERRED-006) |
 | Intel blue chart | `--mb` (#4a90d9) | `--void` (#070d0c) | ~4.7:1 | AA |
 | Impl green chart | `--mg` (#4caf7d) | `--void` (#070d0c) | ~5.1:1 | AA |
+
+---
+
+## Decision Record C — S4 Juice Pass Motion System (s4, 2026-06-20)
+
+**Sprint:** prog-studio-vision-2026-06-s4-juice-pass
+**Author:** UI Designer (ui-designer agent, s4-p3)
+**Status:** RATIFIED — binding on s4-p1 (globals.css owner) and all wave-2 packets
+
+### Scope
+
+This record governs all CSS animation introduced in s4. It specifies the authoritative `@keyframes` identifiers, durations, easings, and `prefers-reduced-motion` fallbacks. p1 is the sole writer of globals.css and must implement exactly the names listed here. Wave-2 packets reference class names only and must not define any `@keyframes`.
+
+### Pre-existing Keyframes (globals.css lines 156–171 at s4 start) — PRESERVE BY EXACT NAME
+
+| Name | Purpose | Used by |
+|---|---|---|
+| `shimmer` | Gradient sweep for skeleton loading states | ShimmerBox (inline), `.skeleton-shimmer` class |
+| `pulse-opacity` | Ambient opacity pulse for empty-state indicators | ProgressionPage empty dot, GraphPage empty state |
+| `spin` | Rotation for loading spinners | ProgressionPage loading spinner, GraphPage loader |
+
+These three names must not be renamed, replaced, or removed. New `.skeleton-shimmer` class (see below) re-uses the `shimmer` keyframe by name.
+
+### New @keyframes and CSS Classes — Authoritative List
+
+| @keyframes name | CSS class | Surface | Duration | Easing | Loop |
+|---|---|---|---|---|---|
+| _(none — reuses `shimmer`)_ | `.skeleton-shimmer` | SkeletonCard (D7) | 1.4s | ease-in-out | infinite |
+| `panel-in` | `.panel-in` | DrilldownPanel (D7) | 180ms | cubic-bezier(0.22,1,0.36,1) | once |
+| `timeline-bar-enter` | `.timeline-bar-enter` | AgentTimeline bar rects | 240ms | ease-out | once |
+| `timeline-marching-ants` | `.timeline-orphan-march` | AgentTimeline orphan dashes | 600ms | linear | infinite |
+| `timeline-playhead-pulse` | `.timeline-playhead` | AgentTimeline now-playhead | 1.6s | ease-in-out | infinite |
+| `level-up-flash` | `.level-up-flash` | ProgressionPage level-up rows | 900ms | ease-out | once |
+| `mode-crossfade` | `.mode-enter` | ModeContent mode switch | 200ms | ease-out | once |
+
+**Stagger for `.timeline-bar-enter`:** p4 sets `animation-delay: calc(var(--bar-index) * 40ms)` via a CSS custom property on each bar row. p1 does not need to define the stagger — only the base class and keyframe.
+
+### prefers-reduced-motion Fallbacks
+
+Every s4 animation resolves to a static legible state under `@media (prefers-reduced-motion: reduce)`. p1 must include a single suppression block after all class definitions.
+
+| Class | Reduced-motion fallback | Information preserved without motion? |
+|---|---|---|
+| `.skeleton-shimmer` | `animation: none; background: var(--sfm)` | Yes — static rectangle communicates loading via shape + border |
+| `.panel-in` | `animation: none; opacity: 1; transform: none` | Yes — panel at final position, fully legible |
+| `.timeline-bar-enter` | `animation: none; opacity: 1; transform: scaleX(1)` | Yes — all bars at full width immediately |
+| `.timeline-orphan-march` | `animation: none` | Yes — static `strokeDasharray="4 3"` still distinguishes orphans |
+| `.timeline-playhead` | `animation: none; opacity: 0.7` | Yes — playhead visible as static vertical rule |
+| `.level-up-flash` | `animation: none` | Yes — LEVELS ADVANCED label (var(--my)) present without flash |
+| `.mode-enter` | `animation: none; opacity: 1; transform: none` | Yes — content at final state instantly |
+
+Pre-existing inline-style animations (`shimmer` on ShimmerBox, `pulse-opacity` + `spin` on ProgressionPage) are also suppressed in the reduced-motion block using attribute selectors targeting the `animation:` style value. p1 may alternatively refactor those callsites to use CSS classes instead of inline styles — cleaner but p1's implementation decision.
+
+### Duration Rationale
+
+- **180ms (panel-in):** dialog entrances read as snappy but physically grounded. Matches the lower bound of the 150–200ms dialog-entrance convention.
+- **200ms (mode-crossfade):** primary navigation action should feel decisive. Slightly longer than panel-in so the transition is registered without feeling like a page load.
+- **240ms (timeline-bar-enter):** bar geometry carries information (duration, overlap). Slightly slower entrance lets the reader track which bar is which as each enters sequentially.
+- **600ms (marching-ants):** fast enough to read as "live" without being distracting. Linear easing prevents the acceleration artifact that eased infinite loops produce.
+- **900ms (level-up-flash):** celebration flash wants to be noticed but not linger. Peak at 40% keyframe then fade — burst shape reads as an event, not a fade-in.
+- **1.6s (playhead pulse):** calm ambient signal. Distinct from 600ms marching-ants: two different animation speeds provide hierarchy (marching = this bar is running; pulse = here is now).
+
+### Token Basis for level-up-flash
+
+`--my: #e8c840` → RGB (232, 200, 64). The `level-up-flash` keyframe uses `rgba(232, 200, 64, ...)` derived directly from this token's hex value. No raw hex invented. The flash color matches the LEVELS ADVANCED section label and the command-agent materia — intentional semantic alignment.
+
+### globals.css Single-Writer Contract
+
+p1 is the sole owner of `globals.css` for the entirety of s4. Wave-2 packets (p2, p4, p5, p6, p8) must:
+1. Reference s4 animation classes by name only.
+2. Assert in their success criteria that `grep -c @keyframes` in their own files equals 0.
+3. Not modify globals.css.
+
+The auditor must verify that every `animation:` / `animation-name:` reference across all five wave-2 surfaces resolves to a keyframe defined in globals.css. A missing keyframe renders a juice item inert with no runtime error.
