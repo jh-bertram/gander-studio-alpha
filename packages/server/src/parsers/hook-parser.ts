@@ -22,7 +22,13 @@ const KNOWN_EVENTS = new Set(['PreToolUse', 'PostToolUse', 'Stop']);
 
 export async function parseAllHooks(ganderRoot: string): Promise<Hook[]> {
   const settingsPath = join(ganderRoot, '.claude', 'settings.json');
-  const raw = await readFile(settingsPath, 'utf-8');
+  let raw: string;
+  try {
+    raw = await readFile(settingsPath, 'utf-8');
+  } catch {
+    // settings.json missing or unreadable — return empty list, do not 500
+    return [];
+  }
   const settings = JSON.parse(raw) as Settings;
 
   const hooks: Hook[] = [];

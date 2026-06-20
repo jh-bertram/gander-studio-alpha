@@ -14,21 +14,13 @@ export const CANVAS_PROXIMITY_THRESHOLD_PX = 60;      // max center-to-center px
 // Edge styling
 export const EDGE_STROKE_COLOR = 'var(--mt)';
 export const EDGE_STROKE_WIDTH = 2;
-export const EDGE_GLOW = '0 0 6px rgba(84,153,181,0.5)';  // teal glow — matches --gt family
 export const EDGE_FILTER = 'drop-shadow(0px 0px 4px var(--bdb))';
-
-// Canvas layout radii (must match canvas-store.ts values — keep in sync)
-export const AGENT_RING_RADIUS_PX = 220;
-export const SKILL_RING_RADIUS_PX = 380;
 
 // Z-indexes
 export const Z_CANVAS_NODE = 10;
-export const Z_CANVAS_EDGE = 5;
-export const Z_PALETTE = 20;
 
 // Palette
 export const PALETTE_WIDTH_PX = 200;
-export const PALETTE_SEARCH_DEBOUNCE_MS = 150;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Glassy orb gradient stops
@@ -137,6 +129,36 @@ export const LINK_SECONDARY_GAIN_RELEASE_MS = 280;
 
 // Cleanup
 export const LINK_CLEANUP_AFTER_MS = 900;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Surface 5b — Save/Export chime (s4-p2/p6 wave-2 sounds)
+// A brief two-note ascending arpeggio: root (523 Hz C5) + fifth (784 Hz G5).
+// Fire-and-forget; mute-gated in useLinkSound.ts.
+// ─────────────────────────────────────────────────────────────────────────────
+export const CHIME_ROOT_FREQ_HZ = 523.25;       // C5
+export const CHIME_FIFTH_FREQ_HZ = 783.99;      // G5
+export const CHIME_ROOT_OSC_TYPE: OscillatorType = 'sine';
+export const CHIME_FIFTH_OSC_TYPE: OscillatorType = 'triangle';
+export const CHIME_ROOT_GAIN_PEAK = 0.28;
+export const CHIME_FIFTH_GAIN_PEAK = 0.14;
+export const CHIME_ATTACK_MS = 4;
+export const CHIME_DECAY_MS = 60;
+export const CHIME_SUSTAIN = 0.10;
+export const CHIME_RELEASE_MS = 380;
+export const CHIME_FIFTH_DELAY_MS = 80;         // fifth enters 80ms after root
+export const CHIME_CLEANUP_AFTER_MS = 900;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Surface 5c — UI tick (subtle click for UI state changes)
+// Short, band-passed sine blip. Neutral, non-intrusive.
+// ─────────────────────────────────────────────────────────────────────────────
+export const TICK_FREQ_HZ = 660;                // E5 — neutral, not too bright
+export const TICK_OSC_TYPE: OscillatorType = 'sine';
+export const TICK_GAIN_PEAK = 0.08;             // very quiet
+export const TICK_ATTACK_MS = 2;
+export const TICK_RELEASE_MS = 60;
+export const TICK_FILTER_CUTOFF_HZ = 2200;
+export const TICK_CLEANUP_AFTER_MS = 200;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Surface 4 — LoadoutListPanel

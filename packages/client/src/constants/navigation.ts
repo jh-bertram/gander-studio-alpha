@@ -1,6 +1,6 @@
 import type { AppMode } from '../store/ui-store';
 
-export interface NavItemDef {
+interface NavItemDef {
   mode: AppMode;
   label: string;
   dotColor: string;
@@ -14,4 +14,6 @@ export const NAV_ITEMS: NavItemDef[] = [
   { mode: 'sessions', label: 'Sessions', dotColor: 'var(--mp)' },
   { mode: 'graph', label: 'Graph', dotColor: 'var(--mr)' },
   { mode: 'progression', label: 'Progression', dotColor: 'var(--mo)' },
+  { mode: 'planning', label: 'Planning', dotColor: 'var(--my)' },
+  { mode: 'programs', label: 'Programs', dotColor: 'var(--cgr)' },
 ];

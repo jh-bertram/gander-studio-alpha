@@ -244,7 +244,9 @@ export default function DrilldownPanel({ item, onClose, triggerRef }: Props) {
     [onClose],
   );
 
-  // Focus trap within panel
+  // Focus trap within panel — visibility-filtered per Focus-Trap Pre-Flight requirement:
+  // offsetParent === null for any element whose ancestor chain contains display:none,
+  // preventing hidden inputs (e.g. collapsed sections) from ending up in the cycle.
   const handlePanelKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'Tab') return;
     const panel = panelRef.current;
@@ -253,7 +255,7 @@ export default function DrilldownPanel({ item, onClose, triggerRef }: Props) {
       panel.querySelectorAll<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       ),
-    ).filter((el) => !el.hasAttribute('disabled'));
+    ).filter((el) => !el.hasAttribute('disabled') && el.offsetParent !== null);
     if (focusable.length === 0) return;
     const first = focusable[0];
     const last  = focusable[focusable.length - 1];

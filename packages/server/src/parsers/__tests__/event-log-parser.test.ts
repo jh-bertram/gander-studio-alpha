@@ -124,20 +124,25 @@ describe('computeSessionStats — output validates SessionStatsSchema', () => {
   });
 });
 
-// ─── 6. feedback_loop: CRITIQUE_BLOCK → same-agent SPAWN ─────────────────────
+// ─── 6. feedback_loop: CRITIQUE_BLOCK → SPAWN (SEAM-04: no same-agent gate) ──
 
 describe('computeSessionStats — feedback_loop detection', () => {
-  it('counts CRITIQUE_BLOCK → same-agent SPAWN as a feedback loop', async () => {
+  it('counts CRITIQUE_BLOCK → SPAWN as a feedback loop (SEAM-04: attributed to spawned agent, no same-agent gate)', async () => {
     const events = await parseEventLogFiles(
       FIXTURES_DIR,
       'prog-studio-sessions-2026-05-s1-backend',
     );
     const stats = computeSessionStats(STUB_SESSION, events);
     // Fixture: seq 4 = BE#1 CRITIQUE_BLOCK, seq 5 = BE#1 SPAWN → 1 feedback loop
+    // SEAM-04: the gate was originally same-agent; it is now removed. In this
+    // synthetic fixture both events carry BE#1 — the test still holds because the
+    // new rule counts any SPAWN after CRITIQUE_BLOCK, and BE#1 is still the
+    // spawned agent (so per-agent attribution is still correct).
+    // See seam-04-feedback-loops.test.ts for the real-shaped cross-agent fixture.
     expect(stats.total_feedback_loops).toBe(1);
   });
 
-  it('attributes the feedback loop to the correct agent', async () => {
+  it('attributes the feedback loop to the spawned agent (BE#1)', async () => {
     const events = await parseEventLogFiles(
       FIXTURES_DIR,
       'prog-studio-sessions-2026-05-s1-backend',

@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import { Loader2 } from 'lucide-react';
 import { trpc } from '@/trpc';
 import { useEditStore } from '@/store/edit-store';
+import { playChime } from '@/hooks/useLinkSound';
 import {
   SAVE_SUCCESS_DURATION_MS,
   PREVIEW_DEBOUNCE_MS,
@@ -45,12 +46,9 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import type { Agent, Skill } from '@gander-studio/shared';
+import ShimmerBox from '@/components/ui/shimmer-box';
 
-// ─── Save stub ──────────────────────────────────────────────────────────────
-function saveStub(): Promise<void> {
-  console.warn('[EditPage] save stub — trpc.agent.save not yet implemented');
-  return new Promise((resolve) => setTimeout(resolve, 300));
-}
+// saveStub removed — replaced with real trpc.agent.save / trpc.skill.save mutations below
 
 // ─── FilePicker ──────────────────────────────────────────────────────────────
 interface FilePickerProps {
@@ -930,8 +928,14 @@ export default function EditPage() {
     description: '',
   });
   const [saveAsNewOpen, setSaveAsNewOpen] = useState(false);
+  // Track the filePath returned by the last successful load — needed by save mutations.
+  const [loadedFilePath, setLoadedFilePath] = useState<string>('');
   const saveSuccessTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewDebounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Real save mutations ────────────────────────────────────────────────────
+  const agentSaveMutation = trpc.agent.save.useMutation();
+  const skillSaveMutation = trpc.skill.save.useMutation();
 
   // tRPC queries for selected file
   const agentQuery = trpc.agent.get.useQuery(
@@ -947,7 +951,7 @@ export default function EditPage() {
     (selectedFile?.type === 'agent' && agentQuery.isLoading) ||
     (selectedFile?.type === 'skill' && skillQuery.isLoading);
 
-  // Populate form when data loads
+  // Populate form when data loads — also capture filePath for save mutations
   useEffect(() => {
     if (selectedFile?.type === 'agent' && agentQuery.data) {
       const a = agentQuery.data;
@@ -961,6 +965,7 @@ export default function EditPage() {
       });
       setContent(a.body);
       setPreviewContent(a.body);
+      setLoadedFilePath(a.filePath);
       setIsDirty(false);
     }
   }, [agentQuery.data, selectedFile?.type, setIsDirty]);
@@ -974,6 +979,7 @@ export default function EditPage() {
       });
       setContent(s.body);
       setPreviewContent(s.body);
+      setLoadedFilePath(s.filePath);
       setIsDirty(false);
     }
   }, [skillQuery.data, selectedFile?.type, setIsDirty]);
@@ -998,32 +1004,153 @@ export default function EditPage() {
     setIsDirty(true);
   }
 
-  // Save handler
+  // ── Internal: shared post-save success handler ────────────────────────────
+  const onSaveSuccess = useCallback(() => {
+    setSaveStatus('saved');
+    setIsDirty(false);
+    // s4-p6 wave-2: success chime — gated by mute in useLinkSound
+    playChime();
+    if (saveSuccessTimer.current) clearTimeout(saveSuccessTimer.current);
+    saveSuccessTimer.current = setTimeout(() => {
+      setSaveStatus('idle');
+    }, SAVE_SUCCESS_DURATION_MS);
+  }, [setSaveStatus, setIsDirty]);
+
+  // ── Internal: shared post-save error handler ──────────────────────────────
+  const onSaveError = useCallback((err: unknown) => {
+    const msg = err instanceof Error ? err.message : 'Unknown error';
+    setSaveStatus('error');
+    setSaveError(`Save failed: ${msg}`);
+  }, [setSaveStatus, setSaveError]);
+
+  // Save handler — real trpc.agent.save / trpc.skill.save, branched on file type
   const handleSave = useCallback(async () => {
-    if (!selectedFile || saveStatus === 'saving') return;
+    if (!selectedFile || saveStatus === 'saving' || !loadedFilePath) return;
     setSaveStatus('saving');
     setSaveError(null);
-    try {
-      await saveStub();
-      setSaveStatus('saved');
-      setIsDirty(false);
-      if (saveSuccessTimer.current) clearTimeout(saveSuccessTimer.current);
-      saveSuccessTimer.current = setTimeout(() => {
-        setSaveStatus('idle');
-      }, SAVE_SUCCESS_DURATION_MS);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      setSaveStatus('error');
-      setSaveError(`Save failed: ${msg}`);
+
+    if (selectedFile.type === 'agent') {
+      agentSaveMutation.mutate(
+        {
+          name: agentValues.name,
+          description: agentValues.description,
+          model: agentValues.model,
+          tools: agentValues.tools,
+          version: agentValues.version || undefined,
+          tier: agentValues.tier,
+          body: content,
+          filePath: loadedFilePath,
+        },
+        {
+          onSuccess: onSaveSuccess,
+          onError: onSaveError,
+        },
+      );
+    } else {
+      // selectedFile.type === 'skill'
+      skillSaveMutation.mutate(
+        {
+          name: skillValues.name,
+          description: skillValues.description,
+          body: content,
+          filePath: loadedFilePath,
+        },
+        {
+          onSuccess: onSaveSuccess,
+          onError: onSaveError,
+        },
+      );
     }
-  }, [selectedFile, saveStatus, setSaveStatus, setSaveError, setIsDirty]);
+  }, [
+    selectedFile,
+    saveStatus,
+    loadedFilePath,
+    agentValues,
+    skillValues,
+    content,
+    setSaveStatus,
+    setSaveError,
+    agentSaveMutation,
+    skillSaveMutation,
+    onSaveSuccess,
+    onSaveError,
+  ]);
+
+  // Save-as-New handler — derives a sibling file path using newName
+  const handleSaveAsNew = useCallback(async (newName: string) => {
+    if (!selectedFile || !loadedFilePath) return;
+    setSaveStatus('saving');
+    setSaveError(null);
+
+    // Derive the new file path by replacing the filename segment.
+    // filePath pattern: /...dir.../oldname.md  or  /...dir.../SKILL.md
+    // For agents: replace basename. For skills: replace the parent dir name.
+    const dirPart = loadedFilePath.substring(0, loadedFilePath.lastIndexOf('/'));
+    const parentDir = dirPart.substring(0, dirPart.lastIndexOf('/'));
+
+    if (selectedFile.type === 'agent') {
+      const newFilePath = `${dirPart}/${newName}.md`;
+      agentSaveMutation.mutate(
+        {
+          name: newName,
+          description: agentValues.description,
+          model: agentValues.model,
+          tools: agentValues.tools,
+          version: agentValues.version || undefined,
+          tier: agentValues.tier,
+          body: content,
+          filePath: newFilePath,
+        },
+        {
+          onSuccess: () => {
+            setLoadedFilePath(newFilePath);
+            setSelectedFile({ type: 'agent', name: newName });
+            onSaveSuccess();
+          },
+          onError: onSaveError,
+        },
+      );
+    } else {
+      // skill: lives at /...skills/skillname/SKILL.md — new dir = parentDir/newName/SKILL.md
+      const newFilePath = `${parentDir}/${newName}/SKILL.md`;
+      skillSaveMutation.mutate(
+        {
+          name: newName,
+          description: skillValues.description,
+          body: content,
+          filePath: newFilePath,
+        },
+        {
+          onSuccess: () => {
+            setLoadedFilePath(newFilePath);
+            setSelectedFile({ type: 'skill', name: newName });
+            onSaveSuccess();
+          },
+          onError: onSaveError,
+        },
+      );
+    }
+  }, [
+    selectedFile,
+    loadedFilePath,
+    agentValues,
+    skillValues,
+    content,
+    setSaveStatus,
+    setSaveError,
+    agentSaveMutation,
+    skillSaveMutation,
+    setSelectedFile,
+    onSaveSuccess,
+    onSaveError,
+  ]);
 
   // Ctrl/Cmd+S shortcut
   useEffect(() => {
     function handleKeyDown(e: globalThis.KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
-        if (selectedFile && isDirty) handleSave();
+        if (selectedFile && isDirty) void handleSave();
       }
     }
     window.addEventListener('keydown', handleKeyDown);
@@ -1091,16 +1218,8 @@ export default function EditPage() {
 
       {/* Loading skeleton */}
       {isLoading && (
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            marginTop: '12px',
-            borderRadius: 'var(--r)',
-            background: 'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 1.4s infinite',
-          }}
+        <ShimmerBox
+          style={{ flex: 1, minHeight: 0, marginTop: '12px', borderRadius: 'var(--r)' }}
         />
       )}
 
@@ -1245,8 +1364,7 @@ export default function EditPage() {
         onClose={() => setSaveAsNewOpen(false)}
         onConfirm={(newName) => {
           setSaveAsNewOpen(false);
-          console.warn(`[EditPage] save stub — trpc.agent.save not yet implemented (new name: ${newName})`);
-          handleSave();
+          void handleSaveAsNew(newName);
         }}
       />
     </div>

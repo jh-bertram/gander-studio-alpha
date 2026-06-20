@@ -9,7 +9,8 @@ export async function parseAllSkills(ganderRoot: string): Promise<Skill[]> {
   const entries = await readdir(skillsDir, { withFileTypes: true });
   const skillDirs = entries.filter(e => e.isDirectory());
 
-  const skills = await Promise.all(
+  // allSettled-and-skip: one bad SKILL.md must not 500 the whole list
+  const results = await Promise.allSettled(
     skillDirs.map(async (dir) => {
       const filePath = join(skillsDir, dir.name, 'SKILL.md');
       const raw = await readFile(filePath, 'utf-8');
@@ -23,5 +24,12 @@ export async function parseAllSkills(ganderRoot: string): Promise<Skill[]> {
     })
   );
 
+  const skills: Skill[] = [];
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      skills.push(result.value);
+    }
+    // rejected: skip silently (malformed SKILL.md — one bad file does not 500)
+  }
   return skills;
 }

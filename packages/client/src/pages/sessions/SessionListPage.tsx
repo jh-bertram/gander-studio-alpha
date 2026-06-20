@@ -6,21 +6,14 @@ import { useSessionStore } from '../../store/session-store';
 import AgentStatPanel from '../../components/sessions/AgentStatPanel';
 import AgentStatTable from '../../components/sessions/AgentStatTable';
 import { groupAgentsByBaseCode } from '../../utils/group-agents';
+import { type MetricKey, formatWallClock } from '../../utils/session-metrics';
+import ErrorState from '../../components/ui/error-state';
+import ShimmerBox from '../../components/ui/shimmer-box';
 
 // ---- Local constants ---------------------------------------------------------
 
-type MetricKey = 'spawns' | 'feedback_loops' | 'wall_clock_ms';
-
 // Default metrics shown in the overview aggregate panel (no analyzeStore import)
 const OVERVIEW_METRICS: MetricKey[] = ['spawns', 'feedback_loops'];
-
-// ---- Helpers ----------------------------------------------------------------
-
-function formatWallClock(ms: number | undefined): string {
-  if (ms === undefined) return '—';
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-}
 
 // ---- PageTitle component ------------------------------------------------
 
@@ -83,14 +76,11 @@ function LoadingState() {
             <tr key={i} style={{ borderBottom: '1px solid var(--bd)' }}>
               {Array.from({ length: 4 }).map((__, j) => (
                 <td key={j} style={{ padding: '10px 14px' }}>
-                  <div
+                  <ShimmerBox
                     style={{
-                      height:         '14px',
-                      borderRadius:   '3px',
-                      background:     'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
-                      backgroundSize: '200% 100%',
-                      animation:      'shimmer 1.4s ease-in-out infinite',
-                      width:          j === 0 ? '70%' : '50%',
+                      height:       '14px',
+                      borderRadius: '3px',
+                      width:        j === 0 ? '70%' : '50%',
                     }}
                   />
                 </td>
@@ -104,50 +94,6 @@ function LoadingState() {
 }
 
 // ---- ErrorState ---------------------------------------------------------
-
-function ErrorState({ error }: { error: unknown }) {
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'string'
-        ? error
-        : 'An unexpected error occurred.';
-
-  return (
-    <div
-      role="alert"
-      style={{
-        borderLeft:   '3px solid var(--redb)',
-        background:   'var(--sfm)',
-        borderRadius: 'var(--rl)',
-        padding:      '14px 18px',
-      }}
-    >
-      <div
-        style={{
-          fontFamily:    'var(--fm)',
-          fontSize:      '10px',
-          color:         'var(--redb)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.12em',
-          fontWeight:    700,
-          marginBottom:  '6px',
-        }}
-      >
-        LOAD ERROR
-      </div>
-      <div
-        style={{
-          fontFamily: 'var(--fm)',
-          fontSize:   '12px',
-          color:      'var(--wd)',
-        }}
-      >
-        {message}
-      </div>
-    </div>
-  );
-}
 
 // ---- EmptyState ---------------------------------------------------------
 
@@ -358,21 +304,17 @@ function AggregatePanel({ selectedSessionIds }: { selectedSessionIds: string[] }
 
   if (isLoading) {
     return (
-      <div
+      <ShimmerBox
         aria-busy="true"
         data-testid="aggregate-loading"
+        srLabel="Loading aggregate stats…"
         style={{
-          height:         '14px',
-          borderRadius:   '3px',
-          background:     'linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%)',
-          backgroundSize: '200% 100%',
-          animation:      'shimmer 1.4s ease-in-out infinite',
-          width:          '60%',
-          margin:         '12px 0',
+          height:       '14px',
+          borderRadius: '3px',
+          width:        '60%',
+          margin:       '12px 0',
         }}
-      >
-        <span className="sr-only">Loading aggregate stats…</span>
-      </div>
+      />
     );
   }
 

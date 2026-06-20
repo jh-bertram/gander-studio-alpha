@@ -44,8 +44,15 @@ export function computeSessionStats(session: Session, events: EventLogEntry[]): 
   }
 
   // --- Total feedback_loops ---
-  // A feedback loop is a consecutive same-agent SPAWN immediately following
-  // a CRITIQUE_BLOCK or AUDIT_FAIL in the event stream.
+  // SEAM-04 (2026-06-20): A feedback loop is a SPAWN immediately following a
+  // CRITIQUE_BLOCK or AUDIT_FAIL in the event stream, attributed to the SPAWNED
+  // agent — regardless of which agent_id the block event carries.
+  //
+  // Rationale: on real logs, CRITIQUE_BLOCK carries the critic's agent_id (e.g.
+  // CR#1) and AUDIT_FAIL carries the auditor's id (e.g. AUDITOR#6). The remediated
+  // agent is always the NEXT SPAWN. The former same-agent gate (cur.agent_id ===
+  // prev.agent_id) silently zeroed this metric on every real sprint.
+  // See docs/programs/prog-studio-vision-2026-06/seam-04-feedback-loops-contract.md
   let total_feedback_loops = 0;
   for (let i = 1; i < sorted.length; i++) {
     const cur = sorted[i];
@@ -53,7 +60,6 @@ export function computeSessionStats(session: Session, events: EventLogEntry[]): 
     if (!cur || !prev) continue;
     if (
       cur.ev === 'SPAWN' &&
-      cur.agent_id === prev.agent_id &&
       (prev.ev === 'CRITIQUE_BLOCK' || prev.ev === 'AUDIT_FAIL')
     ) {
       total_feedback_loops++;
@@ -78,14 +84,14 @@ export function computeSessionStats(session: Session, events: EventLogEntry[]): 
     if (!isNaN(ts)) bucket.timestamps.push(ts);
   }
 
-  // Per-agent feedback_loops
+  // Per-agent feedback_loops — SEAM-04: same rule as total, attributed to the
+  // spawned agent (cur.agent_id). No same-agent gate; block carries critic/auditor id.
   for (let i = 1; i < sorted.length; i++) {
     const cur = sorted[i];
     const prev = sorted[i - 1];
     if (!cur || !prev) continue;
     if (
       cur.ev === 'SPAWN' &&
-      cur.agent_id === prev.agent_id &&
       (prev.ev === 'CRITIQUE_BLOCK' || prev.ev === 'AUDIT_FAIL')
     ) {
       getOrCreate(cur.agent_id).feedback_loops++;

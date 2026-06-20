@@ -13,12 +13,20 @@ import {
   ExportInputSchema,
   SessionSchema,
   SessionStatsSchema,
+  SessionRawInputSchema,
   SessionRawOutputSchema,
   AggregateStatsInputSchema,
   ConnectivityGraphSchema,
+  PlanningListInputSchema,
+  PlanningListOutputSchema,
+  ProgramGetDagInputSchema,
+  ProgramGetDagOutputSchema,
   type ConnectivityGraph,
-  ProgressionEntrySchema,
   type ProgressionEntry,
+  type SessionStats,
+  type Session,
+  type EventLogEntry,
+  ProgressionEntrySchema,
 } from '@gander-studio/shared';
 import { parseSessionFile } from './parsers/session-parser.js';
 import { parseEventLogFiles } from './parsers/event-log-parser.js';
@@ -27,12 +35,58 @@ import { collectSessions } from './session-list.js';
 import { validateSaveEditPath } from './parsers/saveedit-guard.js';
 import { aggregateSessionStats } from './parsers/aggregate-stats.js';
 import { parseLedgerContent } from './parsers/progression-parser.js';
+import { parsePlanningBacklog } from './parsers/planning-parser.js';
+import { parseProgramDags } from './parsers/program-dag-parser.js';
+import { fileURLToPath } from 'node:url';
 
 const t = initTRPC.create();
 
 // ---------------------------------------------------------------------------
+// Studio root — the gander-studio-alpha repo root (NOT GANDER_ROOT).
+// Planning and program.md files live here, not in the agent gander repo.
+// Resolves 3 levels up from packages/server/src/router.ts → repo root.
+// ---------------------------------------------------------------------------
+// router.ts lives at packages/server/src/router.ts
+// dirname(router.ts) = packages/server/src → 3 levels up = studio root
+const STUDIO_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..', '..', '..',
+);
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Scan SESSIONS_SOURCE_DIRS for a session matching `id` (by session.id or session.sprint).
+ * Returns `{ session, dir }` when found, or `null` when not found.
+ * Skips unparseable files silently (same as per-caller behaviour).
+ */
+async function findSessionById(
+  id: string,
+): Promise<{ session: Session; dir: string } | null> {
+  for (const dir of SESSIONS_SOURCE_DIRS) {
+    const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
+    let entries: string[];
+    try {
+      entries = await readdir(postMortemsDir);
+    } catch {
+      continue;
+    }
+    for (const file of entries.filter((e) => e.endsWith('.md'))) {
+      const filePath = path.join(postMortemsDir, file);
+      try {
+        const session = await parseSessionFile(filePath, dir);
+        if (session.id === id || session.sprint === id) {
+          return { session, dir };
+        }
+      } catch {
+        continue;
+      }
+    }
+  }
+  return null;
+}
 
 function guardPath(filePath: string): void {
   const resolved = path.resolve(filePath);
@@ -51,6 +105,36 @@ function sanitizeName(name: string): string {
     throw new TRPCError({ code: 'BAD_REQUEST', message: 'Name contains no valid characters' });
   }
   return clean;
+}
+
+/**
+ * Resolve event-log entries for a session using a two-stage slug strategy:
+ *
+ *  1. PRIMARY: first whitespace-delimited token of session.sprint. Strips
+ *     parenthetical title suffixes (e.g. "v1.2 (some-session)") while
+ *     preserving dotted-version strings ("v1.2" ≠ "v1-2" after toSlug).
+ *  2. FALLBACK: session.id (toSlug(filename-stem)) when primary yields 0 matches.
+ *     Required for prose-H1 Format B sessions where sprint prose like
+ *     "Gander Studio P2 + P3" produces primary="Gander" which never matches
+ *     lowercase task_ids like "gander-studio-p2-p3-t1".
+ *
+ * Emits a console.warn when falling back so zero-match sessions are observable.
+ */
+async function resolveSessionEvents(
+  eventsDir: string,
+  session: { sprint: string; id: string },
+  callerLabel: string,
+): Promise<EventLogEntry[]> {
+  const sprintSlug = session.sprint.split(/\s+/)[0];
+  let events = await parseEventLogFiles(eventsDir, sprintSlug);
+  if (events.length === 0 && session.id !== sprintSlug) {
+    console.warn(
+      `[${callerLabel}] sprintSlug "${sprintSlug}" matched 0 events for session "${session.id}"; ` +
+      `retrying with session.id as slug fallback`,
+    );
+    events = await parseEventLogFiles(eventsDir, session.id);
+  }
+  return events;
 }
 
 // ---------------------------------------------------------------------------
@@ -237,13 +321,23 @@ const exportRouter = t.router({
     .input(ExportInputSchema)
     .output(ExportResultSchema)
     .mutation(async ({ input }) => {
+      const exportBaseResolved = path.resolve(EXPORT_BASE_DIR);
       if (input.targetBasePath !== undefined) {
         const resolved = path.resolve(input.targetBasePath);
         if (resolved !== input.targetBasePath || !resolved.startsWith('/')) {
           throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetBasePath must be an absolute normalised path' });
         }
+        // Enforce containment: targetBasePath must be inside or equal to EXPORT_BASE_DIR
+        if (resolved !== exportBaseResolved && !resolved.startsWith(exportBaseResolved + path.sep)) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'targetBasePath must be inside EXPORT_BASE_DIR' });
+        }
       }
       const targetPath = path.join(input.targetBasePath ?? EXPORT_BASE_DIR, input.targetDirName);
+      // Double-check the fully-resolved target stays within EXPORT_BASE_DIR
+      const targetResolved = path.resolve(targetPath);
+      if (targetResolved !== exportBaseResolved && !targetResolved.startsWith(exportBaseResolved + path.sep)) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'Export target resolves outside EXPORT_BASE_DIR' });
+      }
       const { loadout } = input;
 
       // Track (sourcePath, destPath) pairs alongside plannedFiles
@@ -435,69 +529,27 @@ const sessionRouter = t.router({
     .input(z.object({ id: z.string() }))
     .output(SessionSchema)
     .query(async ({ input }) => {
-      for (const dir of SESSIONS_SOURCE_DIRS) {
-        const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
-        let entries: string[];
-        try {
-          entries = await readdir(postMortemsDir);
-        } catch {
-          continue;
-        }
-        for (const file of entries.filter((e) => e.endsWith('.md'))) {
-          const filePath = path.join(postMortemsDir, file);
-          try {
-            const session = await parseSessionFile(filePath, dir);
-            if (session.id === input.id || session.sprint === input.id) {
-              const eventsDir = path.join(session.source_root, 'docs', 'events');
-              // Use first whitespace-delimited token of sprint — strips parenthetical
-              // title suffixes while preserving dotted version strings (e.g. v1.2)
-              // that differ from the dash-normalised id (v1-2).
-              const sprintSlug = session.sprint.split(/\s+/)[0];
-              const events = await parseEventLogFiles(eventsDir, sprintSlug);
-              return { ...session, events };
-            }
-          } catch {
-            continue;
-          }
-        }
+      const found = await findSessionById(input.id);
+      if (!found) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
       }
-      throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
+      const { session } = found;
+      const eventsDir = path.join(session.source_root, 'docs', 'events');
+      const events = await resolveSessionEvents(eventsDir, session, 'session.get');
+      return { ...session, events };
     }),
 
   getStats: t.procedure
     .input(z.object({ id: z.string() }))
     .output(SessionStatsSchema)
     .query(async ({ input }) => {
-      let foundSession = null as import('@gander-studio/shared').Session | null;
-      for (const dir of SESSIONS_SOURCE_DIRS) {
-        const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
-        let entries: string[];
-        try {
-          entries = await readdir(postMortemsDir);
-        } catch {
-          continue;
-        }
-        for (const file of entries.filter((e) => e.endsWith('.md'))) {
-          const filePath = path.join(postMortemsDir, file);
-          try {
-            const session = await parseSessionFile(filePath, dir);
-            if (session.id === input.id || session.sprint === input.id) {
-              foundSession = session;
-              break;
-            }
-          } catch {
-            continue;
-          }
-        }
-        if (foundSession) break;
-      }
-      if (!foundSession) {
+      const found = await findSessionById(input.id);
+      if (!found) {
         throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
       }
+      const { session: foundSession } = found;
       const eventsDir = path.join(foundSession.source_root, 'docs', 'events');
-      // Same slug strategy as session.get: first whitespace token of sprint.
-      const sprintSlug = foundSession.sprint.split(/\s+/)[0];
-      const events = await parseEventLogFiles(eventsDir, sprintSlug);
+      const events = await resolveSessionEvents(eventsDir, foundSession, 'session.getStats');
       return computeSessionStats(foundSession, events);
     }),
 
@@ -532,59 +584,57 @@ const sessionRouter = t.router({
         });
       }
 
-      const perSessionStats = await Promise.all(
+      // allSettled-and-skip: a single bad session file must not 500 the aggregate
+      const perSessionSettled = await Promise.allSettled(
         matched.map(async (session) => {
           const eventsDir = path.join(session.source_root, 'docs', 'events');
-          // Same slug strategy as getStats: first whitespace token of sprint.
-          const sprintSlug = session.sprint.split(/\s+/)[0];
-          const events = await parseEventLogFiles(eventsDir, sprintSlug);
+          const events = await resolveSessionEvents(eventsDir, session, 'session.aggregateStats');
           return computeSessionStats(session, events);
         }),
       );
+      const perSessionStats = perSessionSettled
+        .filter((r): r is PromiseFulfilledResult<SessionStats> => r.status === 'fulfilled')
+        .map((r) => r.value);
 
       // Explicit parse validates the flat shape before returning to the caller.
       return SessionStatsSchema.parse(aggregateSessionStats(perSessionStats, input.sessionIds));
     }),
 
-  // getRaw — returns the raw markdown of a session's ORIGINAL source file.
+  // getRaw — returns the raw markdown of a session file, preferring the edited
+  // version in SESSIONS_EDITS_DIR when one exists (round-trip for saveEdit).
   // Client input: id only (never filePath — path-traversal prevention).
-  // Always reads session.filePath (original source), never editedFilePath.
+  // Priority: SESSIONS_EDITS_DIR/{id}.md (if present, path-guarded) > session.filePath (original).
   getRaw: t.procedure
-    .input(z.object({ id: z.string() }))
+    .input(SessionRawInputSchema)
     .output(SessionRawOutputSchema)
     .query(async ({ input }) => {
-      for (const dir of SESSIONS_SOURCE_DIRS) {
-        const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
-        let entries: string[];
+      const found = await findSessionById(input.id);
+      if (!found) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
+      }
+      const { session } = found;
+      // Prefer edit file in SESSIONS_EDITS_DIR when it exists (D6 round-trip).
+      // Re-runs validateSaveEditPath to guard against path traversal.
+      let editedFilePath: string | undefined;
+      let content: string;
+      try {
+        const editTarget = validateSaveEditPath(session.id, SESSIONS_EDITS_DIR);
+        const editContent = await readFile(editTarget, 'utf8');
+        // Edit file exists and readable — use it
+        content = editContent;
+        editedFilePath = editTarget;
+      } catch {
+        // Edit file absent or unreadable — fall back to original source
         try {
-          entries = await readdir(postMortemsDir);
+          content = await readFile(session.filePath, 'utf8');
         } catch {
-          continue;
-        }
-        for (const file of entries.filter((e) => e.endsWith('.md'))) {
-          const filePath = path.join(postMortemsDir, file);
-          try {
-            const session = await parseSessionFile(filePath, dir);
-            if (session.id === input.id || session.sprint === input.id) {
-              // Read the ORIGINAL source file (session.filePath), not editedFilePath.
-              let content: string;
-              try {
-                content = await readFile(session.filePath, 'utf8');
-              } catch (err) {
-                throw new TRPCError({
-                  code: 'INTERNAL_SERVER_ERROR',
-                  message: (err as Error).message,
-                });
-              }
-              return { content };
-            }
-          } catch (err) {
-            if (err instanceof TRPCError) throw err;
-            continue;
-          }
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Operation failed',
+          });
         }
       }
-      throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
+      return { content, editedFilePath };
     }),
 });
 
@@ -634,6 +684,32 @@ const connectivityRouter = t.router({
 });
 
 // ---------------------------------------------------------------------------
+// Planning router
+// ---------------------------------------------------------------------------
+
+const planningRouter = t.router({
+  list: t.procedure
+    .input(PlanningListInputSchema)
+    .output(PlanningListOutputSchema)
+    .query(async () => {
+      return parsePlanningBacklog(STUDIO_ROOT);
+    }),
+});
+
+// ---------------------------------------------------------------------------
+// Program router
+// ---------------------------------------------------------------------------
+
+const programRouter = t.router({
+  getDag: t.procedure
+    .input(ProgramGetDagInputSchema)
+    .output(ProgramGetDagOutputSchema)
+    .query(async ({ input }) => {
+      return parseProgramDags(STUDIO_ROOT, input.programId);
+    }),
+});
+
+// ---------------------------------------------------------------------------
 // Progression router
 // ---------------------------------------------------------------------------
 
@@ -674,6 +750,8 @@ export const appRouter = t.router({
   session: sessionRouter,
   connectivity: connectivityRouter,
   progression: progressionRouter,
+  planning: planningRouter,
+  program: programRouter,
 });
 
 export type AppRouter = typeof appRouter;

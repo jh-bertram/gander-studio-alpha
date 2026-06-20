@@ -1,0 +1,9 @@
+{"seq":1,"ts":"2026-03-16T10:00:00Z","ev":"SPAWN","task_id":"gander-studio-p2-p3-export-fix-t1","agent_id":"PM#1","parent_id":"orchestrator","edge_label":"dispatch"}
+{"seq":2,"ts":"2026-03-16T10:05:00Z","ev":"SPAWN","task_id":"gander-studio-p2-p3-export-fix-t1","agent_id":"BE#1","parent_id":"PM#1","edge_label":"task_dispatch"}
+{"seq":3,"ts":"2026-03-16T10:20:00Z","ev":"COMPLETE","task_id":"gander-studio-p2-p3-export-fix-t1","agent_id":"BE#1","parent_id":"PM#1","edge_label":"completion_packet"}
+{"seq":4,"ts":"2026-03-16T10:21:00Z","ev":"CRITIQUE_PASS","task_id":"gander-studio-p2-p3-export-fix-t1","agent_id":"CR#1","parent_id":"PM#1","edge_label":"critique_result"}
+{"seq":5,"ts":"2026-03-16T10:22:00Z","ev":"AUDIT_PASS","task_id":"gander-studio-p2-p3-export-fix-t1","agent_id":"SA#1","parent_id":"PM#1","edge_label":"audit_result"}
+{"seq":6,"ts":"2026-03-16T11:00:00Z","ev":"SPAWN","task_id":"gander-studio-p2-p3-e2e-verify-t2","agent_id":"FE#1","parent_id":"PM#1","edge_label":"task_dispatch"}
+{"seq":7,"ts":"2026-03-16T11:15:00Z","ev":"COMPLETE","task_id":"gander-studio-p2-p3-e2e-verify-t2","agent_id":"FE#1","parent_id":"PM#1","edge_label":"completion_packet"}
+{"seq":8,"ts":"2026-03-16T11:16:00Z","ev":"AUDIT_PASS","task_id":"gander-studio-p2-p3-e2e-verify-t2","agent_id":"SA#1","parent_id":"PM#1","edge_label":"audit_result"}
+{"seq":99,"ts":"2026-03-16T12:00:00Z","ev":"SPAWN","task_id":"unrelated-other-sprint-t1","agent_id":"BE#2","parent_id":"ORC","edge_label":"dispatch"}

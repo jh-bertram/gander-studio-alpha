@@ -1,12 +1,10 @@
-@import "tw-animate-css";
-@import "@fontsource-variable/geist";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   /* FF7R Design Tokens */
-  --mt: #5499b5;
+  --mt: #6db0c8;
   --mtd: #3a6f8a;
   --dg: #165241;
   --dgd: #0e3a2f;
@@ -18,7 +16,7 @@
   --bdb: rgba(84, 153, 181, 0.55);
   --w: #ffffff;
   --wd: rgba(255, 255, 255, 0.72);
-  --wm: rgba(255, 255, 255, 0.38);
+  --wm: rgba(255, 255, 255, 0.55);
   --red: #a12d2d;
   --redb: #cf3c3c;
   /* Materia role colors */
@@ -112,19 +110,6 @@ body::before {
   }
 }
 
-/* Nav item hover state */
-.nav-item:hover {
-  background: rgba(84, 153, 181, 0.08) !important;
-  border-left-color: var(--mt) !important;
-  color: var(--w) !important;
-}
-
-/* Nav item focus ring */
-.nav-item:focus-visible {
-  outline: 2px solid var(--mt);
-  outline-offset: 2px;
-}
-
 /* Tab item focus ring */
 .tab-item:focus-visible {
   outline: 2px solid var(--mt);
@@ -167,94 +152,230 @@ body::before {
 .preview-content strong { color: var(--w); font-weight: 600; }
 .preview-content em { color: var(--wd); font-style: italic; }
 
-/* Skeleton shimmer animation */
+/* ═══════════════════════════════════════════════════════════════════════════
+   s4-p1 SUPPRESSION FOUNDATION — ALL sprint @keyframes owned here.
+   Wave-2 tasks (p2/p4/p5/p6/p8) reference these classes BY NAME only.
+   grep -c @keyframes in those files MUST equal 0.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── PRE-EXISTING (preserve exact names — consumers depend on them) ───────── */
+
+/* Skeleton shimmer animation — PRE-EXISTING */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
-/* Pulse opacity animation (empty state dot) */
+/* Pulse opacity animation (empty state dot) — PRE-EXISTING */
 @keyframes pulse-opacity {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
 }
 
-/* Spinner animation */
+/* Spinner animation — PRE-EXISTING */
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
+/* ── NEW s4 sprint @keyframes ─────────────────────────────────────────────── */
+
+/* DrilldownPanel entrance (D7) */
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* AgentTimeline: bar staggered entrance — stagger via --bar-index * 40ms */
+@keyframes timeline-bar-enter {
+  from { opacity: 0; transform: scaleX(0); transform-origin: left center; }
+  to   { opacity: 1; transform: scaleX(1); transform-origin: left center; }
+}
+
+/* AgentTimeline: orphan bar marching-ants dash stroke */
+@keyframes timeline-marching-ants {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -14; }
+}
+
+/* AgentTimeline: now-playhead ambient pulse */
+@keyframes timeline-playhead-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+/* ProgressionPage: LEVEL UP celebration flash — RGB derived from --my #e8c840 */
+@keyframes level-up-flash {
+  0%   { background: rgba(232, 200, 64, 0.22); }
+  40%  { background: rgba(232, 200, 64, 0.35); }
+  100% { background: transparent; }
+}
+
+/* ModeContent: activeMode switch crossfade */
+@keyframes mode-crossfade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── s4 animation utility CLASSES ─────────────────────────────────────────── */
+
+/* D7: SkeletonCard — shimmer (reuses pre-existing keyframe) */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--sfm) 25%,
+    var(--sfh) 50%,
+    var(--sfm) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* D7: DrilldownPanel / dialog entrance */
+.panel-in {
+  animation: panel-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* AgentTimeline: bar staggered entrance */
+.timeline-bar-enter {
+  animation: timeline-bar-enter 240ms ease-out both;
+  animation-delay: calc(var(--bar-index, 0) * 40ms);
+}
+
+/* AgentTimeline: orphan bar marching-ants (SVG stroke animation) */
+.timeline-orphan-march {
+  animation: timeline-marching-ants 600ms linear infinite;
+}
+
+/* AgentTimeline: now-playhead ambient pulse */
+.timeline-playhead {
+  animation: timeline-playhead-pulse 1.6s ease-in-out infinite;
+}
+
+/* ProgressionPage: LEVEL UP gold flash */
+.level-up-flash {
+  animation: level-up-flash 900ms ease-out both;
+}
+
+/* ModeContent: mode-switch crossfade */
+.mode-enter {
+  animation: mode-crossfade 200ms ease-out both;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL PREFERS-REDUCED-MOTION SUPPRESSION BLOCK
+   All s4 animation classes + attribute-selector guards for pre-existing
+   inline-style animations (ShimmerBox, ProgressionPage loading/empty states).
+   Every animated surface must be legible in suppressed state.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  /* ── New s4 animation classes → static final state ─────────────────────── */
+
+  /* skeleton-shimmer: static dark rectangle — shape still communicates loading */
+  .skeleton-shimmer {
+    animation: none;
+    background: var(--sfm);
+  }
+
+  /* panel-in: panel at final position instantly, fully legible */
+  .panel-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  /* timeline-bar-enter: all bars at full width immediately on mount */
+  .timeline-bar-enter {
+    animation: none;
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  /* timeline-orphan-march: static dash — strokeDasharray '4 3' still distinguishes orphan */
+  .timeline-orphan-march {
+    animation: none;
+  }
+
+  /* timeline-playhead: visible as static vertical rule */
+  .timeline-playhead {
+    animation: none;
+    opacity: 0.7;
+  }
+
+  /* level-up-flash: suppressed — LEVELS ADVANCED label in var(--my) still present */
+  .level-up-flash {
+    animation: none;
+    background: transparent;
+  }
+
+  /* mode-enter: content at final state instantly, no flash-of-empty */
+  .mode-enter {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ── Attribute-selector guard: suppress all remaining CSS animations/transitions ── */
+  /* Catches any inline-style shimmer, pulse-opacity, spin not covered above */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @layer base {
+  /*
+   * FF7 Mako token map — prog-studio-vision-2026-06-s1-token-root-fix (p2)
+   * Stock Shadcn LIGHT oklch values replaced with FF7 runtime var() references.
+   * The .dark block has been REMOVED: className="dark" was applied NOWHERE in the
+   * app (zero consumer sites verified 2026-06-20), so it was dead code. The FF7
+   * :root block above is the single source of truth for all palette tokens.
+   *
+   * Decision record: DESIGN.md §Record A (appended 2026-06-20).
+   */
   :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.809 0.105 251.813);
-    --chart-2: oklch(0.623 0.214 259.815);
-    --chart-3: oklch(0.546 0.245 262.881);
-    --chart-4: oklch(0.488 0.243 264.376);
-    --chart-5: oklch(0.424 0.199 265.638);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
-  }
-  .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.809 0.105 251.813);
-    --chart-2: oklch(0.623 0.214 259.815);
-    --chart-3: oklch(0.546 0.245 262.881);
-    --chart-4: oklch(0.488 0.243 264.376);
-    --chart-5: oklch(0.424 0.199 265.638);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
-  }
-  .theme {
-    --font-sans: 'Geist Variable', sans-serif;
+    /* App surface / text */
+    --background:             var(--void);          /* #070d0c — near-black canvas */
+    --foreground:             var(--w);             /* #ffffff — 21:1 on --void AAA */
+    --card:                   var(--sf);            /* #0d1a18 — deep dark surface */
+    --card-foreground:        var(--w);             /* #ffffff — 17.8:1 on --sf AAA */
+    --popover:                var(--sfm);           /* #122420 — popover surface */
+    --popover-foreground:     var(--w);             /* #ffffff — >15:1 on --sfm AAA */
+    /* Primary / interactive */
+    --primary:                var(--mt);            /* #6db0c8 (p3) — 5.38:1 on --sfh AA */
+    --primary-foreground:     var(--void);          /* #070d0c — 8.12:1 on #6db0c8 AA+ */
+    --secondary:              var(--sfh);           /* #1a3530 — secondary button surface */
+    --secondary-foreground:   var(--wd);            /* rgba(255,255,255,0.72) — 9.6:1 AA+ */
+    --muted:                  var(--sfm);           /* #122420 — muted region bg */
+    --muted-foreground:       var(--wm);            /* rgba(255,255,255,0.55) — 5.06:1 on --sfh AA */
+    --accent:                 var(--sfh);           /* #1a3530 — hover/selected row */
+    --accent-foreground:      var(--wd);            /* rgba(255,255,255,0.72) — 9.6:1 AA+ */
+    --destructive:            var(--redb);          /* #cf3c3c — 4.07:1 on --void (BELOW AA for normal text; see DEFERRED-006) */
+    /* Structural */
+    --border:                 var(--bd);            /* rgba(84,153,181,0.25) — decorative */
+    --input:                  var(--bdb);           /* rgba(84,153,181,0.55) — visible border */
+    --ring:                   var(--mt);            /* #6db0c8 (p3) — 8.12:1 on --void AA+ */
+    /* Charts */
+    --chart-1:                var(--mb);            /* #4a90d9 — Intel blue ~4.7:1 AA */
+    --chart-2:                var(--mg);            /* #4caf7d — Impl green ~5.1:1 AA */
+    --chart-3:                var(--mt);            /* #6db0c8 — Mako teal 5.38:1 AA */
+    --chart-4:                var(--my);            /* #e8c840 — Command yellow AA+ */
+    --chart-5:                var(--mo);            /* #e8914d — Hooks orange ~4.7:1 AA */
+    /* Border radius */
+    --radius: 0.625rem;                             /* 10px — matches --radius-md */
+    /* Sidebar */
+    --sidebar:                var(--sf);            /* #0d1a18 — sidebar panel bg */
+    --sidebar-foreground:     var(--w);             /* #ffffff — 17.8:1 on --sf AAA */
+    --sidebar-primary:        var(--mt);            /* #6db0c8 (p3) — active nav accent */
+    --sidebar-primary-foreground: var(--void);      /* #070d0c — 8.12:1 on teal AA+ */
+    --sidebar-accent:         var(--sfh);           /* #1a3530 — hover/selected nav row */
+    --sidebar-accent-foreground: var(--wd);         /* rgba(255,255,255,0.72) — 9.6:1 AA+ */
+    --sidebar-border:         var(--bd);            /* rgba(84,153,181,0.25) — decorative */
+    --sidebar-ring:           var(--mt);            /* #6db0c8 (p3) — focus ring */
   }
   * {
     @apply border-border;
@@ -264,6 +385,6 @@ body::before {
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    font-family: var(--fb);
   }
 }

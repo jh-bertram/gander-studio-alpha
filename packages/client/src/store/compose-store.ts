@@ -13,11 +13,8 @@ interface CurrentLoadout {
 
 interface ComposeState {
   currentLoadout: CurrentLoadout;
-  addAgent: (name: string) => void;
   removeAgent: (name: string) => void;
-  addSkill: (name: string) => void;
   removeSkill: (name: string) => void;
-  addHook: (matcher: string) => void;
   removeHook: (matcher: string) => void;
   setLoadoutName: (name: string) => void;
   loadLoadout: (loadout: CurrentLoadout) => void;
@@ -27,11 +24,6 @@ interface ComposeState {
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
-
-function dedupeAdd(arr: string[], item: string): string[] {
-  if (arr.includes(item)) return arr;
-  return [...arr, item];
-}
 
 function removeItem(arr: string[], item: string): string[] {
   return arr.filter(x => x !== item);
@@ -51,14 +43,6 @@ const EMPTY_LOADOUT: CurrentLoadout = {
 export const useComposeStore = create<ComposeState>()((set) => ({
   currentLoadout: { ...EMPTY_LOADOUT },
 
-  addAgent: (name) =>
-    set((state) => ({
-      currentLoadout: {
-        ...state.currentLoadout,
-        agents: dedupeAdd(state.currentLoadout.agents, name),
-      },
-    })),
-
   removeAgent: (name) =>
     set((state) => ({
       currentLoadout: {
@@ -67,27 +51,11 @@ export const useComposeStore = create<ComposeState>()((set) => ({
       },
     })),
 
-  addSkill: (name) =>
-    set((state) => ({
-      currentLoadout: {
-        ...state.currentLoadout,
-        skills: dedupeAdd(state.currentLoadout.skills, name),
-      },
-    })),
-
   removeSkill: (name) =>
     set((state) => ({
       currentLoadout: {
         ...state.currentLoadout,
         skills: removeItem(state.currentLoadout.skills, name),
-      },
-    })),
-
-  addHook: (matcher) =>
-    set((state) => ({
-      currentLoadout: {
-        ...state.currentLoadout,
-        hooks: dedupeAdd(state.currentLoadout.hooks, matcher),
       },
     })),
 
