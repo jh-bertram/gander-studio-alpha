@@ -32,6 +32,7 @@ import { parseSessionFile } from './parsers/session-parser.js';
 import { parseEventLogFiles } from './parsers/event-log-parser.js';
 import { computeSessionStats } from './parsers/session-stats.js';
 import { collectSessions } from './session-list.js';
+import { sessionDocDirs } from './session-dirs.js';
 import { validateSaveEditPath } from './parsers/saveedit-guard.js';
 import { aggregateSessionStats } from './parsers/aggregate-stats.js';
 import { parseLedgerContent } from './parsers/progression-parser.js';
@@ -66,22 +67,23 @@ async function findSessionById(
   id: string,
 ): Promise<{ session: Session; dir: string } | null> {
   for (const dir of SESSIONS_SOURCE_DIRS) {
-    const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
-    let entries: string[];
-    try {
-      entries = await readdir(postMortemsDir);
-    } catch {
-      continue;
-    }
-    for (const file of entries.filter((e) => e.endsWith('.md'))) {
-      const filePath = path.join(postMortemsDir, file);
+    for (const docDir of sessionDocDirs(dir)) {
+      let entries: string[];
       try {
-        const session = await parseSessionFile(filePath, dir);
-        if (session.id === id || session.sprint === id) {
-          return { session, dir };
-        }
+        entries = await readdir(docDir);
       } catch {
         continue;
+      }
+      for (const file of entries.filter((e) => e.endsWith('.md'))) {
+        const filePath = path.join(docDir, file);
+        try {
+          const session = await parseSessionFile(filePath, dir);
+          if (session.id === id || session.sprint === id) {
+            return { session, dir };
+          }
+        } catch {
+          continue;
+        }
       }
     }
   }

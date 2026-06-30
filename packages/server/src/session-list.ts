@@ -1,6 +1,7 @@
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { parseSessionFile } from './parsers/session-parser.js';
+import { sessionDocDirs } from './session-dirs.js';
 import type { Session } from '@gander-studio/shared';
 
 /**
@@ -27,42 +28,43 @@ export async function collectSessions(
   let skipped = 0;
 
   for (const dir of sourceDirs) {
-    const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
-    let entries: string[];
-    try {
-      entries = await readdir(postMortemsDir);
-    } catch {
-      // directory absent or unreadable — skip this source root silently
-      continue;
-    }
-
-    const mdFiles = entries.filter((e) => e.endsWith('.md'));
-
-    for (const file of mdFiles) {
-      const absoluteFilePath = path.join(postMortemsDir, file);
-
-      // Within-root dedup: skip if we already saw this resolved path (e.g. symlinks)
-      if (seenFilePaths.has(absoluteFilePath)) {
-        continue;
-      }
-      seenFilePaths.add(absoluteFilePath);
-
-      let session: Session;
+    for (const docDir of sessionDocDirs(dir)) {
+      let entries: string[];
       try {
-        session = await parseSessionFile(absoluteFilePath, dir);
+        entries = await readdir(docDir);
       } catch {
-        skipped++;
+        // directory absent or unreadable — skip this candidate dir silently
         continue;
       }
 
-      // Cross-root dedup uses composite key (source_root, id)
-      const compositeKey = `${session.source_root}::${session.id}`;
-      if (seenCompositeKeys.has(compositeKey)) {
-        continue;
-      }
-      seenCompositeKeys.add(compositeKey);
+      const mdFiles = entries.filter((e) => e.endsWith('.md'));
 
-      sessions.push(session);
+      for (const file of mdFiles) {
+        const absoluteFilePath = path.join(docDir, file);
+
+        // Within-root dedup: skip if we already saw this resolved path (e.g. symlinks)
+        if (seenFilePaths.has(absoluteFilePath)) {
+          continue;
+        }
+        seenFilePaths.add(absoluteFilePath);
+
+        let session: Session;
+        try {
+          session = await parseSessionFile(absoluteFilePath, dir);
+        } catch {
+          skipped++;
+          continue;
+        }
+
+        // Cross-root dedup uses composite key (source_root, id)
+        const compositeKey = `${session.source_root}::${session.id}`;
+        if (seenCompositeKeys.has(compositeKey)) {
+          continue;
+        }
+        seenCompositeKeys.add(compositeKey);
+
+        sessions.push(session);
+      }
     }
   }
 

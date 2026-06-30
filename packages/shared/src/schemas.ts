@@ -168,8 +168,8 @@ const ConnectivityNodeDataSchema = z.object({
   // rule/ref-specific
   size_lines: z.number().optional(),
   // hook-specific
-  event_type: z.string().optional(),
-  matcher: z.string().optional(),
+  event_type: z.string().nullable().optional(),   // null on hooks lacking an event_type (e.g. aa-close-gate.sh)
+  matcher: z.string().nullable().optional(),       // null on hooks lacking a matcher
   // eval-specific
   agent_under_test: z.string().optional(),
   // claudemd-specific
