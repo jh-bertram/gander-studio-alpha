@@ -22,10 +22,32 @@ export type MetricKey = 'spawns' | 'feedback_loops' | 'wall_clock_ms';
  */
 export type PanelMetricKey = MetricKey | 'files_touched';
 
+function pluralize(n: number, unit: string): string {
+  return `${n} ${unit}${n === 1 ? '' : 's'}`;
+}
+
+/**
+ * Format a wall-clock duration (ms) into the largest sensible whole-number unit.
+ *
+ * Wall clock is the span between an agent's first and last event, which for a
+ * long-running sprint can be days or months — so a flat seconds display reads as
+ * millions. This auto-selects ms → s → minutes → hours → days → months and rounds
+ * to a whole number (e.g. 3.0123 months → "3 months"). Single source: AgentStatTable
+ * imports this rather than keeping its own copy.
+ */
 export function formatWallClock(ms: number | undefined): string {
   if (ms === undefined) return '—';
   if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
+  const SECOND = 1000;
+  const MINUTE = 60 * SECOND;
+  const HOUR = 60 * MINUTE;
+  const DAY = 24 * HOUR;
+  const MONTH = 30 * DAY;
+  if (ms < MINUTE) return `${Math.round(ms / SECOND)}s`;
+  if (ms < HOUR) return pluralize(Math.round(ms / MINUTE), 'minute');
+  if (ms < DAY) return pluralize(Math.round(ms / HOUR), 'hour');
+  if (ms < MONTH) return pluralize(Math.round(ms / DAY), 'day');
+  return pluralize(Math.round(ms / MONTH), 'month');
 }
 
 /**
