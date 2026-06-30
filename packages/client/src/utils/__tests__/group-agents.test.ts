@@ -16,6 +16,7 @@ function makeAgent(
     critique_blocks: 0,
     audit_passes:    1,
     audit_fails:     0,
+    files_touched:   0,
     ...overrides,
   };
 }

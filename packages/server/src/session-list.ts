@@ -1,7 +1,9 @@
 import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { parseSessionFile } from './parsers/session-parser.js';
+import { synthesizeSessions } from './parsers/session-synthesis.js';
 import { sessionDocDirs } from './session-dirs.js';
+import { sprintRoot } from './session-slug-match.js';
 import type { Session } from '@gander-studio/shared';
 
 /**
@@ -12,6 +14,10 @@ import type { Session } from '@gander-studio/shared';
  *    same-named post-mortems (two roots each containing foo.md → 2 entries).
  *  - Within-root duplicates (same resolved absolute filePath, e.g. symlinks)
  *    are deduped on the absolute filePath string.
+ *
+ * Doc-backed sessions are collected first, then synthetic sessions derived from
+ * docs/events/*.jsonl (for sprints with no after-action doc) are appended.
+ * Both join the date-descending sort before the limit is applied.
  *
  * Per-file errors are caught and counted in `skipped` — they never abort the list.
  *
@@ -27,6 +33,7 @@ export async function collectSessions(
   const sessions: Session[] = [];
   let skipped = 0;
 
+  // --- Pass 1: doc-backed sessions (existing path) ---
   for (const dir of sourceDirs) {
     for (const docDir of sessionDocDirs(dir)) {
       let entries: string[];
@@ -65,6 +72,34 @@ export async function collectSessions(
 
         sessions.push(session);
       }
+    }
+  }
+
+  // --- Build dedup data for synthesis ---
+  // docIds: full id of every doc-backed session collected above
+  const docIds = sessions.map((s) => s.id);
+  // docRoots: sprintRoot of each doc id (null entries excluded)
+  const docRoots = sessions
+    .map((s) => sprintRoot(s.id))
+    .filter((r): r is string => r !== null);
+
+  // --- Pass 2: synthetic sessions from event logs ---
+  for (const dir of sourceDirs) {
+    let synthetics: Session[];
+    try {
+      synthetics = await synthesizeSessions(dir, docIds, docRoots);
+    } catch {
+      // synthesis failure is non-fatal — just skip this root
+      continue;
+    }
+
+    for (const s of synthetics) {
+      const compositeKey = `${s.source_root}::${s.id}`;
+      if (seenCompositeKeys.has(compositeKey)) {
+        continue;
+      }
+      seenCompositeKeys.add(compositeKey);
+      sessions.push(s);
     }
   }
 

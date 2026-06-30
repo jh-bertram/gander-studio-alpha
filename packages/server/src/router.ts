@@ -39,6 +39,8 @@ import { parseLedgerContent } from './parsers/progression-parser.js';
 import { parsePlanningBacklog } from './parsers/planning-parser.js';
 import { parseProgramDags } from './parsers/program-dag-parser.js';
 import { fileURLToPath } from 'node:url';
+import { synthesizeSessions } from './parsers/session-synthesis.js';
+import { sprintRoot } from './session-slug-match.js';
 
 const t = initTRPC.create();
 
@@ -87,6 +89,19 @@ async function findSessionById(
       }
     }
   }
+
+  // Synthesis fallthrough: no doc found — build synthetic from event logs if possible.
+  const targetRoot = sprintRoot(id);
+  if (targetRoot !== null) {
+    for (const dir of SESSIONS_SOURCE_DIRS) {
+      const synthetics = await synthesizeSessions(dir, [], []);
+      const match = synthetics.find((s) => s.id === targetRoot);
+      if (match) {
+        return { session: match, dir };
+      }
+    }
+  }
+
   return null;
 }
 
@@ -154,6 +169,10 @@ const ExportResultSchema = z.object({
 // Maximum number of sessions to fetch when building an aggregate across all sessions.
 // Large enough to span all known sessions; limits memory footprint for very large repos.
 const AGGREGATE_LIMIT = 500;
+
+/** Placeholder returned by getRaw for sessions with no after-action document (single-sourced). */
+const NO_AFTER_ACTION_PLACEHOLDER =
+  'No after-action document yet for {id} — synthesized from the event log.';
 
 // ---------------------------------------------------------------------------
 // Sub-routers
@@ -559,6 +578,18 @@ const sessionRouter = t.router({
     .input(z.object({ id: z.string(), content: z.string() }))
     .output(z.object({ success: z.boolean(), filePath: z.string() }))
     .mutation(async ({ input }) => {
+      // Resolve session first — unknown id → NOT_FOUND; doc-less → BAD_REQUEST.
+      // Behavior change: previously accepted any id; now requires a known, doc-backed session.
+      const found = await findSessionById(input.id);
+      if (!found) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
+      }
+      if (!found.session.has_after_action) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot edit a session with no after-action document',
+        });
+      }
       let target: string;
       try {
         target = validateSaveEditPath(input.id, SESSIONS_EDITS_DIR);
@@ -615,6 +646,13 @@ const sessionRouter = t.router({
         throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
       }
       const { session } = found;
+      // Guard: doc-less sessions have no source file — return graceful placeholder (no 500).
+      if (!session.has_after_action) {
+        return {
+          content: NO_AFTER_ACTION_PLACEHOLDER.replace('{id}', session.id),
+          editedFilePath: undefined,
+        };
+      }
       // Prefer edit file in SESSIONS_EDITS_DIR when it exists (D6 round-trip).
       // Re-runs validateSaveEditPath to guard against path traversal.
       let editedFilePath: string | undefined;

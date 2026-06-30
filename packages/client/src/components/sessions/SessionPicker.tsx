@@ -13,6 +13,8 @@ const ALL_METRICS: MetricKey[] = ['spawns', 'feedback_loops', 'wall_clock_ms'];
 
 interface SessionPickerProps {
   stats: SessionStats;
+  /** When true, hides the Metric picker section (panel view — metrics are role-fixed). */
+  hideMetricPicker?: boolean;
 }
 
 // Shared styles (plain objects — no Shadcn primitives; FF7 tokens via CSS custom properties)
@@ -48,7 +50,7 @@ function handleToggleKeyDown(
   }
 }
 
-export default function SessionPicker({ stats }: SessionPickerProps) {
+export default function SessionPicker({ stats, hideMetricPicker = false }: SessionPickerProps) {
   const {
     selectedSessionId,
     selectedAgentIds,
@@ -205,61 +207,63 @@ export default function SessionPicker({ stats }: SessionPickerProps) {
         </div>
       </div>
 
-      {/* Metric toggles */}
-      <div role="group" aria-label="Metric dimensions">
-        <div style={sectionLabelStyle}>Metrics</div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '2px',
-          }}
-        >
-          {ALL_METRICS.map((metric) => {
-            const checked = selectedMetrics.includes(metric);
-            const checkboxId = `metric-checkbox-${metric}`;
-            return (
-              <div
-                key={metric}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  height: '28px',
-                  padding: '0 4px',
-                  borderRadius: 'var(--r)',
-                }}
-              >
-                <input
-                  id={checkboxId}
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggleMetric(metric)}
-                  aria-checked={checked}
-                  data-metric-key={metric}
-                  data-testid={`metric-checkbox-${metric}`}
+      {/* Metric toggles — table view only; hidden in panel view (metrics are role-fixed) */}
+      {!hideMetricPicker && (
+        <div role="group" aria-label="Metric dimensions">
+          <div style={sectionLabelStyle}>Metrics</div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '2px',
+            }}
+          >
+            {ALL_METRICS.map((metric) => {
+              const checked = selectedMetrics.includes(metric);
+              const checkboxId = `metric-checkbox-${metric}`;
+              return (
+                <div
+                  key={metric}
                   style={{
-                    accentColor: 'var(--mt)',
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                  }}
-                />
-                <label
-                  htmlFor={checkboxId}
-                  style={{
-                    color: 'var(--wd)',
-                    fontSize: '12px',
-                    fontFamily: 'var(--fm)',
-                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    height: '28px',
+                    padding: '0 4px',
+                    borderRadius: 'var(--r)',
                   }}
                 >
-                  {METRIC_LABELS[metric]}
-                </label>
-              </div>
-            );
-          })}
+                  <input
+                    id={checkboxId}
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleMetric(metric)}
+                    aria-checked={checked}
+                    data-metric-key={metric}
+                    data-testid={`metric-checkbox-${metric}`}
+                    style={{
+                      accentColor: 'var(--mt)',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                    }}
+                  />
+                  <label
+                    htmlFor={checkboxId}
+                    style={{
+                      color: 'var(--wd)',
+                      fontSize: '12px',
+                      fontFamily: 'var(--fm)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {METRIC_LABELS[metric]}
+                  </label>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -1,32 +1,41 @@
 import type { ReactElement } from 'react';
 import type { AgentActivity } from '@gander-studio/shared';
-import { type MetricKey, formatWallClock } from '../../utils/session-metrics';
+import {
+  type MetricKey,
+  type PanelMetricKey,
+  formatWallClock,
+  agentDisplayConfig,
+} from '../../utils/session-metrics';
 
 // ---- Types -------------------------------------------------------------------
 
 interface Props {
   activity: AgentActivity;
-  metrics: MetricKey[];
+  metrics: MetricKey[]; // kept for API compatibility; role-aware config overrides
   className?: string;
 }
 
 // ---- Helpers -----------------------------------------------------------------
 
-const METRIC_LABEL: Record<MetricKey, string> = {
+const METRIC_LABEL: Record<PanelMetricKey, string> = {
   spawns:         'Spawns',
   feedback_loops: 'Feedback Loops',
   wall_clock_ms:  'Wall Clock',
+  files_touched:  'Files Touched',
 };
 
-function getMetricValue(activity: AgentActivity, key: MetricKey): string {
+function getMetricValue(activity: AgentActivity, key: PanelMetricKey): string {
   if (key === 'wall_clock_ms') return formatWallClock(activity.wall_clock_ms);
+  if (key === 'files_touched') return String(activity.files_touched ?? '—');
+  // key narrowed to 'spawns' | 'feedback_loops' — both are number fields
   return String(activity[key]);
 }
 
 // ---- Component ---------------------------------------------------------------
 
-export default function AgentStatPanel({ activity, metrics, className }: Props): ReactElement {
+export default function AgentStatPanel({ activity, metrics: _metrics, className }: Props): ReactElement {
   const { agent_id, completes, spawns, critique_passes, critique_blocks, audit_passes, audit_fails } = activity;
+  const config = agentDisplayConfig(agent_id);
 
   return (
     <article
@@ -104,10 +113,82 @@ export default function AgentStatPanel({ activity, metrics, className }: Props):
         </span>
       </div>
 
-      {/* Primary metrics */}
-      {metrics.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px' }}>
-          {metrics.map((key) => (
+      {/* Critique mode: 2-cell grid — CR role only */}
+      {config.grid === 'critique' && (
+        <div
+          role="group"
+          aria-label={`Critique attribution for ${agent_id}`}
+          data-testid="stat-panel-critique-grid"
+          style={{
+            borderTop:           '1px solid var(--bd)',
+            paddingTop:          '8px',
+            display:             'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap:                 '8px 16px',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{ fontFamily: 'var(--fm)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--wm)' }}>
+              Critique ✓
+            </span>
+            <span style={{ fontFamily: 'var(--fm)', fontSize: '14px', fontWeight: 700, color: 'var(--mg)' }}>
+              {critique_passes}
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{ fontFamily: 'var(--fm)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--wm)' }}>
+              Critique ✗
+            </span>
+            <span style={{ fontFamily: 'var(--fm)', fontSize: '14px', fontWeight: 700, color: 'var(--redb)' }}>
+              {critique_blocks}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Audit mode: 2-cell grid — AUD / AUDITOR roles only */}
+      {config.grid === 'audit' && (
+        <div
+          role="group"
+          aria-label={`Audit attribution for ${agent_id}`}
+          data-testid="stat-panel-audit-grid"
+          style={{
+            borderTop:           '1px solid var(--bd)',
+            paddingTop:          '8px',
+            display:             'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap:                 '8px 16px',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{ fontFamily: 'var(--fm)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--wm)' }}>
+              Audit ✓
+            </span>
+            <span
+              data-testid="audit-pass-value"
+              style={{ fontFamily: 'var(--fm)', fontSize: '14px', fontWeight: 700, color: 'var(--mg)' }}
+            >
+              {audit_passes}
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{ fontFamily: 'var(--fm)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--wm)' }}>
+              Audit ✗
+            </span>
+            <span style={{ fontFamily: 'var(--fm)', fontSize: '14px', fontWeight: 700, color: 'var(--redb)' }}>
+              {audit_fails}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Default mode: role metric list — all other agents */}
+      {config.grid === 'none' && (
+        <div
+          data-testid="stat-panel-default-metrics"
+          style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px' }}
+        >
+          {config.metrics.map((key) => (
             <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
               <span
                 style={{
@@ -136,55 +217,6 @@ export default function AgentStatPanel({ activity, metrics, className }: Props):
           ))}
         </div>
       )}
-
-      {/* Audit attribution */}
-      <div
-        role="group"
-        aria-label={`Audit attribution for ${agent_id}`}
-        style={{
-          borderTop:  '1px solid var(--bd)',
-          paddingTop: '8px',
-          display:    'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap:        '8px 16px',
-        }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <span style={{ fontFamily: 'var(--fm)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--wm)' }}>
-            Critique ✓
-          </span>
-          <span style={{ fontFamily: 'var(--fm)', fontSize: '14px', fontWeight: 700, color: 'var(--mg)' }}>
-            {critique_passes}
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <span style={{ fontFamily: 'var(--fm)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--wm)' }}>
-            Critique ✗
-          </span>
-          <span style={{ fontFamily: 'var(--fm)', fontSize: '14px', fontWeight: 700, color: 'var(--redb)' }}>
-            {critique_blocks}
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <span style={{ fontFamily: 'var(--fm)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--wm)' }}>
-            Audit ✓
-          </span>
-          <span
-            data-testid="audit-pass-value"
-            style={{ fontFamily: 'var(--fm)', fontSize: '14px', fontWeight: 700, color: 'var(--mg)' }}
-          >
-            {audit_passes}
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <span style={{ fontFamily: 'var(--fm)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--wm)' }}>
-            Audit ✗
-          </span>
-          <span style={{ fontFamily: 'var(--fm)', fontSize: '14px', fontWeight: 700, color: 'var(--redb)' }}>
-            {audit_fails}
-          </span>
-        </div>
-      </div>
     </article>
   );
 }

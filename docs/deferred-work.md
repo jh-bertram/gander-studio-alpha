@@ -4,6 +4,14 @@ Items surfaced during sprints but explicitly deferred for a future sprint.
 
 ---
 
+## Sprint: gander-studio-p9-sessions-feed-agentstats (2026-06-30)
+
+### DEFERRED-P9-1 — Tokens-per-agent stats not implemented
+
+`EventLogEntrySchema` carries no token-count field; token data is not present in the JSONL event log. Tokens-per-agent aggregation is deferred until the event schema is extended with a `tokens` field (or an alternative source is identified).
+
+---
+
 ## Sprint: prog-studio-vision-2026-06-s5 (2026-06-20)
 
 ### DEFERRED-006 — `--redb` used as text color below WCAG AA (app-wide, pre-existing)
@@ -81,3 +89,13 @@ Items surfaced during sprints but explicitly deferred for a future sprint.
 **What it is:** Muted `--wm` label text (~3.49:1) and active `--mt` button text (~4.14:1) on dark surfaces fall below WCAG AA 4.5:1. This is NOT a regression from p5 — the new overview UI reused the identical token idiom already present in the unmodified AgentStatPanel/AgentStatTable/SessionPicker.
 **Proposed fix:** A platform-level token pass (e.g. bump `--wm` alpha ~0.38→0.55, lighten `--mt` for text use) so the whole app clears AA. Cross-cutting; out of scope for a feature sprint.
 **Why deferred:** Pre-existing, app-wide, not introduced here. Warrants its own dedicated contrast-remediation sprint rather than a piecemeal fix.
+
+## p9 — synthetic-session under-collapse (accepted tradeoff, Critic-ratified)
+Some sprints with descriptive/non-standard sub-task suffixes synthesize as multiple cards instead of
+one (e.g. `gander-meta-xfolder-improve` + `-agentimprove` + `-hone`; `gander-meta-output-path-relocate`
++ `-t1t2`; `gander-meta-chronicle-skill` + `-firstrun`). `sprintRoot`'s right-strip only removes
+recognized noise segments (agent codes, `t\d+`/`s\d+`/numeric sub-ids, ceremony words, dates,
+timestamps); descriptive words like `firstrun`/`agentimprove` are kept, so they form their own root.
+This is deliberate under-suppression: no duplicate ids, no noise, and broadening the strip set risks
+OVER-suppressing genuinely distinct sprints (CR-rev2 ruling). Cosmetic only. Revisit only with a
+corpus-wide sprint-id taxonomy, not ad-hoc suffix additions.

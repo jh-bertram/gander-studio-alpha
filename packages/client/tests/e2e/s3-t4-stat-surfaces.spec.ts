@@ -168,26 +168,39 @@ test('SC-contrast: table cell text color is visible against background', async (
   expect(styles.color).not.toBe(styles.bg);
 });
 
-// ---- Test 4: AgentStatPanel — audit attribution always rendered ---------------
+// ---- Test 4: AgentStatPanel — role-aware rendering (AUD gets audit grid) -----
+//
+// Updated for p9-t5: AgentStatPanel is now role-aware. Only AUD/AUDITOR cards
+// show the audit grid; CR cards show the critique grid; all others show 3 metrics.
+// Fixture has AUDITOR#1 — look for it specifically.
 
-test('AgentStatPanel audit attribution always renders including zero values', async ({ page }) => {
+test('AgentStatPanel role-aware: AUDITOR card shows audit grid, not 3-metric column', async ({ page }) => {
   await navigateToAnalyzeTab(page);
 
-  // If panel view toggle exists, switch to it
+  // Ensure panel view
   const panelViewBtn = page.getByRole('button', { name: /^Panel$/i }).first();
   if (await panelViewBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
     await panelViewBtn.click();
   }
 
-  // Look for AgentStatPanel: role="article" aria-label="* statistics"
-  const statPanel = page.locator('[role="article"]').first();
-  await expect(statPanel).toBeVisible({ timeout: 10000 });
+  // Find the AUDITOR card by aria-label — fixture has AUDITOR#1
+  // After groupAgentsByBaseCode, grouped cards use the base code; ungrouped use full id.
+  // Either 'AUDITOR#1' or 'AUDITOR' depending on whether grouping is applied.
+  const auditorCard = page
+    .locator('[role="article"]')
+    .filter({ hasText: /AUDITOR/i })
+    .first();
+  await expect(auditorCard).toBeVisible({ timeout: 10000 });
 
-  // Audit attribution section is always rendered (even with zero values)
-  await expect(statPanel.getByText('Audit ✓')).toBeVisible();
-  await expect(statPanel.getByText('Audit ✗')).toBeVisible();
+  // AUD/AUDITOR card must have the audit grid (data-testid="stat-panel-audit-grid")
+  const auditGrid = auditorCard.locator('[data-testid="stat-panel-audit-grid"]');
+  await expect(auditGrid).toBeAttached();
 
-  // Audit pass value data-testid must be attached (rendered as "0" not hidden)
-  const auditPassValue = statPanel.locator('[data-testid="audit-pass-value"]');
+  // Audit pass value must be rendered
+  const auditPassValue = auditorCard.locator('[data-testid="audit-pass-value"]');
   await expect(auditPassValue).toBeAttached();
+
+  // The default-metrics section must NOT be present on the AUDITOR card
+  const defaultMetrics = auditorCard.locator('[data-testid="stat-panel-default-metrics"]');
+  await expect(defaultMetrics).not.toBeAttached();
 });

@@ -38,6 +38,7 @@ export function groupAgentsByBaseCode(agents: AgentActivity[]): AgentActivity[] 
         critique_blocks: agent.critique_blocks,
         audit_passes:    agent.audit_passes,
         audit_fails:     agent.audit_fails,
+        files_touched:   agent.files_touched,
         // Accumulate wall_clock_ms as 0 initially; we resolve undefined/defined
         // semantics at the end using hasDefinedWallClock.
         wall_clock_ms:   agent.wall_clock_ms ?? 0,
@@ -50,6 +51,7 @@ export function groupAgentsByBaseCode(agents: AgentActivity[]): AgentActivity[] 
       existing.critique_blocks += agent.critique_blocks;
       existing.audit_passes    += agent.audit_passes;
       existing.audit_fails     += agent.audit_fails;
+      existing.files_touched   += agent.files_touched;
       existing.wall_clock_ms    = (existing.wall_clock_ms ?? 0) + (agent.wall_clock_ms ?? 0);
     }
   }
@@ -65,6 +67,7 @@ export function groupAgentsByBaseCode(agents: AgentActivity[]): AgentActivity[] 
       critique_blocks: acc.critique_blocks,
       audit_passes:    acc.audit_passes,
       audit_fails:     acc.audit_fails,
+      files_touched:   acc.files_touched,
       ...(hasDefinedWallClock.has(baseCode) ? { wall_clock_ms: acc.wall_clock_ms } : {}),
     }));
 }

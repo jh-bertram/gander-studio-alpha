@@ -75,12 +75,14 @@ export const AgentActivitySchema = z.object({
   critique_blocks: z.number(),
   audit_passes: z.number(),
   audit_fails: z.number(),
+  files_touched: z.number(),
   wall_clock_ms: z.number().optional(),
 });
 export type AgentActivity = z.infer<typeof AgentActivitySchema>;
 
 // SessionSchema — top-level parsed session object
 // gap_classes/.default([]) and status/type/.optional() allow frontmatter-less files to parse
+// has_after_action: true (default) for doc-backed sessions; false for synthetics from event logs
 export const SessionSchema = z.object({
   id: z.string(),
   sprint: z.string(),
@@ -92,6 +94,7 @@ export const SessionSchema = z.object({
   filePath: z.string(),
   editedFilePath: z.string().optional(),
   source_root: z.string(),
+  has_after_action: z.boolean().default(true),
   agents: z.array(AgentActivitySchema),
   events: z.array(EventLogEntrySchema),
 });

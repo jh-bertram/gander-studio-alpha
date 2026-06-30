@@ -9,6 +9,7 @@ import { groupAgentsByBaseCode } from '../../utils/group-agents';
 import { type MetricKey, formatWallClock } from '../../utils/session-metrics';
 import ErrorState from '../../components/ui/error-state';
 import ShimmerBox from '../../components/ui/shimmer-box';
+import { SESSION_NO_DOC_BADGE } from '../../constants/sessions';
 
 // ---- Local constants ---------------------------------------------------------
 
@@ -207,7 +208,11 @@ function SessionRow({
     <tr
       tabIndex={0}
       role="row"
-      aria-label={`${session.sprint} — ${session.date}`}
+      aria-label={
+        session.has_after_action === false
+          ? `${session.sprint} — ${session.date} — no after-action document`
+          : `${session.sprint} — ${session.date}`
+      }
       onClick={onSelect}
       onKeyDown={(e) => handleRowKeyDown(e, onSelect)}
       style={{
@@ -269,7 +274,37 @@ function SessionRow({
           }}
         />
       </td>
-      <td style={TD_PRIMARY_STYLE}>{session.sprint}</td>
+      <td
+        style={{
+          ...TD_PRIMARY_STYLE,
+          display:    'flex',
+          alignItems: 'center',
+          gap:        '8px',
+        }}
+      >
+        <span>{session.sprint}</span>
+        {session.has_after_action === false && (
+          <span
+            data-testid="session-no-doc-badge"
+            aria-hidden="true"
+            style={{
+              fontFamily:    'var(--fm)',
+              fontSize:      '10px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em',
+              color:         'var(--wm)',
+              background:    'var(--sfh)',
+              border:        '1px solid var(--bd)',
+              borderRadius:  'var(--r)',
+              padding:       '4px 8px',
+              flexShrink:    0,
+              lineHeight:    1.2,
+            }}
+          >
+            {SESSION_NO_DOC_BADGE}
+          </span>
+        )}
+      </td>
       <td style={TD_STYLE}>{session.date}</td>
       <td style={TD_STYLE}>{statusText}</td>
       <td style={TD_STYLE}>{gapText}</td>

@@ -27,6 +27,7 @@ const FIXTURE_A: SessionStats = {
       critique_blocks: 1,
       audit_passes: 2,
       audit_fails: 0,
+      files_touched: 0,
       wall_clock_ms: 3000,
     },
     {
@@ -38,6 +39,7 @@ const FIXTURE_A: SessionStats = {
       critique_blocks: 0,
       audit_passes: 2,
       audit_fails: 1,
+      files_touched: 0,
       wall_clock_ms: 1500,
     },
   ],
@@ -64,6 +66,7 @@ const FIXTURE_B: SessionStats = {
       critique_blocks: 2,
       audit_passes: 1,
       audit_fails: 1,
+      files_touched: 0,
       wall_clock_ms: 2000,
     },
     {
@@ -75,6 +78,7 @@ const FIXTURE_B: SessionStats = {
       critique_blocks: 0,
       audit_passes: 2,
       audit_fails: 1,
+      files_touched: 0,
     },
   ],
   wall_clock_ms: 4000,

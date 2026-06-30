@@ -15,6 +15,7 @@ const STUB_SESSION: Session = {
   sprint: 'prog-studio-sessions-2026-05-s1-backend',
   date: '2026-05-20',
   gap_classes: [],
+  has_after_action: true,
   filePath: '/tmp/test-session.md',
   source_root: '/tmp',
   agents: [],
