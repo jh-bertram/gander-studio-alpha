@@ -99,3 +99,14 @@ timestamps); descriptive words like `firstrun`/`agentimprove` are kept, so they 
 This is deliberate under-suppression: no duplicate ids, no noise, and broadening the strip set risks
 OVER-suppressing genuinely distinct sprints (CR-rev2 ruling). Cosmetic only. Revisit only with a
 corpus-wide sprint-id taxonomy, not ad-hoc suffix additions.
+
+---
+
+## Sprint: gander-studio-p10-deferred-smalls (2026-07-02)
+
+### DEFERRED-P10-1 — s3-t3-timeline.spec.ts pre-existing tests fail: fixture sessions aged out of session.list's limit-50 window
+
+**Source:** FE#3 during `gander-studio-p10-deferred-smalls-003-gap2` (runtime a11y gate closure). Root cause traced to `packages/client/src/hooks/useSessions.ts` + `packages/server/src/session-list.ts`.
+**What:** The 5 pre-existing tests in `packages/client/tests/e2e/s3-t3-timeline.spec.ts` pin fixture sessions dated 2026-05-06 / late-May. `session.list` returns a hardcoded `limit: 50` date-descending window, so as newer sessions accumulate the pinned fixtures fall out of the list and the tests fail against a live dev environment — a data-staleness defect, NOT a regression from the p10 tooltip change (the 4 new p10 a11y tests pass green in the same file, same run).
+**Why deferred:** Out of scope for packet 003-gap2 (hard constraint: no src edits); pre-existing.
+**Schedule as:** Small BE/FE packet — either (a) make the pinned fixtures discoverable via a stable query (fetch by session id instead of scanning the list), (b) raise/parameterize the limit for test environments, or (c) refresh the pinned fixture ids. Decide against how the suite is meant to age.

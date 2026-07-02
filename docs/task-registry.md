@@ -107,3 +107,62 @@ To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard 824c23e
 | p5-t1-sidebar-removal | FE#1 | A | HIGH | PENDING | NONE |
 | p5-t2-aggregate-stats-be | BE#1 | A | HIGH | PENDING | p5-t4-overview-aggregate |
 | p5-t3-timeline-zoom | FE#2 | A | NORMAL | PENDING | NONE |
+
+## Rollback Point
+commit: 97d294252ea1012cdb017eca778391da4787c33e
+recorded: 2026-07-02T18:58:24Z
+task_id: gander-studio-p10-deferred-smalls
+
+To recover: git reset --hard 97d294252ea1012cdb017eca778391da4787c33e
+
+## Agent Remits (gander-studio-p10-deferred-smalls)
+Mirrored from extract-agent-remits.sh run 2026-07-02T18:58:24Z (gander .claude/agents): pm 2.2.1 (core responsibilities, 8-read budget, no-code remit), frontend-engineer 2.1.2 (task-boundary compliance, FE consumes contracts), backend-engineer 1.5.2 (Zod at boundaries, no migrations), ui-designer 3.0.1 (token-first, WCAG verify, all-states), critic 2.1.0 + code-auditor 3.3.0 (no explicit remit heading — standing extract-script finding). Full text embedded in the PM orchestrator_brief for this sprint.
+<expectation_manifest>
+  <sprint_id>gander-studio-p10-deferred-smalls</sprint_id>
+  <generated>2026-07-02T19:20:00Z</generated>
+  <revision>rev1 — CR#1 amendments folded</revision>
+  <assignments>
+    <assignment>
+      <task_id>gander-studio-p10-deferred-smalls-003</task_id>
+      <agent>FE#1</agent>
+      <expected_tag>ui_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/gander-studio-p10-deferred-smalls-003-FE-*.md</expected_file>
+      <blocks>NONE (RUNTIME-A11Y auditor duty per SC#8)</blocks>
+      <receipt_check>
+        <item>FF7TooltipPanel EXTENDED (not replaced) — DRY reuse</item>
+        <item>TooltipState has feedbackLoops (numeric) + auditOutcome ('pass'|'fail'|'mixed'|'none'); both computed at bar-group call site from agentMarkers, passed into extended showTooltip; markersByAgent NOT referenced inside the empty-dep useCallback</item>
+        <item>exact spawn/complete timestamps rendered; QA runtime-confirms the feedbackLoops + auditOutcome rows render (not bare token grep)</item>
+        <item>role="tooltip" + aria-describedby active-only; aria-label/name preserved; a11y auditor runtime check done</item>
+        <item>tsc clean x3 + client build passing; no new dependency; timeline-tooltip testid preserved; no edits to globals.css/session-stats.ts</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>gander-studio-p10-deferred-smalls-004</task_id>
+      <agent>BE#1</agent>
+      <expected_tag>completion_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/gander-studio-p10-deferred-smalls-004-BE-*.md</expected_file>
+      <blocks>NONE (GATE-TEST close-blocking: vitest must run green)</blocks>
+      <receipt_check>
+        <item>matchesSlug anchored (=== slug || startsWith(slug + '-')); .includes removed; canonical path packages/server/src/session-slug-match.ts</item>
+        <item>stale line-209 assertion flipped to false + description updated</item>
+        <item>new guard assertions incl. p2-vs-p20 case</item>
+        <item>npm test -w @gander-studio/server GREEN (actual run)</item>
+        <item>git diff --name-only == exactly session-slug-match.ts + session-list.test.ts</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>gander-studio-p10-deferred-smalls-006</task_id>
+      <agent>FE#2</agent>
+      <expected_tag>ui_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/gander-studio-p10-deferred-smalls-006-FE-*.md</expected_file>
+      <blocks>NONE</blocks>
+      <receipt_check>
+        <item>--redb: #e05555 in globals.css; #cf3c3c count == 0 in globals.css; line-357 annotation shows 5.22:1 + resolved (not "below AA")</item>
+        <item>contrast_pairs proves #e05555 on #070d0c ≥ 4.5:1 (≈5.22:1) with method</item>
+        <item>DESIGN.md three live sites (33/183/325) → #e05555/5.22:1/AA; Decision Record D present; #cf3c3c/4.07:1 appear ONLY inside DR-D (containment check), not at live sites</item>
+        <item>destructive-surface regression guard recorded (text-destructive on bg-destructive/10 — no regression)</item>
+        <item>--red/--mr/--materia-red + --destructive mapping untouched; tsc clean x3 + client build passing</item>
+      </receipt_check>
+    </assignment>
+  </assignments>
+</expectation_manifest>
