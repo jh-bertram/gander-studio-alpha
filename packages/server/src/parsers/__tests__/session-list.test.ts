@@ -205,11 +205,20 @@ describe('matchesSlug — unit', () => {
   it('matches by prefix', () => {
     expect(matchesSlug('gander-studio-p2-foo-FE-001', 'gander-studio-p2-foo')).toBe(true);
   });
-  it('matches by substring', () => {
-    expect(matchesSlug('some-task-with-gander-in-it', 'gander')).toBe(true);
+  it('rejects generic substring over-match', () => {
+    expect(matchesSlug('some-task-with-gander-in-it', 'gander')).toBe(false);
   });
   it('does not match unrelated id', () => {
     expect(matchesSlug('system', 'gander-studio-p2-foo')).toBe(false);
+  });
+  it('matches exact taskId/slug equality', () => {
+    expect(matchesSlug('gander-studio-p10', 'gander-studio-p10')).toBe(true);
+  });
+  it('matches boundary-prefix (slug + hyphen)', () => {
+    expect(matchesSlug('gander-studio-p10-deferred-smalls-004', 'gander-studio-p10')).toBe(true);
+  });
+  it('rejects phase over-match (p2 vs p20)', () => {
+    expect(matchesSlug('gander-studio-p20-bar', 'gander-studio-p2')).toBe(false);
   });
 });
 

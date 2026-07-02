@@ -10,9 +10,9 @@
 // matchesSlug — the startsWith||includes predicate inlined in event-log-parser
 // ---------------------------------------------------------------------------
 
-/** Returns true when taskId matches a sprint slug (prefix or substring). */
+/** Returns true when taskId equals the slug or is boundary-prefixed by slug + '-'. */
 export function matchesSlug(taskId: string, slug: string): boolean {
-  return taskId.startsWith(slug) || taskId.includes(slug);
+  return taskId === slug || taskId.startsWith(slug + '-');
 }
 
 // ---------------------------------------------------------------------------
