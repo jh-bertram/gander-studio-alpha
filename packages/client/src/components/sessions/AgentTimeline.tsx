@@ -110,6 +110,13 @@ interface TooltipState {
   svgX: number;        // center x of the hovered bar in SVG coords
   svgY: number;        // top y of the hovered bar row in SVG coords
   roleColor: string;   // materia color token for the MateriaDot
+  // display-local derivation for the tooltip only — NOT the authoritative
+  // SEAM-04 / session-stats.ts feedback-loop counter (see file-header note
+  // at line ~45). Counts this agent's AUDIT_FAIL + CRITIQUE_BLOCK markers.
+  feedbackLoops: number;
+  // Derived from this agent's AUDIT_PASS / AUDIT_FAIL markers only.
+  // Auditor IDENTITY is not on AgentMarker — out of scope (DEFERRED-003).
+  auditOutcome: 'pass' | 'fail' | 'mixed' | 'none';
 }
 
 interface AgentTimelineProps {
@@ -497,8 +504,9 @@ const ZOOM_MAX = 4.0;
 /**
  * FF7-styled tooltip panel. Positioned absolutely over the SVG scroller.
  * Replaces native SVG <title> as the rich tooltip surface.
- * Accessible name is preserved via aria-label on the parent g[role=img].
- * This panel itself is aria-hidden — it is decorative supplemental info.
+ * Accessible NAME is preserved via aria-label on the parent g[role=img];
+ * this panel is the accessible DESCRIPTION, wired via the ARIA tooltip
+ * role below + a stable id, referenced by the active bar's aria-describedby.
  */
 function FF7TooltipPanel({
   tooltip,
@@ -509,11 +517,16 @@ function FF7TooltipPanel({
   axisUnit: AxisUnit;
   tAxisMin: number;
 }): React.JSX.Element {
-  const { bar, svgX, svgY, roleColor: color } = tooltip;
+  const { bar, svgX, svgY, roleColor: color, feedbackLoops, auditOutcome } = tooltip;
   const durationLabel = bar.isOrphan
     ? 'in progress'
     : formatDuration((bar.completeTs as number) - bar.spawnTs);
   const spawnOffsetLabel = formatOffset(bar.spawnTs - tAxisMin, axisUnit);
+  const spawnTimestampLabel = new Date(bar.spawnTs).toLocaleTimeString();
+  const completeTimestampLabel =
+    bar.isOrphan || bar.completeTs === undefined
+      ? 'in progress'
+      : new Date(bar.completeTs).toLocaleTimeString();
 
   // Position tooltip above the bar — offset from SVG coords.
   // Tooltip anchors at bar center-x, above the row.
@@ -522,7 +535,8 @@ function FF7TooltipPanel({
 
   return (
     <div
-      aria-hidden="true"
+      role="tooltip"
+      id="timeline-tooltip"
       data-testid="timeline-tooltip"
       style={{
         position: 'absolute',
@@ -597,6 +611,37 @@ function FF7TooltipPanel({
             {durationLabel}
           </span>
         </div>
+        <div>
+          <span style={{ color: 'var(--wm)' }}>spawned: </span>
+          <span>{spawnTimestampLabel}</span>
+        </div>
+        <div>
+          <span style={{ color: 'var(--wm)' }}>completed: </span>
+          <span style={{ color: bar.isOrphan ? 'var(--my)' : 'var(--wd)' }}>
+            {completeTimestampLabel}
+          </span>
+        </div>
+        <div>
+          <span style={{ color: 'var(--wm)' }}>loops: </span>
+          <span>{feedbackLoops}</span>
+        </div>
+        <div>
+          <span style={{ color: 'var(--wm)' }}>audit: </span>
+          <span
+            style={{
+              color:
+                auditOutcome === 'fail'
+                  ? 'var(--redb)'
+                  : auditOutcome === 'pass'
+                    ? 'var(--mg)'
+                    : auditOutcome === 'mixed'
+                      ? 'var(--my)'
+                      : 'var(--wm)',
+            }}
+          >
+            {auditOutcome}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -642,9 +687,21 @@ export default function AgentTimeline({
   }, []);
 
   // ── Stable tooltip handlers (extract to named functions — no deduplication issue) ──
+  // showTooltip is a PURE SETTER: feedbackLoops/auditOutcome are computed by the
+  // caller (bar-group render, from row-local agentMarkers) and passed in. This
+  // callback must NOT reference markersByAgent — it is defined with an empty
+  // dep array before markersByAgent is rebuilt each render, so closing over it
+  // here would capture a stale first-render map (see CHANGE-4 hard constraint).
   const showTooltip = useCallback(
-    (bar: AgentBar, svgX: number, svgY: number, color: string) => {
-      setTooltipState({ bar, svgX, svgY, roleColor: color });
+    (
+      bar: AgentBar,
+      svgX: number,
+      svgY: number,
+      color: string,
+      feedbackLoops: number,
+      auditOutcome: TooltipState['auditOutcome'],
+    ) => {
+      setTooltipState({ bar, svgX, svgY, roleColor: color, feedbackLoops, auditOutcome });
     },
     [],
   );
@@ -985,8 +1042,30 @@ export default function AgentTimeline({
             // Markers for this agent
             const agentMarkers = markersByAgent.get(bar.agentId) ?? [];
 
+            // display-local derivation for the tooltip only — NOT the authoritative
+            // SEAM-04 / session-stats.ts feedback-loop counter. Computed HERE (row-local
+            // agentMarkers, in scope) rather than inside showTooltip, which must remain a
+            // pure setter (see CHANGE-4 hard constraint / stale-closure avoidance).
+            const rowFeedbackLoops = agentMarkers.filter(
+              (m) => m.ev === 'AUDIT_FAIL' || m.ev === 'CRITIQUE_BLOCK',
+            ).length;
+            const hasAuditPass = agentMarkers.some((m) => m.ev === 'AUDIT_PASS');
+            const hasAuditFail = agentMarkers.some((m) => m.ev === 'AUDIT_FAIL');
+            const rowAuditOutcome: TooltipState['auditOutcome'] =
+              hasAuditPass && hasAuditFail
+                ? 'mixed'
+                : hasAuditFail
+                  ? 'fail'
+                  : hasAuditPass
+                    ? 'pass'
+                    : 'none';
+
             // Marker lane center-Y: above the bar rect
             const markerCY = barY - MARKER_LANE_OFFSET;
+
+            // Active-only aria-describedby: only the currently-hovered/focused
+            // bar points at the tooltip panel; absent on blur/mouseleave.
+            const isActiveTooltipBar = tooltipState?.bar.agentId === bar.agentId;
 
             return (
               <g key={bar.agentId} aria-hidden="false">
@@ -1025,10 +1104,15 @@ export default function AgentTimeline({
                   role="img"
                   tabIndex={0}
                   aria-label={barAriaLabel}
+                  aria-describedby={isActiveTooltipBar ? 'timeline-tooltip' : undefined}
                   data-testid={`timeline-bar-${bar.agentId}`}
                   data-orphan={bar.isOrphan ? 'true' : 'false'}
-                  onMouseEnter={() => showTooltip(bar, barCenterX, barY, barRoleColor)}
-                  onFocus={() => showTooltip(bar, barCenterX, barY, barRoleColor)}
+                  onMouseEnter={() =>
+                    showTooltip(bar, barCenterX, barY, barRoleColor, rowFeedbackLoops, rowAuditOutcome)
+                  }
+                  onFocus={() =>
+                    showTooltip(bar, barCenterX, barY, barRoleColor, rowFeedbackLoops, rowAuditOutcome)
+                  }
                   onMouseLeave={hideTooltip}
                   onBlur={hideTooltip}
                 >

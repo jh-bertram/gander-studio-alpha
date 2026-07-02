@@ -195,3 +195,150 @@ test('SC-units: wide session x-axis tick labels use adaptive hour unit', async (
   const barCount = await svg.locator('[data-testid^="timeline-bar-"]').count();
   expect(barCount).toBeGreaterThan(0);
 });
+
+// ─── SC#4-runtime / SC#8-runtime: FF7 tooltip content + active-only aria-describedby ──
+// Runtime evidence for gander-studio-p10-deferred-smalls-003-gap2 — closes AUD#1's
+// two open runtime gates (SC#4-runtime, SC#8-runtime) left NOT_VERIFIED because AUD#1's
+// spawn toolset had no hover/focus/evaluate primitive.
+//
+// FIXTURE NOTE: the SC-orphan-spawn fixture above (session gander-p7-obsidian-l2-l3,
+// dated 2026-05-06) has aged out of the live session.list top-50 (date-descending,
+// no search/pagination — see packages/server/src/session-list.ts) between when that
+// test was authored and this run (2026-07-02). All 5 pre-existing tests in this file
+// fail against the live dev environment for that same pre-existing reason — NOT
+// introduced by this change; out of scope for gander-studio-p10-deferred-smalls-003-gap2
+// to fix (separate defect, would need a BE fix — larger limit or a session search
+// endpoint). A dedicated exact-match navigator + a currently-live, no-longer-mutating
+// fixture (`gander-meta-output-path-relocate`, 2026-06-23, docless synthesis so
+// `session.agents` — which seeds default `selectedAgentIds` — is populated from the
+// raw event log) is used instead, confirmed via a direct `session.list`/`session.get`
+// tRPC query before authoring these assertions. Agent AUD#1 in that session has SPAWN
+// + AUDIT_PASS but no COMPLETE — a stable orphan bar exercising the "completed: in
+// progress" path plus a non-'none' audit outcome.
+const GAP2_SESSION_ID = 'gander-meta-output-path-relocate';
+const GAP2_ORPHAN_AGENT_ID = 'AUD#1';
+
+/**
+ * Same navigation as navigateToAnalyzeTab, but matches the session row by EXACT
+ * cell text rather than substring `hasText`. Required here because the live list
+ * also contains `gander-meta-output-path-relocate-t1t2`, which is a substring
+ * superset of GAP2_SESSION_ID and would otherwise collide with `hasText` filtering
+ * (see frontend.md "First-row fixture coupling" / E2E Assertion Targeting guard).
+ */
+async function navigateToAnalyzeTabExact(
+  page: import('@playwright/test').Page,
+  sessionId: string,
+): Promise<void> {
+  await page.goto('http://localhost:5173');
+
+  const sessionsNav = page.locator('text=SESSIONS').first();
+  await expect(sessionsNav).toBeVisible({ timeout: 8000 });
+  await sessionsNav.click();
+
+  const listPage = page.getByTestId('sessions-list-page');
+  await expect(listPage).toBeVisible({ timeout: 5000 });
+  const fixtureRow = listPage
+    .locator('tbody tr')
+    .filter({ has: page.getByText(sessionId, { exact: true }) })
+    .first();
+  await expect(fixtureRow).toBeVisible({ timeout: 8000 });
+  await fixtureRow.click();
+
+  const detailPage = page.getByTestId('sessions-detail-page');
+  await expect(detailPage).toBeVisible({ timeout: 5000 });
+  const analyzeTab = page.getByRole('tab', { name: 'Analyze' });
+  await expect(analyzeTab).toBeVisible({ timeout: 5000 });
+  await expect(analyzeTab).not.toHaveAttribute('aria-disabled', 'true');
+  await analyzeTab.click();
+
+  const timeline = page.getByTestId('agent-timeline-svg');
+  await expect(timeline).toBeVisible({ timeout: 8000 });
+}
+
+/** Shared aria-describedby presence check — used across the hover and focus toggle tests. */
+async function hasAriaDescribedBy(locator: import('@playwright/test').Locator): Promise<boolean> {
+  return locator.evaluate((el) => el.hasAttribute('aria-describedby'));
+}
+
+test('SC-tooltip-content: hover reveals loops:/audit: rows + exact spawn/complete timestamps', async ({ page }) => {
+  await navigateToAnalyzeTabExact(page, GAP2_SESSION_ID);
+
+  const orphanBar = page.getByTestId(`timeline-bar-${GAP2_ORPHAN_AGENT_ID}`);
+  await expect(orphanBar).toBeAttached({ timeout: 5000 });
+  // dispatchEvent('mouseover') rather than a geometric .hover(): the fixed/sticky
+  // main-nav tablist intercepts the real pointer at this row's on-screen position
+  // after scroll-into-view for wide/tall sessions. dispatchEvent still fires the
+  // native 'mouseover' React listens to for onMouseEnter — same handler exercised.
+  await orphanBar.scrollIntoViewIfNeeded();
+  await orphanBar.dispatchEvent('mouseover');
+
+  const tooltip = page.getByTestId('timeline-tooltip');
+  await expect(tooltip).toBeVisible({ timeout: 3000 });
+
+  const text = (await tooltip.textContent()) ?? '';
+  expect(text).toMatch(/loops:\s*\d+/);
+  expect(text).toMatch(/audit:\s*(none|pass|fail|mixed)/);
+  expect(text).toMatch(/spawned:\s*\d{1,2}:\d{2}:\d{2}/);
+  // AUD#1 in this fixture has SPAWN + AUDIT_PASS but no COMPLETE event.
+  expect(text).toMatch(/completed:\s*in progress/);
+});
+
+test('SC-tooltip-aria-hover: active bar gains aria-describedby only while hovered; aria-label preserved; cleared on mouseleave', async ({ page }) => {
+  await navigateToAnalyzeTabExact(page, GAP2_SESSION_ID);
+
+  const orphanBar = page.getByTestId(`timeline-bar-${GAP2_ORPHAN_AGENT_ID}`);
+  await expect(orphanBar).toBeAttached({ timeout: 5000 });
+
+  // Before hover: aria-describedby must be absent.
+  const hasAttrBefore = await hasAriaDescribedBy(orphanBar);
+  expect(hasAttrBefore).toBe(false);
+  const labelBefore = await orphanBar.getAttribute('aria-label');
+  expect(labelBefore).toBeTruthy();
+
+  await orphanBar.scrollIntoViewIfNeeded();
+  await orphanBar.dispatchEvent('mouseover');
+  await expect(page.getByTestId('timeline-tooltip')).toBeVisible({ timeout: 3000 });
+  await expect(orphanBar).toHaveAttribute('aria-describedby', 'timeline-tooltip');
+  const labelDuring = await orphanBar.getAttribute('aria-label');
+  expect(labelDuring).toBeTruthy();
+  expect(labelDuring).toBe(labelBefore);
+
+  // Leave — dispatchEvent('mouseout') fires the native event React's onMouseLeave
+  // listens to, mirroring the mouseover dispatch above (same rationale: avoids the
+  // sticky main-nav pointer-interception flake, see comment on the previous test).
+  await orphanBar.dispatchEvent('mouseout');
+  await expect(page.getByTestId('timeline-tooltip')).toHaveCount(0);
+  const hasAttrAfter = await hasAriaDescribedBy(orphanBar);
+  expect(hasAttrAfter).toBe(false);
+});
+
+test('SC-tooltip-aria-focus: keyboard focus triggers the same active-only toggle; blur clears it', async ({ page }) => {
+  await navigateToAnalyzeTabExact(page, GAP2_SESSION_ID);
+
+  const orphanBar = page.getByTestId(`timeline-bar-${GAP2_ORPHAN_AGENT_ID}`);
+  await expect(orphanBar).toBeAttached({ timeout: 5000 });
+
+  await orphanBar.focus();
+  await expect(page.getByTestId('timeline-tooltip')).toBeVisible({ timeout: 3000 });
+  await expect(orphanBar).toHaveAttribute('aria-describedby', 'timeline-tooltip');
+  const labelDuring = await orphanBar.getAttribute('aria-label');
+  expect(labelDuring).toBeTruthy();
+
+  await orphanBar.blur();
+  const hasAttrAfterBlur = await hasAriaDescribedBy(orphanBar);
+  expect(hasAttrAfterBlur).toBe(false);
+});
+
+test('SC-tooltip-role: tooltip panel root has role="tooltip" and id="timeline-tooltip"', async ({ page }) => {
+  await navigateToAnalyzeTabExact(page, GAP2_SESSION_ID);
+
+  const orphanBar = page.getByTestId(`timeline-bar-${GAP2_ORPHAN_AGENT_ID}`);
+  await expect(orphanBar).toBeAttached({ timeout: 5000 });
+  await orphanBar.scrollIntoViewIfNeeded();
+  await orphanBar.dispatchEvent('mouseover');
+
+  const tooltip = page.getByTestId('timeline-tooltip');
+  await expect(tooltip).toBeVisible({ timeout: 3000 });
+  await expect(tooltip).toHaveAttribute('role', 'tooltip');
+  await expect(tooltip).toHaveAttribute('id', 'timeline-tooltip');
+});
