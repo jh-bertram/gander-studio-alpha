@@ -166,3 +166,10 @@ Mirrored from extract-agent-remits.sh run 2026-07-02T18:58:24Z (gander .claude/a
     </assignment>
   </assignments>
 </expectation_manifest>
+
+## Sprint Close — gander-studio-p10-deferred-smalls (2026-07-02)
+**Status:** CLOSED (audit PASS ×3, REQVAL COVERED 17/17, AA close gate PASS)
+**Commits:** ceremony 74213ac → 8495ecc (004) → 4b8fb5c (006) → 88cbebf (003)
+**Current rollback point:** 88cbebf (supersedes 97d2942 recorded at sprint open — prior point demoted)
+To recover pre-sprint state: git reset --hard 97d294252ea1012cdb017eca778391da4787c33e
+**Open at close:** human browser check (Step 4.5, FE sprint) — surfaced in delivery report; DEFERRED-P10-1 queued.
