@@ -1,87 +1,58 @@
-## [STAGE 1] RECEIVED — Remediation rem1
-- **From:** AUD#2 via ORC
-- **At:** 2026-06-01T00:10:00Z
-- **Task ID:** p5b-003-fe (remediation rem1)
+## [STAGE 1] RECEIVED
+- **From:** ORC
+- **At:** 2026-06-30T19:00:00Z
+- **Task ID:** gander-studio-p9-sessions-feed-agentstats-t5
 - **Message received:**
-  > Surgical fix: replace `page.getByText('SURFACE COVERAGE')` in Test 2 of progression.spec.ts with `page.getByRole('heading', { name: 'SURFACE COVERAGE' })` to avoid strict-mode collision with ledger prose. Same check for any other heading getByText. Run spec against live servers. Report Playwright result + lint exit code.
+  > Role-aware AgentStatPanel. Read packages/client/src/utils/session-metrics.ts, AgentStatPanel.tsx, group-agents.ts, AnalyzeTab.tsx...
 
----
+## [STAGE 2] PLAN
+- **At:** 2026-06-30T19:05:00Z
+- **Components to build:**
+  - `packages/client/src/utils/session-metrics.ts` — add PanelMetricKey + agentDisplayConfig
+  - `packages/client/src/components/sessions/AgentStatPanel.tsx` — role-aware metric/grid region
+  - `packages/client/src/components/sessions/SessionPicker.tsx` — hideMetricPicker prop
+  - `packages/client/src/pages/sessions/tabs/AnalyzeTab.tsx` — picker hide + annotation
+  - `packages/client/tests/e2e/gander-studio-p9-sessions-feed-agentstats-t5.spec.ts` — new Playwright spec
+- **State design:** No new store slices; uses existing analyzeStore.selectedMetrics (table view only after change)
+- **tRPC wiring:** session.getStats (unchanged)
+- **A11Y plan:** role="group" aria-label per role on grid sections; aria-label on value spans
 
-## [STAGE 2] PLAN — Remediation rem1
-- **At:** 2026-06-01T00:10:00Z
-- **File to modify:** `packages/client/tests/e2e/progression.spec.ts` only
-- **Change:** lines 38 and 46 — replace `getByText('SURFACE COVERAGE')` and `getByText('SPRINT HISTORY')` with role-scoped heading locators. `getByText('PROGRESSION LEDGER')` is also a heading used in tests 1 and 3 — fix those too.
-- **Verify:** run spec against live servers, confirm pass, run lint.
+### Checkpoint — 19:10:00
+- Wrote `packages/client/src/utils/session-metrics.ts` (54 lines). Constant audit: 0 matches. Added PanelMetricKey + agentDisplayConfig with PINNED match sets.
 
-### Checkpoint — rem1 complete
-- Fixed 4 locators in `progression.spec.ts`. Playwright: 3 passed (5.6s). Lint: exit 0.
+### Checkpoint — 19:15:00
+- Wrote `packages/client/src/components/sessions/AgentStatPanel.tsx` (195 lines). Constant audit: 0 matches. Role-aware grid/metrics region; chrome unchanged.
 
-## [STAGE 3] COMPLETE — Remediation rem1
-- **At:** 2026-06-01T18:59:29Z
-- **Deliverables:**
+### Checkpoint — 19:20:00
+- Wrote `packages/client/src/components/sessions/SessionPicker.tsx` (hideMetricPicker prop, ~6 net lines). Metric dimensions group conditionally hidden.
 
-| File | Lines changed | Notes |
-|------|---------------|-------|
-| `packages/client/tests/e2e/progression.spec.ts` | 4 locator subs | getByText → getByRole('heading') for all 4 heading assertions |
+### Checkpoint — 19:25:00
+- Wrote `packages/client/src/pages/sessions/tabs/AnalyzeTab.tsx` (154 lines). Metric picker hidden in panel view; ANALYZE_PANEL_METRICS_FIXED_NOTE inlined; annotation in view toggle row.
 
-- **Playwright:** 3 passed (5.6s) — live servers :5173 + :3001
-- **Lint:** exit code 0
-- **Sprint_id assertions:** untouched (correct; no collision risk)
+### Checkpoint — 19:30:00
+- Fixed server test stubs: added has_after_action:true to 3 test fixtures (pre-existing t2 schema breakage).
 
----
+### Checkpoint — 19:35:00
+- Wrote `packages/client/tests/e2e/gander-studio-p9-sessions-feed-agentstats-t5.spec.ts` (3 live tests).
+- All 3 pass against live server (port 5173). Updated s3-t4-stat-surfaces Test 4 to match new role-aware behavior.
 
 ## [STAGE 3] COMPLETE
-- **At:** 2026-06-01T00:05:00Z
+- **At:** 2026-06-30T19:40:00Z
 - **Deliverables:**
 
 | File | Lines | Notes |
 |------|-------|-------|
-| `packages/client/src/pages/ProgressionPage.tsx` | 146 | Created — within ≤150 constraint |
-| `packages/client/src/constants/progression.ts` | 34 | Created — SURFACE_COLORS + SURFACE_ORDER |
-| `packages/client/tests/e2e/progression.spec.ts` | 65 | Created — 3 Tier-2 tests |
-| `packages/client/src/store/ui-store.ts` | +1 | Modified — `'progression'` added to AppMode union |
-| `packages/client/src/components/ModeContent.tsx` | +2 | Modified — ProgressionPage import + PAGE_MAP entry |
-| `packages/client/src/constants/navigation.ts` | +1 | Modified — nav item added |
-| `packages/client/src/components/BottomTabBar.tsx` | 0 | Reads NAV_ITEMS dynamically — no modification needed |
+| packages/client/src/utils/session-metrics.ts | 54 | PanelMetricKey + agentDisplayConfig |
+| packages/client/src/components/sessions/AgentStatPanel.tsx | 195 | role-aware; 3 modes |
+| packages/client/src/components/sessions/SessionPicker.tsx | +6 net | hideMetricPicker prop |
+| packages/client/src/pages/sessions/tabs/AnalyzeTab.tsx | 154 | picker hide + annotation |
+| packages/client/tests/e2e/gander-studio-p9-sessions-feed-agentstats-t5.spec.ts | 120 | 3 live tests |
+| packages/client/tests/e2e/s3-t4-stat-surfaces.spec.ts | ~195 | Test 4 updated for role-aware behavior |
+| packages/server/src/parsers/__tests__/event-log-parser.test.ts | +1 | has_after_action fixture fix |
+| packages/server/src/parsers/__tests__/seam-04-feedback-loops.test.ts | +1 | has_after_action fixture fix |
+| packages/server/src/parsers/__tests__/session-stats.test.ts | +1 | has_after_action fixture fix |
 
-- **Lint:** exit code 0 (all 3 packages clean)
-- **Constant audit:** 0 raw hex matches in created/modified files; 0 Tailwind/inline conflicts
-
-### Checkpoint — 00:01:00
-- Wrote `packages/client/src/constants/progression.ts` (34 lines). Constant audit: 0 matches. Next: ProgressionPage.
-
-### Checkpoint — 00:02:30
-- Wrote `packages/client/src/pages/ProgressionPage.tsx` (146 lines). Constant audit: 0 matches. Next: modify 3 call-graph sites.
-
-### Checkpoint — 00:03:30
-- Modified `ui-store.ts`, `ModeContent.tsx`, `navigation.ts`. SC grep checks all pass (1,1,1,1). Next: e2e spec.
-
-### Checkpoint — 00:04:30
-- Wrote `packages/client/tests/e2e/progression.spec.ts` (65 lines). role.*tab count=2, sprint_id grep count=1. Next: lint + audits.
-
----
-
-## [STAGE 2] PLAN
-- **At:** 2026-06-01T00:01:00Z
-- **Components to build:**
-  - `packages/client/src/pages/ProgressionPage.tsx` — main page (≤150 lines; extract SprintEntry sub-component if needed)
-  - `packages/client/src/constants/progression.ts` — SURFACE_COLORS + SURFACE_ORDER constants
-  - `packages/client/tests/e2e/progression.spec.ts` — 3 Tier-2 tests (load, data-visible, console-errors)
-- **Modify:**
-  - `packages/client/src/store/ui-store.ts` — add `| 'progression'` to AppMode union
-  - `packages/client/src/components/ModeContent.tsx` — add `progression: ProgressionPage` to PAGE_MAP
-  - `packages/client/src/constants/navigation.ts` — add nav item `{ mode: 'progression', label: 'Progression', dotColor: 'var(--mo)' }`
-  - BottomTabBar.tsx — reads NAV_ITEMS dynamically (confirmed), NO modification needed
-- **State design:** No local state needed. Pure data-fetch page. `trpc.progression.getLedger.useQuery()` returns `ProgressionEntry[]`. Surface summary computed via `useMemo`. Entries reversed for display (most recent first).
-- **tRPC wiring:** `trpc.progression.getLedger.useQuery()` — no input args. Type `ProgressionEntry` imported from `@gander-studio/shared`.
-- **A11Y plan:** role="status" loading, role="alert" error, role="list"/"listitem" sprint list, aria-hidden on decorative dots, tabIndex=0 on SprintEntry cards, aria-label on SurfacePills.
-
----
-
-## [STAGE 1] RECEIVED
-- **From:** ORC
-- **At:** 2026-06-01T00:00:00Z
-- **Task ID:** p5b-003-fe
-- **Message received:**
-  > You are the Frontend Engineer for Gander Studio. Implement task `p5b-003-fe` — the `/progression` React route, nav wiring, and a Tier-2 e2e spec. Return a `completion_packet`.
-  > Deliverables: ProgressionPage.tsx, constants/progression.ts, tests/e2e/progression.spec.ts, plus 4 AppMode call-graph site modifications (ui-store.ts, ModeContent.tsx, navigation.ts, BottomTabBar.tsx verify). Hard constraints: lint must exit 0, no shared/server modifications, no new npm deps.…[truncated]
+- **Lint:** exit 0 (all 3 packages)
+- **Build:** exit 0
+- **Live Playwright:** 3/3 pass on port 5173
+- **Constant audit:** 0 raw hex matches in modified files

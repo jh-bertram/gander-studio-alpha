@@ -2,7 +2,8 @@
 type: program-manifest
 program_id: prog-studio-sessions-2026-05
 created: 2026-05-06
-status: PLANNED
+status: DONE
+reconciled: 2026-05-28
 ---
 
 # Program: Gander Studio Sessions Mode (P3)
@@ -77,7 +78,7 @@ Each sibling carries its own sprint-level SCs in its orchestrator brief.
 
 ## Status
 
-`PLANNED` — moirai has emitted planning artifacts only; no sibling has been dispatched. The companion `skein` skill will update this field after all siblings reach DONE / FAILED.
+`DONE` — all three siblings reached DONE (no failures). Reconciled by `skein` on 2026-05-28: all 6 declared integration seams STITCHED, 4 drift items resolved in-flight, 5 residue items routed to HR / hone / a small FE follow-up. Recommendation: `STITCHED` (no integration sprint required). See [`skein-report.md`](./skein-report.md) and [`skein-map.html`](./skein-map.html).
 
 ## Known Concurrent Issues (Not In Scope)
 

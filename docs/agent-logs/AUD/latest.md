@@ -1,26 +1,33 @@
-# AUD Log — p5b-003-fe
+# AUD Log — gander-studio-p9-sessions-feed-agentstats
 
 ## Stage 1 — RECEIVED
 - from: ORC#0
-- at: 2026-06-01T18:52:38Z
-- task_id: p5b-003-fe
-- prompt (first 800 chars): Audit the completed Frontend task p5b-003-fe (/progression React route + nav wiring + Tier-2 e2e spec). Return audit_verdict (SA, QA, SX). Read-only; veto power. Built: ProgressionPage.tsx (146), constants/progression.ts (34), tests/e2e/progression.spec.ts (65); modified ui-store.ts (AppMode), ModeContent.tsx (PAGE_MAP), navigation.ts (NAV_ITEMS). Dev servers LIVE (tRPC 3001, Vite 5173). Focus: SA grep SCs, LIVE Playwright pass (load-bearing), contrast/visibility (FF7 invisible-text hazard), SX (no secrets/dangerouslySetInnerHTML).
+- at: 2026-06-30 (post-cutover task_id → v2.0 verdict)
+- task_id: gander-studio-p9-sessions-feed-agentstats
+- spawn: AUD#2, independent_from WF#1,BE#4,UI#1
+- prompt(first 800): Independent audit of gander-studio-p9 before commit. Read-only. 5 packets, 3-pass critic-approved. Sessions feed (event-log synthesis), role-aware AgentStatPanel, router doc-less guards, files_touched metric. Judge SA/QA/SX.
 
-## Stage 2 — PLAN
-Audit order (cheapest-first SA -> QA -> SX):
-1. SA: run SC1-SC7 greps, wc -l, scope check, contrast corrections, no RF/dagre, BottomTabBar role.
-   Files: ProgressionPage.tsx, progression.ts, navigation.ts, ModeContent.tsx, ui-store.ts, BottomTabBar.tsx, progression.spec.ts
-2. QA: lint (tsc x3); live Playwright pass against 5173 (render, real sprint_id, 8 pills, ZERO console errors, screenshot).
-3. SX: dangerouslySetInnerHTML/innerHTML scan, secret scan, npm audit context.
+## Stage 2 — PLAN (audit order: SA cheapest-first → QA → SX)
+1. session-slug-match.ts (dedup core) — SA + QA logic trace
+2. session-synthesis.ts (feed) — SA + QA + SX (path safety)
+3. event-log-parser.ts (readEventLogEntries extraction / DRY)
+4. router.ts (t1b guards) — SA + SX (saveEdit/getRaw)
+5. session-list.ts (collectSessions wiring)
+6. AgentStatPanel.tsx + constants/sessions.ts (role map, DRY)
+7. session-stats.ts + schemas.ts (files_touched)
+8. new tests + e2e specs (coverage)
 
-### Checkpoint — 18:54 - Reviewed ProgressionPage.tsx. SA: pass. QA: pass. SX: pass.
-### Checkpoint — 18:54 - Reviewed constants/progression.ts. SA: pass. QA: pass. SX: pass.
-### Checkpoint — 18:54 - Reviewed navigation.ts / ModeContent.tsx / ui-store.ts (4 call-graph sites). SA: pass.
-### Checkpoint — 18:55 - Reviewed BottomTabBar.tsx (role=tablist/tab, NAV_ITEMS dynamic). SA: pass.
-### Checkpoint — 18:58 - Reviewed tests/e2e/progression.spec.ts. SA: pass. QA: see note (Test2 spec selector collision; load-bearing behavior verified via audit snapshot spec - PASS).
+### Checkpoint — Reviewed session-slug-match.ts. SA: pass. QA: pass. SX: pass.
+### Checkpoint — Reviewed session-synthesis.ts. SA: pass. QA: pass. SX: pass.
+### Checkpoint — Reviewed event-log-parser.ts. SA: pass. QA: pass. SX: pass.
+### Checkpoint — Reviewed router.ts (t1b guards). SA: pass. QA: pass. SX: pass.
+### Checkpoint — Reviewed schemas.ts + session-stats.ts + group-agents.ts. SA: pass. QA: pass. SX: pass.
+### Checkpoint — Reviewed AgentStatPanel.tsx + session-metrics.ts. SA: pass. QA: pass. SX: pass.
+### Checkpoint — Reviewed SessionListPage/EditorTab/AnalyzeTab + constants. SA: pass. QA: pass. SX: pass.
 
 ## Stage 3 — COMPLETE
-- Verdict: PASS (SA PASS / QA PASS / SX SECURE)
-- Live Playwright: RAN. 6 sprint entries, both target sprint_ids visible, 8 pills, ZERO console errors, text visible (screenshot test-results/audit-progression-snap.png).
-- Advisory (non-blocking): authored spec Test 2 has a getByText('SURFACE COVERAGE') strict-mode collision with a ledger delta substring; FE should tighten to getByRole('heading'). Does not affect the page; live behavior verified independently.
-- Output: .claude/agents/tasks/outputs/p5b-003-fe-AUD-1780339929.md
+- Verdict: PASS (SA PASS / QA PASS / SX SECURE) — v2.0 typed audit_verdict emitted.
+- Independent re-verification: 138/138 server tests + lint clean re-run by AUD#2.
+- Output: .claude/tasks/outputs/gander-studio-p9-sessions-feed-agentstats-AUD-1782021000.md
+- Event: seq 51 AUDIT_PASS.
+- 2 advisory (non-blocking) notes: uncommented machine-path in .env.example; untracked debug e2e specs to exclude at commit.
