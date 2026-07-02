@@ -18,7 +18,7 @@
   --wd: rgba(255, 255, 255, 0.72);
   --wm: rgba(255, 255, 255, 0.55);
   --red: #a12d2d;
-  --redb: #cf3c3c;
+  --redb: #e05555;
   /* Materia role colors */
   --mg: #4caf7d;
   --my: #e8c840;
@@ -354,7 +354,7 @@ body::before {
     --muted-foreground:       var(--wm);            /* rgba(255,255,255,0.55) — 5.06:1 on --sfh AA */
     --accent:                 var(--sfh);           /* #1a3530 — hover/selected row */
     --accent-foreground:      var(--wd);            /* rgba(255,255,255,0.72) — 9.6:1 AA+ */
-    --destructive:            var(--redb);          /* #cf3c3c — 4.07:1 on --void (BELOW AA for normal text; see DEFERRED-006) */
+    --destructive:            var(--redb);          /* #e05555 — 5.22:1 on --void (AA for normal text; DEFERRED-006 resolved) */
     /* Structural */
     --border:                 var(--bd);            /* rgba(84,153,181,0.25) — decorative */
     --input:                  var(--bdb);           /* rgba(84,153,181,0.55) — visible border */

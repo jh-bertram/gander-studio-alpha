@@ -30,7 +30,7 @@ Non-negotiable rules for this app's visual identity.
 | `--color-border-active` | `rgba(74,143,168,0.50)` | Active / focused borders |
 | `--color-success` | `#4caf7d` | Success states (role: impl agents) |
 | `--color-warning` | `#e8c840` | Warning states (role: command agents) |
-| `--color-error` | `#cf3c3c` | Error states, destructive actions |
+| `--color-error` | `#e05555` | Error states, destructive actions |
 | `--color-info` | `#4a90d9` | Info states (role: intel agents) |
 
 ### Role / Materia Colors (preserved)
@@ -180,7 +180,7 @@ The table below is the authoritative contract for the `@layer base` `:root` rema
 | `--secondary` | `var(--sfh)` | `#1a3530` | Secondary button surface; deepest visible surface |
 | `--muted` | `var(--sfm)` | `#122420` | Muted/disabled region background; not used for text |
 | `--accent` | `var(--sfh)` | `#1a3530` | Accent region background — hover chip, selected row |
-| `--destructive` | `var(--redb)` | `#cf3c3c` | Destructive action color; 4.07:1 on `--void` — **below AA for normal text** (see DEFERRED-006) |
+| `--destructive` | `var(--redb)` | `#e05555` | Destructive action color; 5.22:1 on `--void` — **AA for normal text** (DEFERRED-006 resolved) |
 
 **Border, input, and ring tokens**
 
@@ -322,7 +322,7 @@ The `--mtd` (dim variant, currently `#3a6f8a`) should also be lightened proporti
 | Primary / ring | `--mt` #6db0c8 (after p3) | `--sfh` (#1a3530) | 5.38:1 | AA |
 | Primary / ring | `--mt` #6db0c8 (after p3) | `--void` (#070d0c) | 8.12:1 | AA+ |
 | Button text (primary-foreground on primary) | `--void` (#070d0c) | `--mt` #6db0c8 | 8.12:1 | AA+ |
-| Destructive | `--redb` (#cf3c3c) | `--void` (#070d0c) | 4.07:1 | **below AA** (see DEFERRED-006) |
+| Destructive | `--redb` (#e05555) | `--void` (#070d0c) | 5.22:1 | AA (DEFERRED-006 resolved) |
 | Intel blue chart | `--mb` (#4a90d9) | `--void` (#070d0c) | ~4.7:1 | AA |
 | Impl green chart | `--mg` (#4caf7d) | `--void` (#070d0c) | ~5.1:1 | AA |
 
@@ -399,3 +399,30 @@ p1 is the sole owner of `globals.css` for the entirety of s4. Wave-2 packets (p2
 3. Not modify globals.css.
 
 The auditor must verify that every `animation:` / `animation-name:` reference across all five wave-2 surfaces resolves to a keyframe defined in globals.css. A missing keyframe renders a juice item inert with no runtime error.
+
+---
+
+## Decision Record D — DEFERRED-006 --redb Contrast Remediation (p10, 2026-07-02)
+
+**Problem.** `--redb` (the source of the `--destructive` token) shipped at `#cf3c3c`, which measures 4.07:1 against `--void` (#070d0c) — below the WCAG AA 4.5:1 threshold for normal text. Ledger item `deferred-work.md` line 22 ratified the fix: "Lighten --redb to approximately #e05555."
+
+**Superseded value (historical, preserved for changelog purposes only — no longer live anywhere in this document or in globals.css):**
+- Old `--redb`: `#cf3c3c` → 4.07:1 on `--void` → **below AA**.
+
+**Resolution.** `--redb` lightened in place to `#e05555` (R=224, G=85, B=85). The `--destructive: var(--redb)` mapping is unchanged — only the source token value moved. No new token variant introduced.
+
+**WCAG method (relative luminance, WCAG 2.x).** Per channel `c ∈ {R,G,B}`: `cs = c/255`; `cl = cs/12.92` if `cs ≤ 0.03928`, else `((cs+0.055)/1.055)^2.4`. `L = 0.2126·Rl + 0.7152·Gl + 0.0722·Bl`. Contrast `= (Llight + 0.05) / (Ldark + 0.05)`.
+
+- `--void` `#070d0c` → L ≈ 0.003601.
+- Old `--redb` `#cf3c3c` → L ≈ 0.168181 → contrast = (0.168181+0.05)/(0.003601+0.05) = **4.07:1** (confirms recorded value — method valid).
+- New `--redb` `#e05555` (R=224,G=85,B=85) → Rl≈0.74540, Gl=Bl≈0.090846 → L ≈ 0.230004 → contrast = (0.230004+0.05)/(0.003601+0.05) = **5.22:1** — **PASS AA** (≥4.5:1 for normal text).
+
+**Contrast pair (post-fix):**
+
+| Pair | Foreground | Background | Ratio | Status |
+|---|---|---|---|---|
+| Destructive | `--redb` (#e05555) | `--void` (#070d0c) | 5.22:1 | AA |
+
+**Regression guard.** `--redb`/`--destructive` is consumed in two places: (1) the Shadcn destructive button variant, which renders `text-destructive` (red text) on `bg-destructive/10` (a 10%-alpha tint of the same red) — text-on-tint, not white-on-solid-red; lightening the source hex only raises this text/tint contrast, so no regression is possible here. (2) `AgentTimeline.tsx` uses `--redb` as a graphical marker/legend color (AUDIT_FAIL/FAIL states), which requires only the WCAG non-text 3:1 threshold — comfortably cleared by the new value. No solid-red-background + light-foreground-text pairing exists anywhere in the codebase for this token, so the historical AA failure is fully resolved with no new failure introduced.
+
+**Ratification.** Target value `#e05555` is ledger-ratified (deferred-work.md line 22, "lighten-in-place" default — no new token variant). This Decision Record documents the mechanical doc-sync applied at the three live sites referencing `--color-error` / `--destructive` contrast (Color Tokens table, Decision Record A, Decision Record B) plus this changelog entry.
