@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gander Studio v2 — Party Screen (design mockup)</title>
+<style>
+  /* ===== FF7 Mako-Teal runtime tokens (values copied verbatim from
+     packages/client/src/globals.css :root — READ ONLY source, not edited) ===== */
+  :root {
+    --void: #070d0c;
+    --sf: #0d1a18;
+    --sfm: #122420;
+    --sfh: #1a3530;
+    --w: #ffffff;
+    --wd: rgba(255, 255, 255, 0.72);
+    --wm: rgba(255, 255, 255, 0.55);
+    --mt: #6db0c8;
+    --redb: #e05555;
+    --mg: #4caf7d;
+    --my: #e8c840;
+    --mb: #4a90d9;
+    --mp: #9b59b6;
+    --mr: #e74c3c;
+    --mo: #e8914d;
+    --bd: rgba(84, 153, 181, 0.25);
+    --bdb: rgba(84, 153, 181, 0.55);
+    --nav-active-bg: rgba(84, 153, 181, 0.14);
+    --radius-md: 10px;
+    --radius-sm: 6px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --fs-2xl: 22px;
+    --fs-lg: 16px;
+    --fs-sm: 12px;
+    --fs-xs: 10px;
+    --fh: Optima, "Palatino Linotype", serif;
+    --fb: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --fm: "Courier New", monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--void);
+    color: var(--w);
+    font-family: var(--fb);
+    min-height: 100vh;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+
+  button { font-family: inherit; cursor: pointer; }
+
+  /* ===== App shell layout ===== */
+  .app-shell {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    grid-template-areas: "header header" "rail main";
+    min-height: 100vh;
+  }
+
+  /* ===== Header ===== */
+  .ps-header {
+    grid-area: header;
+    background: var(--sf);
+    padding: var(--space-6) var(--space-6) var(--space-2);
+    border-bottom: 1px solid var(--bd);
+  }
+  .ps-title-row { display: flex; align-items: center; gap: var(--space-2); }
+  .ps-title-rule { display: inline-block; width: 2px; height: 18px; background: var(--mt); }
+  .ps-title-row h1 {
+    font-family: var(--fh); font-weight: 600; font-size: 20px; margin: 0; color: var(--w);
+  }
+  .ps-scope {
+    font-size: var(--fs-xs); color: var(--wm); text-transform: uppercase;
+    letter-spacing: 0.12em; margin: var(--space-2) 0 0;
+  }
+  .ps-about {
+    font-size: var(--fs-sm); color: var(--wd); max-width: 62ch; margin: var(--space-2) 0 0; line-height: 1.5;
+  }
+
+  /* ===== Submenu rail ===== */
+  .submenu-rail { grid-area: rail; background: var(--sf); border-right: 1px solid var(--bd); padding: var(--space-4) var(--space-2); }
+  .submenu-rail h2 {
+    font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.12em; color: var(--wm);
+    margin: 0 var(--space-2) var(--space-2); font-weight: 600;
+  }
+  .submenu-rail ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+  .submenu-item {
+    display: flex; align-items: center; gap: var(--space-2); width: 100%;
+    background: transparent; border: none; border-left: 2px solid transparent;
+    color: var(--wd); font-size: var(--fs-sm); padding: var(--space-2);
+    border-radius: var(--radius-sm); text-align: left;
+  }
+  .submenu-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .submenu-item:hover { background: var(--nav-active-bg); }
+  .submenu-item:focus-visible { outline: 2px solid var(--mt); outline-offset: 2px; }
+  .submenu-item.is-active { background: var(--sfh); color: var(--mt); border-left-color: var(--mt); }
+
+  /* ===== Main / party surface ===== */
+  .party-main { grid-area: main; padding: var(--space-6); }
+  .party-surface[data-state] .state-panel { display: none; }
+  .party-surface[data-state="default"] .state-panel[data-for="default"],
+  .party-surface[data-state="loading"] .state-panel[data-for="loading"],
+  .party-surface[data-state="empty"] .state-panel[data-for="empty"],
+  .party-surface[data-state="error"] .state-panel[data-for="error"] { display: block; }
+
+  .party-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4);
+  }
+  @media (max-width: 1023px) { .party-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 639px) {
+    .app-shell { grid-template-columns: 1fr; grid-template-areas: "header" "main" "rail"; }
+    .party-grid { grid-template-columns: 1fr; }
+    .submenu-rail {
+      border-right: none; border-top: 1px solid var(--bd);
+      position: sticky; bottom: 0;
+    }
+    .submenu-rail ul { flex-direction: row; }
+    .submenu-rail li { flex: 1; }
+    .submenu-item { flex-direction: column; gap: 2px; border-left: none; border-top: 2px solid transparent; }
+    .submenu-item.is-active { border-top-color: var(--mt); border-left-color: transparent; }
+  }
+
+  /* ===== Party member card ===== */
+  .party-card {
+    display: block; width: 100%; text-align: left; background: var(--sf);
+    border: 1px solid var(--bd); border-radius: var(--radius-md); padding: var(--space-4);
+  }
+  .party-card:hover { border-color: var(--bdb); }
+  .party-card:focus-visible { outline: 2px solid var(--mt); outline-offset: 2px; border-color: var(--bdb); }
+  .party-card:active { background: var(--nav-active-bg); }
+
+  .role-impl    { --role-color: var(--mg); --role-tint: rgba(76, 175, 125, 0.12); --role-tint-border: rgba(76, 175, 125, 0.25); }
+  .role-command { --role-color: var(--my); --role-tint: rgba(232, 200, 64, 0.12); --role-tint-border: rgba(232, 200, 64, 0.25); }
+  .role-gate    { --role-color: var(--mr); --role-tint: rgba(231, 76, 60, 0.12); --role-tint-border: rgba(231, 76, 60, 0.25); }
+  .role-intel   { --role-color: var(--mb); --role-tint: rgba(74, 144, 217, 0.12); --role-tint-border: rgba(74, 144, 217, 0.25); }
+
+  .portrait-frame {
+    position: relative; aspect-ratio: 5 / 2; border-radius: var(--radius-md);
+    border: 2px solid var(--role-color);
+    background: linear-gradient(135deg, var(--role-tint), var(--sfh));
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: var(--space-4); overflow: hidden;
+  }
+  .portrait-monogram {
+    font-family: var(--fm); font-size: var(--fs-2xl); font-weight: 600; color: var(--w);
+    letter-spacing: 0.04em;
+  }
+  .portrait-flourish {
+    position: absolute; bottom: 6px; right: 6px; width: 20px; height: 20px;
+    color: var(--role-color); opacity: 0.5;
+  }
+
+  .agent-code { font-family: var(--fm); font-size: var(--fs-lg); font-weight: 600; color: var(--w); margin: 0; }
+  .role-tag {
+    display: inline-block; font-size: var(--fs-xs); color: var(--wd); background: var(--role-tint);
+    border: 1px solid var(--role-tint-border); border-radius: 999px; padding: 2px 10px;
+    margin: var(--space-1) 0 var(--space-4); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  .stat-bar-list { display: flex; flex-direction: column; gap: var(--space-2); }
+  .stat-bar-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .stat-label { font-size: var(--fs-sm); color: var(--wd); }
+  .stat-value { font-size: var(--fs-sm); color: var(--w); font-variant-numeric: tabular-nums; }
+  .stat-value.stat-na { color: var(--wm); font-size: var(--fs-xs); text-align: right; }
+  .stat-track { height: 6px; background: var(--sfh); border-radius: var(--radius-sm); margin-top: 4px; overflow: hidden; }
+  .stat-fill { height: 100%; border-radius: var(--radius-sm); }
+  .stat-fill.is-activity, .stat-fill.is-accuracy { background: var(--role-color); }
+  .stat-fill.is-stamina { background: var(--mg); }
+
+  .party-grid-caption { font-size: var(--fs-xs); color: var(--wm); margin: var(--space-4) 0 0; max-width: 90ch; line-height: 1.6; }
+
+  /* ===== Loading state ===== */
+  .skeleton-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+  @media (max-width: 1023px) { .skeleton-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 639px) { .skeleton-grid { grid-template-columns: 1fr; } }
+  .skeleton-card { background: var(--sf); border: 1px solid var(--bd); border-radius: var(--radius-md); padding: var(--space-4); }
+  .skeleton-block {
+    border-radius: var(--radius-sm);
+    background: linear-gradient(90deg, var(--sfm) 25%, var(--sfh) 50%, var(--sfm) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+  .skeleton-portrait { aspect-ratio: 5 / 2; margin-bottom: var(--space-4); }
+  .skeleton-line { height: 10px; margin-bottom: var(--space-2); }
+  .skeleton-line.w-60 { width: 60%; }
+  .skeleton-line.w-100 { width: 100%; }
+  @keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* ===== Empty state ===== */
+  .empty-panel {
+    max-width: 480px; margin: var(--space-6) auto; text-align: center;
+    background: var(--sf); border: 1px solid var(--bd); border-radius: var(--radius-md);
+    padding: var(--space-6) var(--space-4);
+  }
+  .empty-panel svg { width: 36px; height: 36px; color: var(--wm); margin-bottom: var(--space-2); }
+  .empty-panel h2 { font-size: var(--fs-lg); color: var(--w); margin: 0 0 var(--space-2); }
+  .empty-panel p { font-size: var(--fs-sm); color: var(--wd); margin: 0 0 var(--space-4); line-height: 1.5; }
+  .btn-primary {
+    background: var(--mt); color: var(--void); border: none; border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-4); font-size: var(--fs-sm); font-weight: 600;
+  }
+  .btn-primary:focus-visible { outline: 2px solid var(--w); outline-offset: 2px; }
+
+  /* ===== Error state ===== */
+  .error-panel {
+    max-width: 560px; margin: var(--space-6) auto; border-left: 3px solid var(--redb);
+    background: var(--void); padding: var(--space-4);
+  }
+  .error-panel p { color: var(--redb); font-size: var(--fs-sm); margin: 0 0 var(--space-4); line-height: 1.5; }
+  .btn-outline {
+    background: transparent; color: var(--w); border: 1px solid var(--bdb); border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-4); font-size: var(--fs-sm);
+  }
+  .btn-outline:focus-visible { outline: 2px solid var(--mt); outline-offset: 2px; }
+
+  /* ===== State-preview switcher (mockup-review affordance, not part of the app UI) ===== */
+  .state-switcher {
+    display: flex; gap: var(--space-1); margin: var(--space-4) 0 var(--space-6);
+    border-top: 1px solid var(--bd); padding-top: var(--space-4);
+  }
+  .state-switch-btn {
+    background: var(--sf); color: var(--wd); border: 1px solid var(--bd); border-radius: var(--radius-sm);
+    padding: var(--space-1) var(--space-2); font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .state-switch-btn[aria-pressed="true"] { background: var(--mt); color: var(--void); border-color: var(--mt); font-weight: 600; }
+  .state-switch-btn:focus-visible { outline: 2px solid var(--mt); outline-offset: 2px; }
+  .state-switcher-label { font-size: var(--fs-xs); color: var(--wm); align-self: center; margin-right: var(--space-2); text-transform: uppercase; letter-spacing: 0.08em; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <header class="ps-header">
+    <div class="ps-title-row">
+      <span class="ps-title-rule" aria-hidden="true"></span>
+      <h1>Party Screen</h1>
+    </div>
+    <p class="ps-scope">13-agent roster · sample data as of 2026-07-07</p>
+    <p class="ps-about">
+      Design mockup for <code>gander-studio-p11-v2-vision-t3</code>'s party-screen spec. Static
+      HTML/CSS/JS only, no build, no network. Stat values below are copied verbatim from the
+      spec's sample-data appendix (sourced from the t1 session-data-inventory corpus sample) —
+      nothing here is fabricated.
+    </p>
+  </header>
+
+  <nav class="submenu-rail" aria-label="Party screen submenus">
+    <h2 id="submenu-heading">Submenus</h2>
+    <ul aria-labelledby="submenu-heading">
+      <li>
+        <button type="button" class="submenu-item is-active" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Roster
+        </button>
+      </li>
+      <li>
+        <button type="button" class="submenu-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M5 21V5a2 2 0 0 1 2-2h7l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z"/>
+            <path d="M14 3v4a1 1 0 0 0 1 1h4"/><circle cx="12" cy="15" r="4"/><path d="M12 13.5V15l1 1"/>
+          </svg>
+          Sessions
+        </button>
+      </li>
+      <li>
+        <button type="button" class="submenu-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>
+          </svg>
+          Progression
+        </button>
+      </li>
+      <li>
+        <button type="button" class="submenu-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+            <path d="M18 9a9 9 0 0 1-9 9"/>
+          </svg>
+          Programs
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <main class="party-main">
+    <div class="party-surface" data-state="default" aria-live="polite">
+
+      <!-- ===== DEFAULT STATE ===== -->
+      <div class="state-panel" data-for="default">
+        <div class="party-grid" aria-label="Party members">
+
+          <button type="button" class="party-card role-impl" aria-label="FE, Impl role. Activity 100%, Stamina approximately 96%, Accuracy 63%.">
+            <div class="portrait-frame">
+              <span class="portrait-monogram">FE</span>
+              <svg class="portrait-flourish" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M4 20L18 6"/><path d="M15 3l6 6"/><path d="M13 5l6 6"/><path d="M4 20l2 2"/>
+              </svg>
+            </div>
+            <h3 class="agent-code">FE</h3>
+            <span class="role-tag">Impl</span>
+            <div class="stat-bar-list">
+              <div role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Activity: 100%">
+                <div class="stat-bar-row"><span class="stat-label">Activity</span><span class="stat-value">100%</span></div>
+                <div class="stat-track"><div class="stat-fill is-activity" style="width:100%"></div></div>
+              </div>
+              <div role="progressbar" aria-valuenow="96" aria-valuemin="0" aria-valuemax="100" aria-label="Stamina: approximately 96%">
+                <div class="stat-bar-row"><span class="stat-label">Stamina</span><span class="stat-value">≈95.7%</span></div>
+                <div class="stat-track"><div class="stat-fill is-stamina" style="width:96%"></div></div>
+              </div>
+              <div role="progressbar" aria-valuenow="63" aria-valuemin="0" aria-valuemax="100" aria-label="Accuracy: 63%">
+                <div class="stat-bar-row"><span class="stat-label">Accuracy</span><span class="stat-value">63%</span></div>
+                <div class="stat-track"><div class="stat-fill is-accuracy" style="width:63%"></div></div>
+              </div>
+            </div>
+          </button>
+
+          <button type="button" class="party-card role-command" aria-label="PM, Command role. Activity approximately 54%, Stamina 100%, Accuracy not applicable, not audit-gated.">
+            <div class="portrait-frame">
+              <span class="portrait-monogram">PM</span>
+              <svg class="portrait-flourish" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M3 18h18l-1.5-9L15 13l-3-7-3 7-4.5-4L3 18z"/>
+              </svg>
+            </div>
+            <h3 class="agent-code">PM</h3>
+            <span class="role-tag">Command</span>
+            <div class="stat-bar-list">
+              <div role="progressbar" aria-valuenow="54" aria-valuemin="0" aria-valuemax="100" aria-label="Activity: approximately 54%">
+                <div class="stat-bar-row"><span class="stat-label">Activity</span><span class="stat-value">≈54%</span></div>
+                <div class="stat-track"><div class="stat-fill is-activity" style="width:54%"></div></div>
+              </div>
+              <div role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Stamina: 100%">
+                <div class="stat-bar-row"><span class="stat-label">Stamina</span><span class="stat-value">100%</span></div>
+                <div class="stat-track"><div class="stat-fill is-stamina" style="width:100%"></div></div>
+              </div>
+              <div aria-label="Accuracy: not applicable, not audit-gated">
+                <div class="stat-bar-row"><span class="stat-label">Accuracy</span><span class="stat-value stat-na">N/A — not audit-gated</span></div>
+                <div class="stat-track"><div class="stat-fill" style="width:0"></div></div>
+              </div>
+            </div>
+          </button>
+
+          <button type="button" class="party-card role-gate" aria-label="AU, Gate role. Activity approximately 83%, Stamina 100%, Accuracy not applicable, renders audits, not audited.">
+            <div class="portrait-frame">
+              <span class="portrait-monogram">AU</span>
+              <svg class="portrait-flourish" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+            <h3 class="agent-code">AU</h3>
+            <span class="role-tag">Gate</span>
+            <div class="stat-bar-list">
+              <div role="progressbar" aria-valuenow="83" aria-valuemin="0" aria-valuemax="100" aria-label="Activity: approximately 83%">
+                <div class="stat-bar-row"><span class="stat-label">Activity</span><span class="stat-value">≈83%</span></div>
+                <div class="stat-track"><div class="stat-fill is-activity" style="width:83%"></div></div>
+              </div>
+              <div role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Stamina: 100%">
+                <div class="stat-bar-row"><span class="stat-label">Stamina</span><span class="stat-value">100%</span></div>
+                <div class="stat-track"><div class="stat-fill is-stamina" style="width:100%"></div></div>
+              </div>
+              <div aria-label="Accuracy: not applicable, renders audits, not audited">
+                <div class="stat-bar-row"><span class="stat-label">Accuracy</span><span class="stat-value stat-na">N/A — renders audits, not audited</span></div>
+                <div class="stat-track"><div class="stat-fill" style="width:0"></div></div>
+              </div>
+            </div>
+          </button>
+
+          <button type="button" class="party-card role-intel" aria-label="AR, Intel role. Activity approximately 33%, Stamina 100%, Accuracy not applicable, not audit-gated.">
+            <div class="portrait-frame">
+              <span class="portrait-monogram">AR</span>
+              <svg class="portrait-flourish" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="9"/><path d="M15 9l-2 6-6 2 2-6 6-2z"/>
+              </svg>
+            </div>
+            <h3 class="agent-code">AR</h3>
+            <span class="role-tag">Intel</span>
+            <div class="stat-bar-list">
+              <div role="progressbar" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100" aria-label="Activity: approximately 33%">
+                <div class="stat-bar-row"><span class="stat-label">Activity</span><span class="stat-value">≈33%</span></div>
+                <div class="stat-track"><div class="stat-fill is-activity" style="width:33%"></div></div>
+              </div>
+              <div role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Stamina: 100%">
+                <div class="stat-bar-row"><span class="stat-label">Stamina</span><span class="stat-value">100%</span></div>
+                <div class="stat-track"><div class="stat-fill is-stamina" style="width:100%"></div></div>
+              </div>
+              <div aria-label="Accuracy: not applicable, not audit-gated">
+                <div class="stat-bar-row"><span class="stat-label">Accuracy</span><span class="stat-value stat-na">N/A — not audit-gated</span></div>
+                <div class="stat-track"><div class="stat-fill" style="width:0"></div></div>
+              </div>
+            </div>
+          </button>
+
+          <button type="button" class="party-card role-impl" aria-label="BE, Impl role. Activity approximately 35%, Stamina approximately 81%, Accuracy 100%.">
+            <div class="portrait-frame">
+              <span class="portrait-monogram">BE</span>
+              <svg class="portrait-flourish" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M4 20L18 6"/><path d="M15 3l6 6"/><path d="M13 5l6 6"/><path d="M4 20l2 2"/>
+              </svg>
+            </div>
+            <h3 class="agent-code">BE</h3>
+            <span class="role-tag">Impl</span>
+            <div class="stat-bar-list">
+              <div role="progressbar" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100" aria-label="Activity: approximately 35%">
+                <div class="stat-bar-row"><span class="stat-label">Activity</span><span class="stat-value">≈35%</span></div>
+                <div class="stat-track"><div class="stat-fill is-activity" style="width:35%"></div></div>
+              </div>
+              <div role="progressbar" aria-valuenow="81" aria-valuemin="0" aria-valuemax="100" aria-label="Stamina: approximately 81%">
+                <div class="stat-bar-row"><span class="stat-label">Stamina</span><span class="stat-value">≈81.2%</span></div>
+                <div class="stat-track"><div class="stat-fill is-stamina" style="width:81%"></div></div>
+              </div>
+              <div role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Accuracy: 100%">
+                <div class="stat-bar-row"><span class="stat-label">Accuracy</span><span class="stat-value">100%</span></div>
+                <div class="stat-track"><div class="stat-fill is-accuracy" style="width:100%"></div></div>
+              </div>
+            </div>
+          </button>
+
+          <button type="button" class="party-card role-gate" aria-label="CR, Gate role. Activity approximately 54%, Stamina 100%, Accuracy not applicable, renders plan-gate verdicts.">
+            <div class="portrait-frame">
+              <span class="portrait-monogram">CR</span>
+              <svg class="portrait-flourish" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+            <h3 class="agent-code">CR</h3>
+            <span class="role-tag">Gate</span>
+            <div class="stat-bar-list">
+              <div role="progressbar" aria-valuenow="54" aria-valuemin="0" aria-valuemax="100" aria-label="Activity: approximately 54%">
+                <div class="stat-bar-row"><span class="stat-label">Activity</span><span class="stat-value">≈54%</span></div>
+                <div class="stat-track"><div class="stat-fill is-activity" style="width:54%"></div></div>
+              </div>
+              <div role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Stamina: 100%">
+                <div class="stat-bar-row"><span class="stat-label">Stamina</span><span class="stat-value">100%</span></div>
+                <div class="stat-track"><div class="stat-fill is-stamina" style="width:100%"></div></div>
+              </div>
+              <div aria-label="Accuracy: not applicable, renders plan-gate verdicts">
+                <div class="stat-bar-row"><span class="stat-label">Accuracy</span><span class="stat-value stat-na">N/A — renders plan-gate verdicts</span></div>
+                <div class="stat-track"><div class="stat-fill" style="width:0"></div></div>
+              </div>
+            </div>
+          </button>
+
+        </div>
+        <p class="party-grid-caption">
+          Showing 6 of 13 roster agents (front row, by corpus-wide spawn count, descending — t3
+          spec's sample-data appendix). Not shown on this front row: ORC, UI, DI, HR, RA, ST, DS —
+          available via the Roster submenu. Per t1 §4's honesty finding, <code>DI</code> has zero
+          observed corpus occurrences and would read "No corpus occurrences observed" rather than
+          a fabricated stat if surfaced there. No cost/MP/token bar is rendered anywhere on this
+          screen — DEFERRED-P9-1 (no token field in the event schema); the spec's appendix omits
+          it entirely rather than shipping a labeled-aspirational bar (SC8 satisfied vacuously).
+        </p>
+      </div>
+
+      <!-- ===== LOADING STATE ===== -->
+      <div class="state-panel" data-for="loading">
+        <div class="skeleton-grid" role="status" aria-label="Loading party members">
+          <span class="sr-only">Loading party members…</span>
+          <div class="skeleton-card" aria-hidden="true">
+            <div class="skeleton-block skeleton-portrait"></div>
+            <div class="skeleton-block skeleton-line w-60"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+          </div>
+          <div class="skeleton-card" aria-hidden="true">
+            <div class="skeleton-block skeleton-portrait"></div>
+            <div class="skeleton-block skeleton-line w-60"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+          </div>
+          <div class="skeleton-card" aria-hidden="true">
+            <div class="skeleton-block skeleton-portrait"></div>
+            <div class="skeleton-block skeleton-line w-60"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+          </div>
+          <div class="skeleton-card" aria-hidden="true">
+            <div class="skeleton-block skeleton-portrait"></div>
+            <div class="skeleton-block skeleton-line w-60"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+          </div>
+          <div class="skeleton-card" aria-hidden="true">
+            <div class="skeleton-block skeleton-portrait"></div>
+            <div class="skeleton-block skeleton-line w-60"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+          </div>
+          <div class="skeleton-card" aria-hidden="true">
+            <div class="skeleton-block skeleton-portrait"></div>
+            <div class="skeleton-block skeleton-line w-60"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+            <div class="skeleton-block skeleton-line w-100"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== EMPTY STATE ===== -->
+      <div class="state-panel" data-for="empty">
+        <div class="empty-panel" role="status">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <h2>No Active Party Members Yet</h2>
+          <p>No agent activity found in the configured session sources for this window.</p>
+          <button type="button" class="btn-primary">View Full Roster</button>
+        </div>
+      </div>
+
+      <!-- ===== ERROR STATE ===== -->
+      <div class="state-panel" data-for="error">
+        <div class="error-panel" role="alert">
+          <p>Couldn't load party data — the session source directory could not be read.</p>
+          <button type="button" class="btn-outline">Retry</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="state-switcher" role="group" aria-label="Preview state (design review only, not part of the app UI)">
+      <span class="state-switcher-label">Preview state:</span>
+      <button type="button" class="state-switch-btn" data-state="default" aria-pressed="true">Default</button>
+      <button type="button" class="state-switch-btn" data-state="loading" aria-pressed="false">Loading</button>
+      <button type="button" class="state-switch-btn" data-state="empty" aria-pressed="false">Empty</button>
+      <button type="button" class="state-switch-btn" data-state="error" aria-pressed="false">Error</button>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  (function () {
+    var buttons = document.querySelectorAll('.state-switch-btn');
+    var surface = document.querySelector('.party-surface');
+    function setState(state) {
+      surface.setAttribute('data-state', state);
+      buttons.forEach(function (b) {
+        b.setAttribute('aria-pressed', b.getAttribute('data-state') === state ? 'true' : 'false');
+      });
+    }
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () { setState(btn.getAttribute('data-state')); });
+    });
+  })();
+</script>
+</body>
+</html>
