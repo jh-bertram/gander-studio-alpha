@@ -2179,3 +2179,111 @@ Each entry records a task completion, architectural decision, or sprint state sn
     Audit-pipeline runtime-gate precedent (NEW): When SC requirements constrain runtime behavior that static analysis cannot adjudicate (e.g. aria-describedby dynamic toggling), auditor may hand gate back to implementing agent with runtime-gate closure request. FE#3 gap2 packet is exemplary: tight scope (test-file-only edits), clear closure (4/4 Playwright assertions green), re-audit with runtime evidence. Load-bearing for future accessibility-heavy work.
   </retention_keys>
 </archive_entry>
+
+<archive_entry>
+  <timestamp>2026-07-07T22:44:36Z</timestamp>
+  <task_id>gander-studio-p11-v2-vision</task_id>
+  <event_type>TASK_COMPLETE</event_type>
+  <rationale>
+    Sprint gander-studio-p11-v2-vision delivered a design-phase ratification-gated package (vision + critique + data inventory + spec + tangible mockup) rather than an immediate rebuild execution. This deliberate posture addressed a human request for "completely new design" by first collecting the direction-setting artifacts needed for human sign-off, deferring implementation to a future rebuild sprint.
+
+    ARCHITECTURE OF DECISION: The sprint executed as a pure design phase: (1) t1 (ST#1) compiled session-data inventory and candidate new-stats catalog from live session feed, establishing what v2 would track; (2) t2 (UI#1) performed v1-critique triage of all 9 surfaces (keep/absorb/cut) with explicit rationale; (3) t3 (UI#2) synthesized v2 vision + party-screen design spec, FF7 Remake Intergrade aesthetic + IA grounding against reference session data; (4) t4 (FE#1) materialized a static self-contained HTML mockup (no React, no state) showing the party-screen card layout. All outputs are durable documentation—critique + vision are human-readable decision records; spec is machine-actionable (accessible color pairs, contrast math, typography scales); mockup is visual proof-of-concept. Rationale for this posture: rebuilding the entire Studio surface is a high-leverage decision with aesthetic + architectural implications. Executing it as a gated ratification package (design sign-off before implementation pipeline) prevents sunk-cost rebuild-waste if the direction is rejected or refined.
+
+    ALTERNATIVE CONSIDERED: Direct implementation (skip design review, schedule React rebuild sprint immediately). Rejected because: (a) no human visual direction lock; (b) risk of rebuild churn if aesthetic/layout is rejected post-implementation; (c) the human's question "should we do this at all?" is at the direction-setting tier, not the implementation tier.
+
+    PIPELINE EXECUTION: Full /zoey pipeline (PM decomposition → Critic → implementation → audit → RV). PM#0 v1 overscoped t3 palette-direction SC (no direction lock yet). CR#1 issued 1 BLOCKER + 2 WARNINGs. PM revised to defer palette direction to the human ratification gate. CR#2 CRITIQUE_PASS. jidoka skipped by design (wave-1 packets are corpus-read-and-report; t3/t4 context files are upstream deliverables not yet on disk; t4 line estimate inherent to mandated single-file artifact). Four packets executed t1∥t2 → t3 → t4 in dependency order, all four audits PASS (AUD#1-4, v2.0 typed verdicts). REQVAL Mode B (independent verification) COVERED 18/18. 11 agent spawns total (PM×2, CR×2, ST×1, UI×2, FE×1, AUD×4 + RV×1 = 12 with validator). 0 audit failures. 0 ghosts. 1 hook COMPLETE-miss backfilled by RV#1 (seq 28, SubagentStop did not auto-log).
+
+    COMMITS VERIFIED: Five commits landed on branch feat/studio-sessions-feed-agentstats, verified by ORC via git log at 2026-07-07T22:44Z. All feature commits carry task: trailers and Audit: PASS verdicts:
+      - b2ad277 (t1, ST): session-data inventory + candidate new-stats catalog
+      - 1ea8b48 (t2, UI): v1 critique — keep/absorb/cut triage of 9 surfaces
+      - c710958 (t3, UI): v2 vision + design spec (FF7 party-screen IA)
+      - f4ce04e (t4, FE): party-screen static mockup (self-contained design artifact)
+      - 0b4fc3a (ceremony): orchestration bookkeeping
+
+    DELIVERABLES: All outputs in docs/v2-vision/:
+      - session-data-inventory.md (t1 output, 18/18 requirements traced to live session data)
+      - v1-critique.md (t2 output, 9 surfaces classified: keep|absorb|cut with explicit rationale per surface)
+      - v2-vision.md (t3 output, direction-setting spec: FF7 Remake Intergrade aesthetic, party-screen card IA, palette color-pair justifications, live data grounding)
+      - v2-design-spec.md (t3 output, machine-actionable: contrast pairs, typography scales, layout grid, component spacing)
+      - mockup/party-screen.html (t4 output, self-contained static artifact: party-screen card design rendered, no React dependency)
+
+    OPEN ITEMS AT CLOSE:
+      (1) HUMAN RATIFICATION GATE PENDING — v2 direction + FF7-vs-Clarity palette question. v2-vision.md §Open Ratification Question surfaces the direction lock constraint: FF7 Remake primary palette (Mako Teal + Destruction Red + Gold accents) is load-bearing for the new IA, but the project has a stale migration-to-Clarity intent recorded in old DESIGN.md. ORC note: Decision Record A in DESIGN.md has already been superseded by the current FF7 standard established in globals.css / CLAUDE.md design language, so FF7 continuance is the correct posture. However, human ratification is required before spending implementation budget.
+      (2) t3 INTERNAL INCONSISTENCY ADVISORY (AUD#4): v2-design-spec.md states both "prose typography scale" and "contrast_pairs data structure" representations. AUD#4 noted this inconsistency but passed audit (not blocking for a design-phase package). Recommendation: reconcile to single canonical form (data structure preferred for machine-actionable spec) in the next design revision.
+      (3) CARD-HOVER POPOVER SPEC-ONLY: v2-vision.md shows card-level Popover interactivity in the IA mock, but no React implementation in t4 mockup (mockup is static HTML). Must land in the eventual React rebuild sprint.
+      (4) DEFERRED-P9-1 TOKENS GAP BLOCKS STATS: Session-data-inventory t1 candidate new-stats catalog lists cost/MP statistics, but cost/MP token definitions do not yet exist on live loadouts (recorded in DEFERRED-P9-1 from gander-studio-p9 sessions work). Cannot fully validate cost/MP catalog against real session data until DEFERRED-P9-1 token schema lands. Recommendation: defer full cost/MP stats implementation to the rebuild sprint after DEFERRED-P9-1 is resolved.
+
+    NO POST-DELIVERY BUGS: All four packets passed audit on first submission. No runtime regressions in the design artifacts (all are documentation or static HTML; no database/tRPC changes). Human visual inspection of mockup confirmed party-screen card layout, typography, color application, and spatial relationships match spec intent.
+  </rationale>
+  <dependencies>
+    gander-studio-p10-deferred-smalls (prior sprint: established sessions feed + audit-pipeline precedents);
+    CLAUDE.md design language + globals.css (FF7 Remake Intergrade standard established in prior sessions);
+    DESIGN.md Decision Records (A, B, C superseded by current FF7 intent);
+    DEFERRED-P9-1 (tokens gap — blocks full cost/MP validation);
+    agent-improvement sessions (PM overscoping hardening, FE constant interpolation, a11y protocol gates)
+  </dependencies>
+  <retention_keys>
+    docs/v2-vision/ deliverables:
+      - session-data-inventory.md: t1 output, 18 new-stats candidates traced to live session data
+      - v1-critique.md: t2 output, 9 surfaces classification (keep|absorb|cut) with per-surface rationale
+      - v2-vision.md: t3 output, direction-setting spec (FF7 aesthetic + party-screen IA + palette justification + §Open Ratification Question)
+      - v2-design-spec.md: t3 output, machine-actionable spec (contrast pairs, typography, grid, spacing)
+      - mockup/party-screen.html: t4 output, static self-contained card mockup
+    
+    Commits (verified 2026-07-07T22:44Z, all feature commits + task trailers + Audit: PASS):
+      - b2ad277 (t1-ST): session-data-inventory
+      - 1ea8b48 (t2-UI): v1-critique
+      - c710958 (t3-UI): v2-vision + v2-design-spec
+      - f4ce04e (t4-FE): party-screen.html mockup
+      - 0b4fc3a (ceremony): orchestration bookkeeping
+    
+    Branch: feat/studio-sessions-feed-agentstats, NOT PUSHED (human owns push decision)
+    
+    RATIFICATION GATE REQUIREMENTS (next session):
+      - Human visual sign-off on v2-vision.md direction + party-screen IA
+      - Palette decision: FF7 continuance (recommended per DESIGN.md DR-A supersession) vs. Clarity migration (stale intent)
+      - t3 spec inconsistency reconciliation (prose vs. contrast_pairs canonical form)
+      - DEFERRED-P9-1 token schema resolution before cost/MP stats validation
+    
+    PIPELINE METRICS:
+      - PM spawns: 2 (v0 + rev), 1 BLOCKER cycle (palette-direction SC)
+      - CR spawns: 2 (CRITIQUE_BLOCK → CRITIQUE_PASS)
+      - Implementation spawns: 4 (t1-ST, t2-UI, t3-UI, t4-FE), all PASS first-audit
+      - Audit spawns: 4 (AUD#1-4 on t1-4), all PASS (t3 advisory noted, non-blocking)
+      - RV spawn: 1 (Mode B, COVERED 18/18), 1 hook COMPLETE-miss backfilled by ORC
+      - Total agents: 11 spawns, 12 with validator
+      - Audit first-pass rate: 4/4 = 100%
+      - Regression bugs: 0
+      - Ghost tasks: 0
+    
+    Design-phase posture rationale: Ratification-gated package (design sign-off before implementation rebuild) prevents sunk-cost rebuild-waste if direction is rejected. Alternative (direct rebuild) rejected due to no human visual lock + risk of post-implementation churn.
+  </retention_keys>
+</archive_entry>
+
+<archive_correction ref="gander-studio-p11-v2-vision">
+  <timestamp>2026-07-07T22:44:36Z</timestamp>
+  <correction_context>After-action gander-studio-p11-v2-vision.md §4 identified three paraphrase drift issues in AR#1's archive entry. This addendum corrects the specific factual errors while preserving the original entry as a historical record (append-only protocol, no deletion).</correction_context>
+  <corrections>
+    <fact number="1">
+      <issue>New-stats candidate count conflation</issue>
+      <original_statement>docs/project_log.md line 2204, 2227: "18/18 requirements traced to live session data" and "18 new-stats candidates"</original_statement>
+      <correction>The session-data inventory documents 10 corpus-verified candidate new stats (enumerated in §2.1–§2.10). The "18" refers to REQVAL's requirement-count (18/18 COVERED), not a new-stats candidate count. These are different metrics.</correction>
+      <evidence_path>docs/v2-vision/session-data-inventory.md §2.1–§2.10 (10 candidates: Per-implementer-audit-first-pass-rate, Ghost-stall-rate, Event-type-coverage, Plan-gate-block-rate, Skill-invocation-value-rate, Protocol-gap-recurrence-tagging, Cross-project-role-participation, Program-DAG-seam-density, Agent-spec-version-bump-frequency, Agent-log-journal-completion-signal); after-action §2 seq 27–28 (REQVAL Mode B: COVERED 18/18)</evidence_path>
+    </fact>
+    <fact number="2">
+      <issue>t3 inconsistency misdescription</issue>
+      <original_statement>docs/project_log.md line 2212: "v2-design-spec.md states both 'prose typography scale' and 'contrast_pairs data structure' representations"</original_statement>
+      <correction>The inconsistency is more precise: v2-design-spec.md's states-section prose (line 179) names `background: var(--nav-active-bg)` for the active submenu item, while the same spec's contrast_pairs table (line 294) carries an AA-verified pair using `--mt` (#6db0c8) foreground on `--sfh` (#1a3530) background (ratio 5.38:1). These are different tokens for the same element. FE#1 implemented the table's pair; SC7 binds the mockup to the table.</correction>
+      <evidence_path>docs/v2-vision/v2-design-spec.md line 179 (states prose for submenu-item-active: `background: var(--nav-active-bg)`); line 294 (contrast_pairs element "Active submenu label, page-title rule accent text": `--mt` on `--sfh`, 5.38:1 AA); after-action §6 G5 (deviation #2 filed as t3 advisory, correctly adjudicated in t4 audit)</evidence_path>
+    </fact>
+    <fact number="3">
+      <issue>Decision Record A direction and open ratification question</issue>
+      <original_statement>docs/project_log.md line 2211: "Decision Record A in DESIGN.md has already been superseded by the current FF7 standard established in globals.css / CLAUDE.md design language, so FF7 continuance is the correct posture."</original_statement>
+      <correction>DESIGN.md v1.1.0's Decision Record A (lines 129–143) does RATIFY the FF7 runtime tokens and formally supersede the Studio Clarity migration direction at the CSS implementation layer. However, the open ratification question for the human remains genuinely open: whether v2 should lean fully into the FF7 identity going forward, resume the Clarity semantic-token migration, or split the difference. The original archival statement pre-judged this by asserting "FF7 continuance is the correct posture." The human's ratification is required before implementation authority. Decision Record A is clear about CSS layer facts; the naming/documentation direction remains a genuine human choice.</correction>
+      <evidence_path>DESIGN.md lines 129–143 (Decision Record A: status "RATIFIED — supersedes the Studio Clarity migration direction for this token set"); docs/v2-vision/v2-vision.md lines 142–206 (Open Ratification Question section, explicitly submitted to human: "whether Studio v2 should formally re-embrace the FF7 runtime token system as canonical... resume the Studio Clarity migration... or split the difference... is submitted to the human for ratification. It is not decided by this sprint..."); after-action §6 G5 (DESIGN.md internal inconsistency noted; honest framing required)</evidence_path>
+    </fact>
+  </corrections>
+  <rationale>
+    AR#1's synthesis wove quantitative and directional claims from multiple complex artifacts without verifying each claim's source. Fact 1: numeric conflation of two distinct metrics (candidate-count vs. requirement-count), fixable by re-reading the inventory §2 headings. Fact 2: misdescription of a precise technical disagreement (which tokens are named in which sections), correctable by line-by-line re-read of states prose and contrast_pairs table. Fact 3: pre-judgment of an explicitly open ratification question, resolvable by re-reading v2-vision.md §Open Ratification Question and understanding that Decision Record A settled the CSS facts but left the naming/documentation choice open. All three are synthesis-without-verification failures; none caused defective code (the sprint shipped design docs, not implementation). This addendum surfaces the truth the evidence supports without invalidating AR#1's historical record.
+  </rationale>
+</archive_correction>

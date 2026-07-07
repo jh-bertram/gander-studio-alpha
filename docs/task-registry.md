@@ -1,6 +1,6 @@
 # Task Registry — Gander Studio
 
-Last updated: 2026-06-01T18:25:08Z
+Last updated: 2026-07-07T23:05:00Z
 
 ---
 
@@ -245,3 +245,11 @@ To recover: git reset --hard f2e7df0a033667081056ef0fc1eacfdb387ef237
     </assignment>
   </assignments>
 </expectation_manifest>
+
+## Sprint Close — gander-studio-p11-v2-vision (2026-07-07)
+**Status:** DELIVERED (audit PASS ×4 first-pass, REQVAL COVERED 18/18, AA close gate PASS) — **HUMAN RATIFICATION GATE OPEN** (v2 direction + FF7-vs-Clarity palette question; design-sprint Step 4.5-analog)
+**Commits:** ceremony 0b4fc3a → b2ad277 (t1) → 1ea8b48 (t2) → c710958 (t3) → f4ce04e (t4); close bookkeeping trails
+**Current rollback point:** f4ce04e (supersedes 88cbebf recorded at sprint open — prior point demoted)
+To recover pre-sprint state: git reset --hard f2e7df0a033667081056ef0fc1eacfdb387ef237
+**Deliverables:** docs/v2-vision/{session-data-inventory,v1-critique,v2-vision,v2-design-spec}.md + mockup/party-screen.html
+**Open at close:** human ratification (v2 direction + palette); t3 states-vs-contrast_pairs advisory; card-hover Popover spec-only (eventual React build); DEFERRED-P9-1 tokens gap blocks real cost/MP stat; §6 G1-G5 routed via after-action (pm-preflight symlink-anchor fix is HIGH).
