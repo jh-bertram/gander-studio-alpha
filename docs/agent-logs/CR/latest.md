@@ -10,3 +10,9 @@ All CR#1 items resolved by rev1:
 No new defects. Output: .claude/tasks/outputs/gander-studio-p10-deferred-smalls-cr2-CR-1783019996.md
 
 (Round 1 verdict was BLOCK, CR-1783019352 — superseded by this PASS.)
+
+## [STAGE 3] INTERRUPTED
+- **At:** 2026-07-07T21:28:56.312675+00:00
+- **Detected by:** agent-stop-checkpoint hook (session ended without Stage 3)
+- **Action required:** Re-dispatch CR#1 (canonical: CR#1) for task `gander-studio-p11-v2-vision`.
+  Read `docs/agent-logs/CR/latest.md` before starting — skip completed checkpoints.

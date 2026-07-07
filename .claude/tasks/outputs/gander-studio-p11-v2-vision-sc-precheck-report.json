@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "input_file": "/home/jhber/projects/gander-studio-alpha/.claude/tasks/outputs/gander-studio-p11-v2-vision-PM-1783458668.md",
+  "repo_root": "/home/jhber/projects/gander-studio-alpha",
+  "findings": [],
+  "summary": {
+    "total_commands_extracted": 0,
+    "satisfiable": 0,
+    "unsatisfiable": 0,
+    "self_defeating": 0,
+    "checked_at": "2026-07-07T21:23:50Z"
+  }
+}

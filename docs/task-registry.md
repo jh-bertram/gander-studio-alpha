@@ -173,3 +173,75 @@ Mirrored from extract-agent-remits.sh run 2026-07-02T18:58:24Z (gander .claude/a
 **Current rollback point:** 88cbebf (supersedes 97d2942 recorded at sprint open — prior point demoted)
 To recover pre-sprint state: git reset --hard 97d294252ea1012cdb017eca778391da4787c33e
 **Open at close:** human browser check (Step 4.5, FE sprint) — surfaced in delivery report; DEFERRED-P10-1 queued.
+
+## Agent Remits (gander-studio-p11-v2-vision)
+<agent_remits source="auto-extracted from gander .claude/agents/*.md via extract-agent-remits.sh at 2026-07-07T21:08:01Z">
+  <agent name="project-manager" version="2.4.0">Core Responsibilities: atomic decomposition (one owner, unambiguous verification, non-cascading failure); context guarding (each agent gets only what it needs); static-content embedding rule (verbatim in packet or dedicated context file); gate enforcement (no task complete without auditor PASS); failure handling (single specific remediation request; 3 consecutive fails → escalate). Tool-Call Budget: soft 8-read budget per decomposition; halt-and-surface with budget_exceeded block; post-timeout retry requires strictly leaner brief (≤4 named reads). Does NOT: write code, design components, route packets, or escalate directly to human.</agent>
+  <agent name="critic" version="2.1.0">NO REMIT SECTION FOUND (spec lacks explicit remit/constraint heading — recorded as finding).</agent>
+  <agent name="ui-designer" version="3.0.1">Constraints: token-first (no raw hex/px/font-size outside scales; propose new tokens rather than hardcode); Shadcn primitives by default; describe-don't-prescribe implementation; all states specified (empty/error included); WCAG contrast verified per pair, recorded in accessibility_spec→contrast_pairs; dashboard sprints include ~/.claude/refs/dashboard-patterns.md and verify pattern citations against the live library.</agent>
+  <agent name="statistician" version="2.1.0">Boundaries: analyzes data, produces findings; does NOT implement features/API routes/UI. Requirements discovered via analysis → design_implication routed by PM. Data-quality issues needing re-acquisition → reacquisition_request to PM, never silent use of bad data.</agent>
+  <agent name="frontend-engineer" version="2.1.2">Task Boundary Compliance: implement only the authorized task_id; consolidation requires explicit ORC approval, else BLOCKED event. Domain Boundaries: consumes data contracts (BE-owned Zod schemas), builds against typed mock if schema absent (mark MOCKED); implements design_spec faithfully — flag spec gaps, don't improvise redesigns.</agent>
+  <agent name="code-auditor" version="3.4.0">NO REMIT SECTION FOUND (spec lacks explicit remit/constraint heading — recorded as finding).</agent>
+</agent_remits>
+
+## Rollback Point
+commit: f2e7df0a033667081056ef0fc1eacfdb387ef237
+recorded: 2026-07-07T21:39:52+00:00
+task_id: gander-studio-p11-v2-vision
+
+To recover: git reset --hard f2e7df0a033667081056ef0fc1eacfdb387ef237
+
+<expectation_manifest>
+  <sprint_id>gander-studio-p11-v2-vision</sprint_id>
+  <generated>2026-07-07T21:55:00Z</generated>
+  <plan_source>.claude/tasks/outputs/gander-studio-p11-v2-vision-rev-PM-1783459761.md (CR#2 CRITIQUE_PASS)</plan_source>
+  <assignments>
+    <assignment>
+      <task_id>gander-studio-p11-v2-vision-t1</task_id>
+      <agent>ST#1</agent><wave>0</wave>
+      <expected_tag>statistical_report</expected_tag>
+      <expected_file>.claude/tasks/outputs/gander-studio-p11-v2-vision-t1-ST-*.md + docs/v2-vision/session-data-inventory.md</expected_file>
+      <blocks>gander-studio-p11-v2-vision-t3</blocks>
+      <receipt_check>
+        <item>deliverable exists; v1-baseline section (DRY); candidates carry name/source/derivation/AVAILABLE-NOW|NEEDS-SCHEMA-EXTENSION</item>
+        <item>tokens/cost NEEDS-SCHEMA-EXTENSION citing DEFERRED-P9-1; design_implications + sample-data appendix w/ real roster codes; provenance paths cited</item>
+      </receipt_check>
+      <receipt_status>PASS 2026-07-07T21:55Z (ORC grep-verified on disk)</receipt_status>
+    </assignment>
+    <assignment>
+      <task_id>gander-studio-p11-v2-vision-t2</task_id>
+      <agent>UI#1</agent><wave>0</wave>
+      <expected_tag>design_spec</expected_tag>
+      <expected_file>.claude/tasks/outputs/gander-studio-p11-v2-vision-t2-UI-*.md + docs/v2-vision/v1-critique.md</expected_file>
+      <blocks>gander-studio-p11-v2-vision-t3</blocks>
+      <receipt_check>
+        <item>verdict for all 9 surfaces each KEEP|ABSORB|CUT + rationale; ABSORB names target; review-purpose lens up front; ORC-EVAL structural citations (no code re-audit)</item>
+      </receipt_check>
+      <receipt_status>PASS 2026-07-07T21:55Z (ORC grep-verified: 3 KEEP / 3 ABSORB / 3 CUT, lens section, summary table)</receipt_status>
+    </assignment>
+    <assignment>
+      <task_id>gander-studio-p11-v2-vision-t3</task_id>
+      <agent>UI#2</agent><wave>1</wave>
+      <expected_tag>design_spec</expected_tag>
+      <expected_file>.claude/tasks/outputs/gander-studio-p11-v2-vision-t3-UI-*.md + docs/v2-vision/v2-vision.md + docs/v2-vision/v2-design-spec.md</expected_file>
+      <blocks>gander-studio-p11-v2-vision-t4</blocks>
+      <receipt_check>
+        <item>v2-vision.md prose, no XML ceremony; all 7 analogy terms (equipment, materia, abilities / skills, hooks, workflows, tools); new-purpose + FF7 IA (party+submenus) + stats catalog w/ source+feasibility + t2 verdict summary</item>
+        <item>SC11: explicitly-headed open-ratification-question section naming FF7-vs-Studio-Clarity direction reversal (DESIGN.md v1.1.0 migration; v2 reverses/scope-carves; submitted to human)</item>
+        <item>v2-design-spec.md: design_system_source DESIGN_MD; party layout + asset-free portrait + submenus + empty & error states; accessibility_spec contrast_pairs per-pair AA verdicts; sample-data appendix</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>gander-studio-p11-v2-vision-t4</task_id>
+      <agent>FE#1</agent><wave>2 (after t3 audit PASS)</wave>
+      <expected_tag>completion_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/gander-studio-p11-v2-vision-t4-FE-*.md + docs/v2-vision/mockup/party-screen.html</expected_file>
+      <blocks>NONE (terminal before ORC ratification report)</blocks>
+      <receipt_check>
+        <item>single self-contained file; SC2 broadened external-load patterns absent (src="http, href="http, @import, cdn., url(http, url(//, @font-face remote src, src="//, href="//); inline-SVG xmlns exempt</item>
+        <item>console-clean via file:// (MCP navigate+console); snapshot: party cards w/ portraits + stat bars + side submenu; >=3 real roster codes from t3/t1 appendix</item>
+        <item>SC7 legibility: text pairs bound to t3 contrast_pairs AA-pass entries (grep + screenshot adjudication); SC8: any cost/MP bar carries visible projected/needs-schema-extension label (vacuous if absent)</item>
+      </receipt_check>
+    </assignment>
+  </assignments>
+</expectation_manifest>
