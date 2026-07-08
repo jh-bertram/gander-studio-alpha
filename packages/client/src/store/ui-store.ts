@@ -9,6 +9,10 @@ interface UIState {
   // s4-p1 SUPPRESSION FOUNDATION: persisted mute toggle
   muted: boolean;
   toggleMuted: () => void;
+  // s2-to-s3-nav-contract: the roster/agent-detail selection seam. Ephemeral —
+  // NOT persisted (see partialize below); s3 owns the dedicated detail surface.
+  selectedAgentCode: string | null;
+  setSelectedAgentCode: (code: string | null) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -18,6 +22,8 @@ export const useUIStore = create<UIState>()(
       setActiveMode: (mode: AppMode) => set({ activeMode: mode }),
       muted: false,
       toggleMuted: () => set((s) => ({ muted: !s.muted })),
+      selectedAgentCode: null,
+      setSelectedAgentCode: (code: string | null) => set({ selectedAgentCode: code }),
     }),
     {
       name: 'gander-ui-store',
