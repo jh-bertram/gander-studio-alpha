@@ -314,3 +314,9 @@ To recover: git reset --hard 814a0dd82a239d0b8e7eafd1a11cb09adf68011a
       <receipt_check><item>Tier-2 e2e: default route renders live party; rail-nav asserts destination DOM markers (W3); popover; keyboard a11y; setViewportSize mobile legibility + screenshots both widths (W3); BottomTabBar no-regression; headless run evidence (npx playwright test) green</item></receipt_check></assignment>
   </assignments>
 </expectation_manifest>
+
+## Sprint Close — prog-studio-v2-2026-07-s2-party-shell (2026-07-08)
+**Status:** DONE-PENDING-4.5 (8 audit verdicts: 7 PASS, 1 FAIL remediated ×2 rounds + family re-audit PASS; REQVAL COVERED 15/15 + requires_human_visual) — **HUMAN BROWSER CHECK OPEN (Step 4.5)**
+**Commits:** 7 durability (7359da5 t1 → dbc4b87 t6) + ceremony 0a0536e; **Current rollback point:** dbc4b87 (t6)
+**Delivered:** v2 party screen LIVE as the default route — party cards (asset-free portraits, StatBars, popover quick-peek, keyboard-stable after t3-rem), SubmenuRail, 4 states, diagnostics footnote, route-level code-splitting (main chunk 1035.70→756.80 kB), 19-assertion Tier-2 e2e gate.
+**Open at close:** human browser check; HA-1 rail collapse/expand + HA-2 return-to-party affordance (both s4); DEFERRED-V2S2-1/2; branch push human-owned; 3rd consecutive archivist-drift correction appended (systemic — gander fix queued).

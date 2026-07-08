@@ -1,48 +1,52 @@
 # AR Agent Log — latest
 
 **agent_id:** AR#1  
-**task_id:** prog-studio-vision-2026-06-postmortem  
+**task_id:** prog-studio-v2-2026-07-s2-party-shell  
 **stage:** COMPLETE  
-**ts:** 2026-06-20T22:54:27Z
+**ts:** 2026-07-08T04:12:29Z
 
 **Summary:**
-POST_MORTEM archive entry appended to docs/project_log.md for prog-studio-vision-2026-06 program:
-- 5-sprint autonomous program (s1 token-root-fix → s2 fix-broken-surfaces → s3 agent-os-legibility → s5 cleanup-docs → s4 juice-pass)
-- All 5 siblings delivered, audited PASS, ORC-live-re-verified, committed, and merged to main (745f5d7 via PR #1)
-- Zero defects shipped to human; build/lint clean, server 108/108, per-sprint e2e all green
-- **Dominant finding:** static-audit-passes-but-runtime/spec-broken pattern (4 instances: s2 Zustand loop, s1 contrast-spec false-fail, s3 missed import, s2 authored-not-executed e2e) — all caught by ORC's own live verification, NOT by SA/QA/SX gate
-- **Counter-positives:** Critic BLOCKed 4/5 plans (s5 SESSION_TABS over-deletion was single highest-value action); s4 AUD#2 exemplary (live-instrumented OscillatorNode.start)
-- 5 priority rule-delta proposals + 4 eval-gap candidates + 3 new-skill candidates (sprint-verify-close, orc-live-runtime-gate, sibling-file-overlap-serialize)
+TASK_COMPLETE archive entry appended to docs/project_log.md for prog-studio-v2-2026-07-s2-party-shell sprint:
+- Tier-1 FE sibling (6 core tasks + 2 remediation rounds); v2 party member roster UI shell implementation
+- 21 total agent spawns: PM ×2, CR ×1, FE ×9 (t1–t6 + rem FE#7/FE#8/FE#9), AUD ×8, RV ×1
+- **Remediation chain:** AUD#5 QA FAIL on bundle gate (main chunk 1,035.70 kB exceeds 1 MB) → rem FE#8 React.lazy PartyPage (1,025.44 kB, insufficient) → rem FE#9 extended lazy-load to GraphPage/ProgramDagPage/ComposePage importers (756.80 kB, PASS)
+- **e2e defect:** t6 gate discovered HIGH keyboard defect (PartyMemberCard popover focus oscillation ~40–50 ms) → rem FE#7 fixed via initialFocus={false} + role="presentation" → AUD#6 PASS
+- **Status:** DONE-PENDING-4.5 (human browser check required before final DONE)
+- **REQVAL:** 15/15 COVERED + requires_human_visual=true (FE sprint protocol)
+- All commits delivered on feat/studio-sessions-feed-agentstats branch (NOT PUSHED; human owns push per guarded-git-push)
+
+**Deliverables:**
+- 7 commits (t1–t4 core + ceremony + t5-family wire + t6 e2e) all Glob-verified on disk
+- 10 file paths cited with evidence-path discipline: ui-store.ts, navigation.ts, 5 party components, useParty.ts, PartyPage.tsx, ModeContent.tsx, e2e spec
+- Audit trail: AUD#1–AUD#4 first-pass PASS; AUD#5 FAIL; rem FE#7/FE#8/FE#9 complete; AUD#6–AUD#8 PASS
 
 **Output files written:**
-- `/home/jhber/projects/gander-studio-alpha/docs/project_log.md` (POST_MORTEM archive_entry appended, lines 2076–2097)
-- `/home/jhber/projects/gander-studio-alpha/.claude/agents/tasks/outputs/prog-studio-vision-2026-06-postmortem-AR-1718910867.md` (primary output)
-- `/home/jhber/projects/gander-studio-alpha/docs/agent-logs/AR/prog-studio-vision-2026-06-postmortem.md` (task log)
+- `/home/jhber/projects/gander-studio-alpha/docs/project_log.md` (TASK_COMPLETE archive_entry appended, lines 2424–2522)
+- `/home/jhber/projects/gander-studio-alpha/.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-AR-1783483949.md` (primary output with full checkpoint stages)
 - `/home/jhber/projects/gander-studio-alpha/docs/agent-logs/AR/latest.md` (this checkpoint log)
 
-**Protocol Gaps Identified (prog-studio-vision-2026-06 POST_MORTEM, §6):**
-- **(a) Auditor marks e2e "authored" but never executes** — SKIPPED Playwright can still return PASS (s2 + s1). **Fix (HARD GATE):** SubagentStop/verdict-validator hook must fail audit_review with `<playwright tier="SKIPPED">` + `<overall_status>PASS</overall_status>` on `.spec.ts` diffs; force `INDETERMINATE`.
-- **(b) Scoped `git add` misses new imported files** — s3 ProgramDagPage committed importing untracked SprintNode.tsx; fresh checkout fails. **Fix:** add import-closure check to commit-packet Step 4, HALT on new untracked imports.
-- **(c) Wrong base-URL in FE specs silently green/red** — s1 contrast-smoke used BASE=:3001 (API) vs :5173 (client) → false 4/6 fails. **Fix:** env-preflight add spec-base-URL check.
-- **(d) Zustand unstable-selector class** — `useStore(fn returning new object)` → render loop, statically invisible (s2 D1). **Fix:** ESLint rule + sa-subchecks grep as meta-team backstop.
-- **(e) Accelerant observability coarser than base-plan** — Workflow emitted SPRINT-level `WF#N` events only; internal PM/Critic/FE/auditor reconstructable from packets, not event log. **Fix:** extend accelerant wrapper to emit per-internal-agent SPAWN/COMPLETE.
+**Evidence discipline (verified):**
+- All file paths Glob-confirmed before citation (8 distinct paths on disk)
+- Bundle sizes, commit subjects, timestamps, audit outcomes copied exactly from ORC facts + event log
+- No paraphrasing; all claims traceable to on-disk artifacts or ORC-verified facts
+- Append-only ordering maintained: entry appended to EOF, chronological order preserved
 
-**Rule/Ref Deltas Proposed (§9):**
-- `audit-pipeline`: make live Playwright gating (not advisory) for FE/selector diffs; SKIPPED→INDETERMINATE (HIGH)
-- `commit-packet`: add import-closure HALT for untracked new modules (HIGH)
-- `env-preflight`: add client-port (5173) + spec-base-URL validation (MEDIUM)
-- `standards.md` Git Workflow: add scoped-commit completeness clause (MEDIUM)
-- `standards.md` Verification: codify runtime-gate discipline for FE rendering/selector changes (HIGH)
+**Open at close:**
+1. HUMAN BROWSER CHECK (Step 4.5) — party screen live at default route required before DONE
+2. HA-1 (rail collapse/expand affordance) — deferred to s4
+3. HA-2 (return-to-party affordance from other modes) — deferred to s4
+4. DEFERRED-V2S2-1 (390px header overflow pre-existing) — scoped to s4 breakpoint audit
+5. DEFERRED-V2S2-2 (CLAUDE.md bundle-size baseline stale: 700 KB cited vs 756.80 kB actual) — docs update deferred to s4
+6. Push pending — human owns git push (feat/studio-sessions-feed-agentstats branch, all commits present on disk)
 
 ---
 
 ## [STAGE 3] COMPLETE
 
-✓ Archive entry appended to docs/project_log.md (timestamp 2026-06-20T22:54:27Z, lines 2076–2097)  
-✓ Chronological order verified (entry appended after prior closing tag at line 2074)  
-✓ Output artifact written to .claude/agents/tasks/outputs/prog-studio-vision-2026-06-postmortem-AR-1718910867.md  
-✓ Task log written to docs/agent-logs/AR/prog-studio-vision-2026-06-postmortem.md  
-✓ Latest checkpoint updated  
+✓ Archive entry appended to docs/project_log.md (timestamp 2026-07-08T04:12:29Z, lines 2424–2522)  
+✓ Chronological order verified (entry appended after prior closing tag at line 2422)  
+✓ Output artifact written to .claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-AR-1783483949.md  
+✓ Latest checkpoint written to docs/agent-logs/AR/latest.md  
 
-**Timestamp sourced from:** SPAWN event seq 43 in docs/events/agent-events-2026-06-20.jsonl (2026-06-20T22:54:27Z)  
-**Status:** All deliverables written to disk; durability confirmed. Archive entry ready for ORC verification and commit. Post-mortem findings logged to project memory for future reference.
+**Timestamp sourced from:** SPAWN event seq 66 in docs/events/agent-events-2026-07-08.jsonl (2026-07-08T04:12:29Z)  
+**Status:** Archive entry successfully appended with full evidence discipline and append-only ordering verified. All deliverable files committed and on disk. Ready for orchestrator close-out.

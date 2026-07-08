@@ -2420,3 +2420,190 @@ Each entry records a task completion, architectural decision, or sprint state sn
     - **Future AR tasks:** This is a recurrence of Evidence-path discipline #2 (Glob-confirm-before-citation), flagged in standards.md as MAJOR. AR tasks must Glob-verify cited paths before recording them in project_log.md.
   </impact>
 </archive_correction>
+
+<archive_entry>
+  <timestamp>2026-07-08T04:12:29Z</timestamp>
+  <task_id>prog-studio-v2-2026-07-s2-party-shell</task_id>
+  <event_type>TASK_COMPLETE</event_type>
+  
+  <rationale>
+    Tier-1 sibling of prog-studio-v2-2026-07 program, implementing the FF7-design party member roster UI shell (6 FE tasks + 2 remediation rounds). Scope chosen to ship party as the v2 default route with foundational leaf components + route-level code-splitting to manage bundle size. Remediation chain drove two audit cycles: (1) AUD#5 QA FAIL on bundle gate (main chunk 1,035.70 kB exceeds 1 MB ceiling); rem FE#8 added React.lazy PartyPage wiring (1,025.44 kB, insufficient) → rem2 FE#9 extended lazy-load to GraphPage/ProgramDagPage/ComposePage importers in ModeContent.tsx (756.80 kB, PASS). (2) t6 e2e gate discovered HIGH keyboard defect: PartyMemberCard popover stealing focus on selection, causing ~40–50 ms oscillation cycles (focus→popover→focus loop). Rem FE#7 stabilized via initialFocus={false} + role="presentation" on popover. All audit rounds PASS post-remediation. REQVAL COVERED 15/15 with human-visual-check requirement (FE sprint requires manual browser verification of default-route party screen live-ness). Status: DONE-PENDING-4.5 (awaiting human Step 4.5 browser check before final DONE).
+  </rationale>
+  
+  <dependencies>
+    prog-studio-v2-2026-07-s1-data-layer (backend roster, party schema, agent-detail procedures; all audit-PASS);
+    prog-studio-v2-2026-07-s2-party-shell CRITIQUE_PASS (CR#1 approved design on 2026-07-08T01:30:42Z);
+    prog-studio-v2-2026-07-s2-party-shell-amend COMPLETE (PM amendment resolved CR warnings W1–W5 outside round caps);
+    design: DESIGN.md FF7 Remake Intergrade palette (Mako teal, materiaTint color-mapping scheme per docs/design-system-ff7-intergrade.md);
+    parent program: prog-studio-v2-2026-07 (vision approved 2026-07-07 post-ratification, commit 0a0536e ceremony pre-staging)
+  </dependencies>
+  
+  <deliverables_committed>
+    Branch: feat/studio-sessions-feed-agentstats (NOT PUSHED; human owns push per guarded-git-push layer 2 protocol)
+    
+    Commits (5 total, all Glob-verified on disk):
+    1. t1 "feat(v2-shell): add selectedAgentCode store contract + RAIL_ITEMS nav constants"
+       - packages/client/src/store/ui-store.ts (selectedAgentCode state, dispatch signature)
+       - packages/client/src/constants/navigation.ts (RAIL_ITEMS navigation enum)
+    
+    2. t2 "feat(v2-shell): add party leaf primitives — PortraitFrame, StatBar, materiaTint"
+       - packages/client/src/components/party/materia-tint.ts (color indexer, Zod-validated input)
+       - packages/client/src/components/party/PortraitFrame.tsx (character portrait card)
+       - packages/client/src/components/party/StatBar.tsx (HP/MP bar renderer)
+    
+    3. t3 "feat(v2-shell): add PartyMemberCard + SubmenuRail"
+       - packages/client/src/components/party/PartyMemberCard.tsx (selection-aware card with fixed keyboard focus; rem FE#7 applied initialFocus={false})
+       - packages/client/src/components/party/SubmenuRail.tsx (vertical selection rail)
+       - vitest.config.ts alias infra fix (sanctioned by AUD#3)
+    
+    4. t4 "feat(v2-shell): add PartyPage + useParty live data hook"
+       - packages/client/src/pages/PartyPage.tsx (party roster composition)
+       - packages/client/src/hooks/useParty.ts (live roster hook, fetches roster.getParty)
+    
+    5. Ceremony commit (0a0536e) stitching t1–t4 + remediation rounds (rem FE#7, rem FE#8, rem FE#9)
+    
+    6. t5-family wire "feat(v2-shell): wire party as default route with route-level code-splitting"
+       - packages/client/src/components/ModeContent.tsx (React.lazy() wiring per rem FE#9 spec: GraphPage/ProgramDagPage/ComposePage)
+    
+    7. t6 "test(v2-shell): add party-shell Tier-2 e2e gate (19 assertions)"
+       - packages/client/tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts (19 deterministic assertions; AUD#8 confirmed replicable across double-runs)
+  </deliverables_committed>
+  
+  <audit_trail>
+    AUD#1 (t1): PASS — ui-store contract + navigation constants
+    AUD#2 (t2): PASS — leaf primitives rendering, materia-tint color validation
+    AUD#3 (t3): PASS — PartyMemberCard semantics, SubmenuRail focus management (vitest alias infra approved as sanctioned infrastructure fix)
+    AUD#4 (t4): PASS — PartyPage + useParty hook, roster.getParty integration verified live
+    AUD#5 (t5): FAIL (QA Bundle Size Gate) — main chunk 1,035.70 kB exceeds 1 MB ceiling; t5 wiring pulls PartyPage subtree into initial bundle
+    rem FE#7 (t3 keyboard fix): COMPLETE 2026-07-08T03:31:31Z; AUD#6 PASS 2026-07-08T03:38:41Z
+    rem FE#8 (t5 code-split attempt 1): COMPLETE 2026-07-08T03:40:28Z; main chunk 1,025.44 kB (still > 1 MB)
+    rem FE#9 (t5 code-split attempt 2): COMPLETE 2026-07-08T03:53:35Z; main chunk 756.80 kB (PASS)
+    AUD#7 (t5 reaudit): PASS 2026-07-08T03:59:47Z
+    AUD#8 (t6 spec + e2e gate): PASS 2026-07-08T04:04:30Z — 19 assertions, deterministic across double-runs
+    
+    RV#1 (Requirements Validation Mode B): COVERED 15/15 (/15 requirements met + evidence linkage documented)
+    RV#1 flag: requires_human_visual=true → DONE-PENDING-4.5 status (Step 4.5 human browser check required before DONE)
+  </audit_trail>
+  
+  <known_issues_and_deferrals>
+    Open at close:
+    1. HUMAN BROWSER CHECK (Step 4.5) — manual verification that party screen displays live at default route; deferred to human until completion
+    2. HA-1 (rail collapse/expand UI affordance) — deferred to s4
+    3. HA-2 (return-to-party affordance from other modes) — deferred to s4
+    4. DEFERRED-V2S2-1 — 390px header overflow pre-existing, scoped to s4 breakpoint audit
+    5. DEFERRED-V2S2-2 — CLAUDE.md bundle-size baseline stale (cited 700 KB main; actual 756.80 kB post-split); docs update deferred to s4
+    6. Push pending — human owns git push (feat/studio-sessions-feed-agentstats branch, commits present on disk)
+  </known_issues_and_deferrals>
+  
+  <retention_keys>
+    Sprint scope: Tier-1 sibling (6 FE core tasks + 2 rem rounds); party shell v2 default route implementation
+    Remediation pattern: Bundle gate caught at AUD#5 (1,035.70 kB raw t5 wiring); two lazy-load iterations required (rem FE#8→FE#9); keyboard defect caught by t6 e2e (40–50 ms focus oscillation); rem FE#7 stabilized via initialFocus={false}
+    Key code paths (all committed, Glob-verified):
+      - Stores: packages/client/src/store/ui-store.ts (selectedAgentCode state)
+      - Constants: packages/client/src/constants/navigation.ts (RAIL_ITEMS enum)
+      - Leaf components: packages/client/src/components/party/{materia-tint.ts,PortraitFrame.tsx,StatBar.tsx,PartyMemberCard.tsx,SubmenuRail.tsx}
+      - Hooks: packages/client/src/hooks/useParty.ts (live roster fetcher)
+      - Pages: packages/client/src/pages/PartyPage.tsx (party roster composition)
+      - Integration: packages/client/src/components/ModeContent.tsx (route-level lazy-load wiring per rem FE#9)
+      - E2E: packages/client/tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts (19 assertions, replicable)
+    
+    Audit outcomes:
+      - First-pass rate: 6/8 (t1–t4 + t6 PASS on first submission; t5 FAIL AUD#5 bundle gate → remediated)
+      - Remedy success rate: 2/2 (rem FE#7 + rem FE#9 both remediated → PASS; rem FE#8 insufficient, escalated to FE#9)
+      - e2e gate: HIGH defect caught by t6 (focus oscillation) → fixed by rem FE#7
+      - REQVAL: 15/15 COVERED, requires manual human visual check (FE sprint protocol)
+    
+    Stats: 21 agent spawns (PM ×2, CR ×1, FE ×9 [t1–t6 + rem FE#7/FE#8/FE#9], AUD ×8, RV ×1); 1 audit FAIL (AUD#5 bundle gate, remediated); 1 e2e-discovered HIGH defect (keyboard oscillation, remediated); 0 ghosts; 1 hook COMPLETE-miss backfilled (RV#1)
+    
+    Status progression: TASK_COMPLETE (all tickets resolved post-remedy) → DONE-PENDING-4.5 (human browser check required before release)
+    
+    Branch state: feat/studio-sessions-feed-agentstats, all commits present, NOT PUSHED (human push ownership per guarded-git-push protocol)
+  </retention_keys>
+</archive_entry>
+
+<archive_correction ref="prog-studio-v2-2026-07-s2-party-shell">
+  <timestamp>2026-07-08T04:15:26Z</timestamp>
+  <task_id>prog-studio-v2-2026-07-s2-party-shell-gap</task_id>
+  <event_type>ARCHIVE_CORRECTION</event_type>
+  <original_entry_ref>lines 2424–2522, archive_entry task_id="prog-studio-v2-2026-07-s2-party-shell"</original_entry_ref>
+  
+  <corrections>
+    <fact num="1">
+      <error_claim>Line 2444: "Commits (5 total, all Glob-verified on disk):" followed by 7 enumerated items (t1, t2, t3, t4, ceremony, t5-family, t6)</error_claim>
+      <verification>commit_record (prog-studio-v2-2026-07-s2-party-shell-COMMIT-1783483923.md lines 14–22) lists SEVEN durability commits with full shas and audit trailers:
+        1. 7359da5 feat(v2-shell): selectedAgentCode store + RAIL_ITEMS (t1)
+        2. b9dffa9 feat(v2-shell): PortraitFrame, StatBar, materiaTint (t2)
+        3. 82c2400 feat(v2-shell): PartyMemberCard + SubmenuRail (t3)
+        4. 2c23c7e feat(v2-shell): PartyPage + useParty (t4)
+        5. 87dc529 fix(v2-shell): card keyboard focus stabilization (t3-rem)
+        6. 3a6a277 feat(v2-shell): party default route + code-splitting (t5)
+        7. dbc4b87 test(v2-shell): Tier-2 e2e gate (t6)
+      Plus ceremony commit 0a0536e (not in commit_record body; referenced as separate coordination staging). Total: 7 durability + 1 ceremony = 8 commits.</verification>
+      <corrected_statement>Commits: EIGHT total (7 durability + 1 ceremony). Durability commits: 7359da5 (t1), b9dffa9 (t2), 82c2400 (t3), 2c23c7e (t4), 87dc529 (t3-rem), 3a6a277 (t5), dbc4b87 (t6). Ceremony: 0a0536e.</corrected_statement>
+      <evidence_path>.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-COMMIT-1783483923.md lines 14–22 (commit_record with all shas); docs/after-actions/prog-studio-v2-2026-07-s2-party-shell.md line 30 (final state lists "7 durability commits (7359da5/b9dffa9/82c2400/2c23c7e/87dc529/3a6a277/dbc4b87) + ceremony 0a0536e")</evidence_path>
+    </fact>
+    
+    <fact num="2a">
+      <error_claim>Line 2463: "5. Ceremony commit (0a0536e) stitching t1–t4 + remediation rounds (rem FE#7, rem FE#8, rem FE#9)"</error_claim>
+      <verification>The ceremony commit (0a0536e) is a coordination-only staging: it contains no application code. The remediation rounds' code lives in durability commits — t3-rem fix (87dc529), t5 code-split (3a6a277). The after-action §6 G5 (line 191) explicitly states: "describes ceremony `0a0536e` as 'stitching t1–t4 + remediation rounds' (it is code-free coordination staging)". Confirmed: ceremony commits stage outputs, verdicts, event logs, deferred-work markers, task-registry — never code.</verification>
+      <corrected_statement>Ceremony commit (0a0536e) is coordination staging only — contains no application code. The actual remediation code commits are: 87dc529 (t3-rem keyboard focus fix) and 3a6a277 (t5 + code-split iterations rem1+rem2 combined). Do not conflate ceremony (coordination) with code-remediation commits.</corrected_statement>
+      <evidence_path>docs/after-actions/prog-studio-v2-2026-07-s2-party-shell.md §6 G5 line 191 (explicit classification); .claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-COMMIT-1783483923.md lines 19–21 (durability commits for t3-rem and t5)</evidence_path>
+    </fact>
+    
+    <fact num="2b">
+      <error_claim>Line 2438 dependencies: "parent program: prog-studio-v2-2026-07 (vision approved 2026-07-07 post-ratification, commit 0a0536e ceremony pre-staging)"</error_claim>
+      <verification>This s2-sprint's ceremony commit is 0a0536e. The parent program's ceremony commit (the v2 program's kickoff/coordination) is 290de04, a separate commit from an earlier sprint. Line 2438 incorrectly fuses the two: it cites 0a0536e as the parent program's ceremony, when 0a0536e is this sprint's ceremony.</verification>
+      <corrected_statement>The parent program prog-studio-v2-2026-07 has its own separate ceremony commit (290de04, from 2026-07-07 kickoff). This sprint's s2 ceremony is 0a0536e. Do not cross-reference them as the same commit.</corrected_statement>
+      <evidence_path>docs/after-actions/prog-studio-v2-2026-07-s2-party-shell.md line 30 (distinguishes s2's "ceremony 0a0536e" from program context); prior sprint records or program.md for 290de04 context</evidence_path>
+    </fact>
+    
+    <fact num="3">
+      <error_claim>Lines 2441–2470 enumerate commits 1–7 (t1, t2, t3, t4, ceremony, t5-family, t6), but commit 87dc529 (t3-rem) is not listed as a separate item. Lines 2454–2457 (t3 description) include "rem FE#7 applied initialFocus={false}" as a parenthetical, implying the fix is part of t3's commit (82c2400), not a separate commit.</error_claim>
+      <verification>commit_record line 19 shows 87dc529 as a distinct commit with subject "fix(v2-shell): card keyboard focus stabilization" and trailer task="prog-studio-v2-2026-07-s2-party-shell-t3-rem". The commit is separate from t3's commit (82c2400). The fix is NOT in t3's code; it is in t3-rem's code. After-action §6 G5 line 191 states: "omits `87dc529` (t3-rem) from the commit list, folding the fix into t3's commit".</verification>
+      <corrected_statement>Commit 87dc529 (t3-rem, "fix(v2-shell): card keyboard focus stabilization") is a distinct durability commit applied after t3. It is NOT part of t3's commit (82c2400). The commit list (lines 2441–2470) must include t3-rem as a separate enumerated item: "3. t3 (82c2400)", then "5. t3-rem (87dc529)" before t5. The fix (initialFocus={false} + role="presentation" on PopoverContent) ships in 87dc529, not in 82c2400.</corrected_statement>
+      <evidence_path>.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-COMMIT-1783483923.md line 19 (t3-rem commit record); docs/after-actions/prog-studio-v2-2026-07-s2-party-shell.md line 76–79 (phase 3 timeline: "FE#7 (t3-rem)" at seq 51–53, spawned before AUD#5's verdict)</evidence_path>
+    </fact>
+    
+    <fact num="4">
+      <error_claim>Lines 2465–2466 describe t5-family: "packages/client/src/components/ModeContent.tsx (React.lazy() wiring per rem FE#9 spec: GraphPage/ProgramDagPage/ComposePage)" — omits packages/client/src/store/ui-store.ts</error_claim>
+      <verification>Audit verdict AUD#5 (prog-studio-v2-2026-07-s2-party-shell-t5-AUD-1783477019.md lines 30–31) lists t5's inputs as:
+        - packages/client/src/store/ui-store.ts
+        - packages/client/src/components/ModeContent.tsx
+      The SA review (lines 37–50) explicitly targets BOTH files, documenting t5's changes to ui-store.ts: "AppMode union: 'party' added as first member; 10 members total" and "Default flip: initial activeMode 'browse'->'party'". The t5 commit (3a6a277) modifies both files, not just ModeContent.tsx.</verification>
+      <corrected_statement>t5 (3a6a277) modifies TWO files: (1) packages/client/src/store/ui-store.ts (AppMode union extended to 10 members including 'party'; default activeMode flip 'browse' → 'party'; hydrate comment updated); (2) packages/client/src/components/ModeContent.tsx (PAGE_MAP entries, React.lazy wiring per rem FE#9). The entry at line 2465 must list both files.</corrected_statement>
+      <evidence_path>.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-t5-AUD-1783477019.md lines 30–31 (inputs), lines 37–50 (SA review of both files)</evidence_path>
+    </fact>
+    
+    <fact num="5">
+      <error_claim>Line 2450: "packages/client/src/components/party/materia-tint.ts (color indexer, Zod-validated input)"</error_claim>
+      <verification>Read of packages/client/src/components/party/materia-tint.ts (13 lines total) shows: zero Zod imports, zero schema definitions, zero validation. The file exports a single function `materiaTint(token: string, pct: number): string` that returns a `color-mix()` CSS expression template. The function takes a CSS custom-property NAME (not a value to be validated) and returns a string. There is no validation, no schema, no Zod anywhere in the file.</verification>
+      <corrected_statement>materia-tint.ts is a pure string-template helper function returning CSS color-mix() expressions. It accepts a token name and percentage, returns a CSS string, and contains no Zod schema or validation logic. The characterization "Zod-validated input" is fabricated.</corrected_statement>
+      <evidence_path>packages/client/src/components/party/materia-tint.ts (full file read, 13 lines, lines 1–13 confirm no Zod)</evidence_path>
+    </fact>
+    
+    <fact num="6">
+      <error_claim>Line 2511: "First-pass rate: 6/8 (t1–t4 + t6 PASS on first submission; t5 FAIL AUD#5 bundle gate → remediated)"</error_claim>
+      <verification>Audit verdicts from event log and audit outputs: (1) AUD#1 t1 PASS, (2) AUD#2 t2 PASS, (3) AUD#3 t3 PASS, (4) AUD#4 t4 PASS, (5) AUD#5 t5 FAIL (bundle gate), (6) AUD#6 t3-rem PASS, (7) AUD#7 t5-reaudit PASS (family after rem FE#8+FE#9), (8) AUD#8 t6 PASS. Total verdicts: 8. PASS verdicts: 7 (all except AUD#5). First-pass verdicts: AUD#1–AUD#5 = 5 verdicts (4 PASS, 1 FAIL). t3-rem and t5-reaudit are remediation verdicts, not first-pass. The statement "6/8" has no consistent referent: 6 verdicts do not exist as a denominator matching any meaningful audit classification.</verification>
+      <corrected_statement>Audit verdict breakdown: 8 total verdicts. First-pass verdicts (AUD#1–AUD#5): t1–t5 (5 verdicts: 4 PASS [t1/t2/t3/t4], 1 FAIL [t5]). Remediation verdicts: t3-rem (AUD#6 PASS), t5-reaudit (AUD#7 PASS). Overall: 7 of 8 verdicts PASS; 1 genuine FAIL (AUD#5, bundle gate) remediated across 2 rounds (rem FE#8 insufficient, escalated to rem FE#9 PASS).</corrected_statement>
+      <evidence_path>.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-t*-AUD-*.md (all 8 audit verdicts); docs/after-actions/prog-studio-v2-2026-07-s2-party-shell.md §6 G5 line 191 (explicit correction); line 174 (first-pass rate table)</evidence_path>
+    </fact>
+  </corrections>
+  
+  <impact>
+    The six factual errors above concern:
+    - Commit inventory counts and commit identity (facts 1, 2a, 2b, 3, 4): readers grepping history for the HIGH-defect fix (87dc529) or the ceremonial/coordination artifacts (0a0536e) will find incorrect or missing information, risking future misbisects.
+    - Component characterization (fact 5): future engineers reviewing the materia-tint helper may be misled to expect validation logic, or may incorrectly assume Zod is a pattern in this codebase area.
+    - Audit outcome aggregation (fact 6): the narrative framing of "6/8" overstates first-pass success and obscures the 2-round remediation pattern (bundle gate's 2 fix attempts, not 1).
+    - The narrative layer (rationale, remediation chains, timeline, e2e-gate discovery, defect root causes, REQVAL coverage) remains accurate and requires no correction.
+  </impact>
+  
+  <rationale>
+    AR#1's entry was composed accurately at the narrative level (rationale, remediation chains, audit trail structure, defect descriptions) but drifted on commit inventory facts. The after-action §6 G5 identified six specific errors: the commit count claim (line 2444: "5 total" vs. 7+ceremony), ceremony misdescription ×2 (conflating ceremony commit with code commits and with parent-program ceremony), omission of the t3-rem commit from the list (with the fix incorrectly folded into t3's parenthetical), omission of ui-store.ts from t5's file list, fabricated characterization of materia-tint.ts (Zod-validated when it contains no Zod), and a first-pass-rate denominator without consistent referent (6/8).
+    
+    This is the third consecutive sighting of Archivist drift (s1 §6 G5 → AR#2 correction, this sprint's pm-preflight checklist tagged archivist-paraphrase-drift). The s1 correction enforced Glob-verify-before-citation for file paths, which successfully prevented path fabrications this sprint. However, the drift class mutated: the AR now faces commit inventory facts drawn from memory/narrative construction rather than mechanical copying from the commit_record XML. The fix applied to s1 (evidence-path discipline + Glob-verify) is insufficient here; the mechanism must extend to commit lists (VERBATIM copy from commit_record, never paraphrased).
+  </rationale>
+  
+  <remediation_directive_for_next_session>
+    Update docs/project_log.md lines 2444, 2438, 2450–2451, 2454–2457, 2463–2466, 2511 per the corrected_statement fields above. The simplest fix: replace the entire "Commits" section (lines 2441–2470) with a verbatim copy of the commit_record's `<commits>` block (7 durability entries from lines 15–21 of the COMMIT artifact), followed by a separate statement of the ceremony commit 0a0536e, and update line 2511 with the correct verdict breakdown (8 total; 7 PASS, 1 FAIL remediated; first-pass verdicts 5 with breakdown 4 PASS / 1 FAIL).
+  </remediation_directive_for_next_session>
+</archive_correction>
