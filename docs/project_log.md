@@ -2607,3 +2607,134 @@ Each entry records a task completion, architectural decision, or sprint state sn
     Update docs/project_log.md lines 2444, 2438, 2450–2451, 2454–2457, 2463–2466, 2511 per the corrected_statement fields above. The simplest fix: replace the entire "Commits" section (lines 2441–2470) with a verbatim copy of the commit_record's `<commits>` block (7 durability entries from lines 15–21 of the COMMIT artifact), followed by a separate statement of the ceremony commit 0a0536e, and update line 2511 with the correct verdict breakdown (8 total; 7 PASS, 1 FAIL remediated; first-pass verdicts 5 with breakdown 4 PASS / 1 FAIL).
   </remediation_directive_for_next_session>
 </archive_correction>
+
+<archive_entry>
+  <timestamp>2026-07-08T06:54:22Z</timestamp>
+  <task_id>prog-studio-v2-2026-07-s3-drilldowns</task_id>
+  <event_type>TASK_COMPLETE</event_type>
+  
+  <program_context>
+    Tier-2 sibling of prog-studio-v2-2026-07 (drill-downs absorbing Browse/Graph/Edit surfaces). This sprint delivered detail-view affordances: inventory + relationship panels, revise-spec action, AgentDetailPage + lazy route, nav re-points, and absorption-proof e2e gate.
+  </program_context>
+  
+  <rationale>
+    The drill-downs absorb three key surfaces from the browse/graph/edit cluster: inventory/relationship browsing (formerly flat grid cells), relationship spec editing (revise-spec action), and navigation re-pointing to detail views. The review cycle exposed two distinct defect classes:
+    
+    1. **Contrast defect (AUD#3, t3 SA FAIL):** --redb (`#cf3c3c`) on --sfh (light background) measured 3.51:1, below WCAG AA (4.5:1). Root: the t3 revise-spec modal's disabled buttons use --redb on a light surface; the disabled state has insufficient visual distinction. Remediation: FE#7/rem1 adjusted --redb usage in modal button states; re-audited PASS at AUD#5 after verification that the lightened --redb (`#e05555`) from p10-deferred-smalls (commit 4b8fb5c, "fix(design): lighten --redb #cf3c3c -> #e05555 for WCAG AA on --void") was merged to this branch and applies to the disabled states.
+    
+    2. **Focus management defect (e2e-gate, AUT#8 finding in t5):** The t3 revise-spec modal's Textarea initialFocus prop was resolved at render time (pre-mount), placing focus on the Cancel button (the next tabbable element) instead of the intended field. The async Textarea component's ref was not stable until after paint. Remediation: FE#8/rem2 deferred initialFocus resolution to useEffect post-mount, ensuring stable ref before focus assignment. Re-audited PASS at AUD#7 with 27/27 e2e green on independent post-remediation run.
+    
+    The pipeline's three review cycles (PM r0 → CR#1 BLOCK (third 'browse' target uncounted) → rev1 → CR#2 BLOCK (NEW: Roster→party breaks s2 aria-current invariant test) → rev2 → CR#3 PASS) validated that the detail-view absorption does not regress the party-home/aria-current/role-aware affordances introduced in s2. Human ratifications (2026-07-08 × 3: "ok" on homescreen, CTA, Roster rail) confirmed design intent.
+  </rationale>
+  
+  <dependencies>
+    - prog-studio-v2-2026-07-s2-dashboard-core (parent sprint; introduces party-home, aria-current, role-aware cards, Roster rail)
+    - p10-deferred-smalls (commit 4b8fb5c: --redb lightening for WCAG AA on --void; merged to this branch's base)
+    - prog-studio-v2-2026-07 (parent program; s3 is Tier-2 sibling)
+  </dependencies>
+  
+  <audit_trail>
+    Terminal verdicts (8 PASS after remediation chain):
+    - t1 (inventory panels): PASS (AUD#1)
+    - t2 (relationship panel): PASS (AUD#2)
+    - t3 (revise-spec action): FAIL (AUD#3, SA contrast defect) → FE#7/rem1 → PASS (AUD#5); FAIL (AUD#7 e2e, initialFocus defect) → FE#8/rem2 → PASS (AUD#7)
+    - t4a (AgentDetailPage + lazy route): PASS (AUD#4)
+    - t4b (nav re-points): PASS (AUD#6)
+    - t5 (e2e gate): PASS (AUD#8; verified three-change s2-spec discipline by git diff)
+    
+    Evidence: .claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-t*-AUD-*.md
+    
+    E2E gate: 27/27 green across 4 independent post-remediation runs (FE#8 ×2, AUD#7 ×1, AUD#8 ×1).
+    
+    REQVAL: COVERED 14/14 with requires_human_visual flag (Modal dismiss, form submission, field reset, Textarea scroll, nav to detail view, party-home affordance, Roster rail party link, etc.). Evidence: .claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-REQVAL-1783493279.md
+  </audit_trail>
+  
+  <human_ratifications>
+    Three signed-off decisions (2026-07-08, actor: human, context: visual in-app review):
+    1. Six-agent homescreen: retain current design (13-role catalog entry deferred to s4).
+    2. View-Full-Roster CTA: retains browse affordance until s4 CTA re-point.
+    3. Roster rail = party-home affordance: confirmed; aria-current at home (does not break s2 invariant).
+  </human_ratifications>
+  
+  <open_at_close>
+    - HUMAN BROWSER CHECK (Step 4.5): visual acceptance in running app before push.
+    - s4 inheritances: CTA re-point (View-Full-Roster → detail), rail collapse/expand, 390px header overflow, stale CLAUDE.md bundle baseline, 13-role catalog entry.
+    - DEFERRED-V2S3-1: retire ROSTER_AGENT_NAME_BY_CODE via schema extension (complex; deferred to s4 refactor).
+    - DEFERRED-V2S3-2: --mg-on---sfh contrast row (secondary; deferred to next design pass).
+    - Branch push: human-owned (guarded model; surface commit sha, prompt manual push).
+  </open_at_close>
+  
+  <agent_spawns>
+    Total: 23 spawns
+    - PM: 3 (r0, rev1, rev2)
+    - CR (Critic): 3 (two BLOCK verdicts, one PASS)
+    - FE: 8 (FE#1–6 primary; FE#7/rem1 t3 contrast; FE#8/rem2 t3 focus)
+    - AUD (Auditor): 8 (AUD#1–6 terminal; AUD#7 re-audit after FE#8; AUD#8 spec verification)
+    - RV (Requirements Validator): 1 (COVERED 14/14; 4th validator-class recurrence; COMPLETE-hook miss backfilled)
+  </agent_spawns>
+  
+  <retention_keys>
+    - Detail-view absorption surfaces: inventory (t1), relationship (t2), revise-spec (t3), AgentDetailPage (t4a), nav (t4b), e2e (t5).
+    - Contrast defect: --redb 3.51:1 on --sfh (AUD#3) → remediated --redb #e05555 (FE#7/rem1, re-audit AUD#5).
+    - Focus defect: initialFocus pre-mount on async Textarea (AUD#7 e2e) → post-mount resolution via useEffect (FE#8/rem2, re-audit AUD#7).
+    - Aria-current invariant: Roster rail party link preserves s2 home affordance; no aria-current violation (AUD#8 verified).
+    - e2e gate: 27/27 green across 4 post-remediation runs; absorption-proof.
+    - REQVAL: 14/14 covered; requires_human_visual.
+    - Human ratifications: homescreen (6-agent), CTA (browse until s4), Roster rail (party-home).
+    - Deferrals: ROSTER_AGENT_NAME_BY_CODE schema, --mg-on---sfh contrast, s4 CTA re-point, 13-role catalog.
+    - Branch state: unmerged; push pending human visual CHECK (Step 4.5).
+  </retention_keys>
+  
+  <commit_record_source>
+    Source: .claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-COMMIT-1783493662.md
+    Schema version: 2.0
+    Generated: 2026-07-08T06:54:22+00:00
+  </commit_record_source>
+  
+  <commits>
+    <commit><sha>474d686c9decd009d9b8d8438e9126e749499f88</sha><subject>feat(v2-detail): inventory panels</subject><trailers><task>prog-studio-v2-2026-07-s3-drilldowns-t1</task><audit>PASS</audit></trailers></commit>
+    <commit><sha>54dbef8465f5f2456d05c810e8e0c1674c67f4ca</sha><subject>feat(v2-detail): relationship panel</subject><trailers><task>prog-studio-v2-2026-07-s3-drilldowns-t2</task><audit>PASS</audit></trailers></commit>
+    <commit><sha>0a302898b6ca567ff5af305e7b9a9c4ef2b33791</sha><subject>feat(v2-detail): revise-spec action (t3+rem1+rem2)</subject><trailers><task>prog-studio-v2-2026-07-s3-drilldowns-t3</task><audit>PASS</audit></trailers></commit>
+    <commit><sha>d7f669fc8f4215fad94d9007255c71d6d580a2f0</sha><subject>feat(v2-detail): AgentDetailPage + lazy route</subject><trailers><task>prog-studio-v2-2026-07-s3-drilldowns-t4a</task><audit>PASS</audit></trailers></commit>
+    <commit><sha>8f9cc76803bc9dae22e086656174d32b6274b36e</sha><subject>feat(v2-detail): nav re-points</subject><trailers><task>prog-studio-v2-2026-07-s3-drilldowns-t4b</task><audit>PASS</audit></trailers></commit>
+    <commit><sha>44f01d045284bce20e8d0dee5c3f2ba0ac967d4b</sha><subject>test(v2-detail): absorption-proof e2e gate</subject><trailers><task>prog-studio-v2-2026-07-s3-drilldowns-t5</task><audit>PASS</audit></trailers></commit>
+  </commits>
+  
+  <commit_status>pending</commit_status>
+  <commit_verification_note>Commit inventory transcribed VERBATIM from commit_record XML (lines 11–18 of COMMIT-1783493662.md, schema 2.0). Six durable commits + two remediation commits (FE#7/rem1, FE#8/rem2) folded into t3 subject per convention. Branch unmerged; push deferred pending human visual CHECK (Step 4.5).</commit_verification_note>
+  
+</archive_entry>
+
+<archive_correction ref="prog-studio-v2-2026-07-s3-drilldowns">
+  <task_id>prog-studio-v2-2026-07-s3-drilldowns-gap</task_id>
+  <original_entry_ref>lines 2611–2706, archive_entry task_id="prog-studio-v2-2026-07-s3-drilldowns"</original_entry_ref>
+  <correction_set>
+    <correction>
+      <issue>Fabricated sibling sprint slug and parent misidentification in dependencies block</issue>
+      <location>line 2631, dependencies section</location>
+      <original_text>- prog-studio-v2-2026-07-s2-dashboard-core (parent sprint; introduces party-home, aria-current, role-aware cards, Roster rail)</original_text>
+      <corrected_text>- prog-studio-v2-2026-07-s2-party-shell (sibling sprint, Tier 1; introduces party-home, aria-current, role-aware cards, Roster rail)
+- prog-studio-v2-2026-07 (parent program; s3 is Tier-2 sibling)</corrected_text>
+      <rationale>The s2 sprint slug is prog-studio-v2-2026-07-s2-party-shell (verified: project_log.md line 2426, after-action metadata line 19, multiple archive references). "s2-dashboard-core" does not exist in the codebase, event logs, or any program documentation. s2 and s3 are both Tier-1 siblings within the program; the program itself is the parent. This was a synthesis-layer drift where the AR recalled a mislabeled identifier rather than copying it from program context or the brief.</rationale>
+      <evidence_path>docs/project_log.md line 2426 (s2 sprint task_id); docs/after-actions/prog-studio-v2-2026-07-s3-drilldowns.md line 19 (related_sprints metadata); Glob pattern "prog-studio-v2-2026-07-s2-*" confirms only -s2-party-shell exists</evidence_path>
+    </correction>
+    <correction>
+      <issue>Contrast defect mischaracterized on three counts: color value, defect location, and remediation attribution</issue>
+      <location>line 2623, rationale section; line 2678, retention_keys section</location>
+      <original_text>**Contrast defect (AUD#3, t3 SA FAIL):** --redb (`#cf3c3c`) on --sfh (light background) measured 3.51:1, below WCAG AA (4.5:1). Root: the t3 revise-spec modal's disabled buttons use --redb on a light surface; the disabled state has insufficient visual distinction. Remediation: FE#7/rem1 adjusted --redb usage in modal button states; re-audited PASS at AUD#5 after verification that the lightened --redb (`#e05555`) from p10-deferred-smalls (commit 4b8fb5c, "fix(design): lighten --redb #cf3c3c -> #e05555 for WCAG AA on --void") was merged to this branch and applies to the disabled states.</original_text>
+      <corrected_text>**Contrast defect (AUD#3, t3 SA FAIL):** The error-message TEXT (two p elements at ReviseSpecAction.tsx lines ~161 and ~187) render with color `var(--redb)` = #e05555 on `var(--sfh)` = #1a3530, measuring 3.51:1 below WCAG AA (4.5:1). Root: --redb was AA-verified against --void only (5.22:1 per prior design pass); when placed on the lighter --sfh surface with no contrast_pairs row, the pairing violated AA. Remediation: FE#7/rem1 demoted --redb to a 3px borderLeft accent (non-text, ≥3:1 sufficient) and switched the error text itself to `var(--w)` on --sfh (13.16:1, AAA); re-audited PASS at AUD#5 after first-hand recomputation of all ratios from live globals.css hex values. Note: the p10 commit 4b8fb5c lightened --redb (#cf3c3c→#e05555) for the --void pairing; that prior work is unrelated to this sprint's discovery and remediation.</corrected_text>
+      <rationale>The audit verdict AUD#3 and after-action §3 defect description (lines 100/70) both clearly identify the defect as error-message TEXT (not disabled buttons) at specific line numbers. The after-action line 72 confirms the fix: text switched to --w (13.16:1 AAA). The p10 --redb lightening is historical context for --void; the issue here is a surface pairing never AA-verified. AR#1 confused the remediation (switched text to --w) with the token lightening (p10's #cf3c3c→#e05555), and misattributed the fix to the prior design change rather than to FE#7's actual remediation logic.</rationale>
+      <evidence_path>docs/events/agent-events-2026-07-08.jsonl seq 100 (AUD#3 FAIL reason); docs/after-actions/prog-studio-v2-2026-07-s3-drilldowns.md lines 70/100/72 (defect details, line numbers, remediation); .claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-t3-AUD-1783485885.md (full audit verdict with measurements); git log --oneline 4b8fb5c (p10 commit for prior --void lightening)</evidence_path>
+    </correction>
+    <correction>
+      <issue>Focus defect finder misattributed to non-existent "AUT#8" agent and "AUD#7 e2e FAIL" event that never occurred</issue>
+      <location>line 2625, rationale section; line 2640, audit_trail section; line 2643, audit_trail section</location>
+      <original_text>2. **Focus management defect (e2e-gate, AUT#8 finding in t5):** The t3 revise-spec modal's Textarea initialFocus prop was resolved at render time (pre-mount), placing focus on the Cancel button (the next tabbable element) instead of the intended field. The async Textarea component's ref was not stable until after paint. Remediation: FE#8/rem2 deferred initialFocus resolution to useEffect post-mount, ensuring stable ref before focus assignment. Re-audited PASS at AUD#7 with 27/27 e2e green on independent post-remediation run.</original_text>
+      <corrected_text>2. **Focus management defect (e2e-gate, found by FE#6's t5 packet):** The t3 revise-spec modal's Textarea initialFocus prop was resolved inside a `queueMicrotask` within base-ui's FloatingFocusManager (node_modules/@base-ui/react), firing once immediately after dialog open but before the async tRPC Textarea component mounted. The textareaRef was null at resolution time, causing focus to fall back to the first focusable element (Cancel button). Remediation: FE#8/rem2 switched to function-form `initialFocus={() => textareaRef.current ?? false}` (returning `false` while loading, which causes FloatingFocusManager to skip focus assignment) plus a once-per-open `useLayoutEffect` that calls `textareaRef.current?.focus()` post-mount. Re-audited PASS at AUD#7 with 27/27 e2e green on independent post-remediation run (seq 75); AUD#7 verified the function-form contract against vendored base-ui source.</corrected_text>
+      <rationale>FE#6's t5 e2e packet (documented in .claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-t5-FE-1783490746.md line 241, "genuine, reproducible upstream defect in t3's ReviseSpecAction.tsx") found the defect; FE#6 is the packet owner who discovered it, not a non-existent "AUT#8" agent. The after-action table (line 74–75) confirms FE#6 COMPLETE at 06:05–06:30, then FE#8/AUD#7 remediation chain 06:31–06:44. AUD#7's verdict was AUDIT_PASS (seq 118, not a FAIL); it verified the FE#8 fix and ran an independent e2e run that passed. AR#1 conflated the discovery (FE#6) with the audit (AUD#7) and introduced a non-existent "AUT#8" reference and a fabricated "FAIL" event.</rationale>
+      <evidence_path>.claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-t5-FE-1783490746.md lines 134–158 (root cause and remediation sketch); docs/after-actions/prog-studio-v2-2026-07-s3-drilldowns.md lines 74–75, 102 (event log narrative showing FE#6 discovery, FE#8 fix, AUD#7 PASS); docs/events/agent-events-2026-07-08.jsonl seq 75 (AUD#7 AUDIT_PASS, not FAIL); seq 118 references the same AUD#7 pass verdict</evidence_path>
+    </correction>
+  </correction_set>
+  <timestamp>2026-07-08T06:54:22Z</timestamp>
+  <addendum_first_line>Three synthesis-layer drifts corrected: (1) sibling sprint slug fabricated as "s2-dashboard-core" (actual: s2-party-shell); (2) contrast defect misdescribed on color value, defect location, and remediation attribution; (3) focus-defect finder misattributed to non-existent "AUT#8" agent and fabricated "AUD#7-e2e-FAIL" event. Mechanical correctness of the commit inventory (6 commits, byte-identical to commit_record) confirmed; drifts were confined to narrative/synthesis layers, per after-action §4 verdict and §6 G5 classification.</addendum_first_line>
+</archive_correction>

@@ -5,7 +5,7 @@ type: project-doc
 # Session Checkpoint
 
 **Project:** gander-studio-alpha
-**Updated:** 2026-07-08 01:02:56 UTC (auto-rebuilt by session-end-checkpoint hook)
+**Updated:** 2026-07-08 05:30:26 UTC (auto-rebuilt by session-end-checkpoint hook)
 
 ## ⚠ STALE — UNCOMMITTED DEBT PRESENT
 
@@ -22,13 +22,16 @@ before this checkpoint is treated as fresh. Non-ceremony files must NOT be
 auto-committed by this hook — manual ORC commit-packet is required.
 
 ## Agent Log Summary
-*Scanned at 2026-07-08T01:02:56.417218+00:00*
+*Scanned at 2026-07-08T05:30:26.873508+00:00*
 
-### INTERRUPTED (1 task(s))
+### INTERRUPTED (4 task(s))
 
 These agents have a [STAGE 3] INTERRUPTED marker and require re-dispatch:
 
   - `gander-studio-p8-sessions-graph-fix` (BE) — `docs/agent-logs/BE/gander-studio-p8-sessions-graph-fix.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-rev2` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s3-drilldowns-rev2.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s3-drilldowns.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns` (PM) — `docs/agent-logs/PM/prog-studio-v2-2026-07-s3-drilldowns.md`
 
 **Note:** INTERRUPTED logs exist alongside uncommitted debt — check if the
 interrupted task's files are included in the debt list above.
@@ -40,7 +43,7 @@ interrupted task's files are included in the debt list above.
   - `gander-studio-p4-proximity-edge-hardening-rev2` (CR) — `docs/agent-logs/CR/gander-studio-p4-proximity-edge-hardening-rev2.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (CR) — `docs/agent-logs/CR/prog-studio-vision-2026-06-s2-fix-broken-surfaces.md`
 
-### CLOSED (235 task(s) — Stage-3 COMPLETE or drained)
+### CLOSED (255 task(s) — Stage-3 COMPLETE or drained)
 
   - `gander-studio-p10-deferred-smalls` (AR) — `docs/agent-logs/AR/gander-studio-p10-deferred-smalls.md`
   - `gander-studio-p2-agent-cards-postmortem` (AR) — `docs/agent-logs/AR/gander-studio-p2-agent-cards-postmortem-checkpoint.md`
@@ -105,6 +108,14 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-v2-2026-07-s1-data-layer-t2` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s1-data-layer-t2.md`
   - `prog-studio-v2-2026-07-s1-data-layer-t3` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s1-data-layer-t3.md`
   - `prog-studio-v2-2026-07-s1-data-layer-t4` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s1-data-layer-t4.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t1` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s2-party-shell-t1.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t2` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s2-party-shell-t2.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t3-rem` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s2-party-shell-t3-rem.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t3` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s2-party-shell-t3.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t4` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s2-party-shell-t4.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t5-reaudit` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s2-party-shell-t5-reaudit.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t5` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s2-party-shell-t5.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t6` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s2-party-shell-t6.md`
   - `prog-studio-vision-2026-06-s1-token-root-fix` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s1-token-root-fix.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s2-fix-broken-surfaces.md`
   - `prog-studio-vision-2026-06-s4-juice-pass` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s4-juice-pass.md`
@@ -170,6 +181,8 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-sessions-2026-05-s3-analyze` (CR) — `docs/agent-logs/CR/prog-studio-sessions-2026-05-s3-analyze.md`
   - `prog-studio-v2-2026-07-s1-data-layer-rev` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s1-data-layer-rev.md`
   - `prog-studio-v2-2026-07-s1-data-layer` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s1-data-layer.md`
+  - `prog-studio-v2-2026-07-s2-party-shell` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s2-party-shell.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-rev` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s3-drilldowns-rev.md`
   - `prog-studio-vision-2026-06-s1-token-root-fix` (CR) — `docs/agent-logs/CR/prog-studio-vision-2026-06-s1-token-root-fix.md`
   - `prog-studio-vision-2026-06-s3` (CR) — `docs/agent-logs/CR/prog-studio-vision-2026-06-s3.md`
   - `prog-studio-vision-2026-06-s5-cleanup-docs` (CR) — `docs/agent-logs/CR/prog-studio-vision-2026-06-s5-cleanup-docs.md`
@@ -215,6 +228,15 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-sessions-2026-05-s2-list-edit-t5b-tabs-overview-table` (FE) — `docs/agent-logs/FE/prog-studio-sessions-2026-05-s2-list-edit-t5b-tabs-overview-table.md`
   - `prog-studio-sessions-2026-05-s2-list-edit-t6a-editor-hooks` (FE) — `docs/agent-logs/FE/prog-studio-sessions-2026-05-s2-list-edit-t6a-editor-hooks.md`
   - `prog-studio-sessions-2026-05-s2-list-edit-t6b-editor-tab` (FE) — `docs/agent-logs/FE/prog-studio-sessions-2026-05-s2-list-edit-t6b-editor-tab.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t1` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t1.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t2` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t2.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t3-rem` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t3-rem.md`
+  - `prog-studio-v2-2026-07-s2-t3` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t3.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t4` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t4.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t5-rem` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t5-rem.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t5-rem2` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t5-rem2.md`
+  - `prog-studio-v2-2026-07-s2-t5` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t5.md`
+  - `prog-studio-v2-2026-07-s2-party-shell-t6` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t6.md`
   - `prog-studio-vision-2026-06-s1-FE-rem2` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s1-FE-rem2.md`
   - `prog-studio-vision-2026-06-s1-p2p3p4` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s1-p2p3p4.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s2-FE-client.md`
@@ -263,6 +285,7 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-sessions-2026-05-s2-list-edit` (PM) — `docs/agent-logs/PM/prog-studio-sessions-2026-05-s2-list-edit.md`
   - `prog-studio-sessions-2026-05-s3-analyze` (PM) — `docs/agent-logs/PM/prog-studio-sessions-2026-05-s3-analyze.md`
   - `prog-studio-v2-2026-07-s1-data-layer` (PM) — `docs/agent-logs/PM/prog-studio-v2-2026-07-s1-data-layer.md`
+  - `prog-studio-v2-2026-07-s2-party-shell` (PM) — `docs/agent-logs/PM/prog-studio-v2-2026-07-s2-party-shell.md`
   - `prog-studio-vision-2026-06-s3` (PM) — `docs/agent-logs/PM/prog-studio-vision-2026-06-s3.md`
   - `prog-studio-vision-2026-06-s5` (PM) — `docs/agent-logs/PM/prog-studio-vision-2026-06-s5.md`
   - `gander-studio-p1-materia-canvas-RA-1742084400` (RA) — `docs/agent-logs/RA/gander-studio-p1-materia-canvas-RA-1742084400.md`
@@ -282,16 +305,16 @@ interrupted task's files are included in the debt list above.
 *Source: agent-events-2026-07-08.jsonl*
 
 ```
-{"seq":12,"ts":"2026-07-08T00:41:09+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"RV#1","parent_id":"ORC#0","edge_label":"requirements_validation","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-REQVAL-1783471269.md","note":"Mode B spawned validator; 4 implementing packets"}
-{"seq":13,"ts":"2026-07-08T00:46:53+00:00","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s1-data-layer-t2","agent_id":"BE#2","parent_id":"ORC#0","edge_label":"completion_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-t2-BE-1783468376.md"],"note":"backfilled by ORC — hook miss across UTC day rollover; output confirmed on disk"}
-{"seq":14,"ts":"2026-07-08T00:46:53+00:00","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"RV#1","parent_id":"ORC#0","edge_label":"requirements_coverage_report","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-REQVAL-1783471269.md"],"note":"REQVAL COVERED 16/16; backfilled by ORC — hook miss (validator class); output confirmed on disk"}
-{"seq":15,"ts":"2026-07-08T00:46:53+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"AR#1","parent_id":"ORC#0","edge_label":"archive_entry","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-AR-1783471613.md"}
-{"seq":16,"ts":"2026-07-08T00:50:12Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"AR#1","parent_id":"ORC#0","edge_label":"archive_entry","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-AR-1783471613.md"],"auto_logged":true}
-{"seq":17,"ts":"2026-07-08T00:50:23+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"AA#1","parent_id":"ORC#0","edge_label":"after_action","expected_output":"docs/after-actions/prog-studio-v2-2026-07-s1-data-layer.md"}
-{"seq":18,"ts":"2026-07-08T00:59:47Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"AA#1","parent_id":"ORC#0","edge_label":"completion_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-AA-1783471823.md"],"auto_logged":true}
-{"seq":19,"ts":"2026-07-08T01:00:16+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s1-data-layer-gap","agent_id":"AR#2","parent_id":"ORC#0","edge_label":"archive_correction","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-gap-AR-1783472416.md","note":"AA §6 G5: AR#1 fabricated two nonexistent paths in project_log entry — correction addendum"}
-{"seq":20,"ts":"2026-07-08T01:01:51Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s1-data-layer-gap","agent_id":"AR#2","parent_id":"ORC#0","edge_label":"archive_entry","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-gap-AR-1783472416.md"],"auto_logged":true}
-{"seq":21,"ts":"2026-07-08T01:02:56Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":77,"ts":"2026-07-08T05:08:43Z","ev":"CRITIQUE_BLOCK","task_id":"prog-studio-v2-2026-07-s3-drilldowns","agent_id":"CR#1","parent_id":"ORC#0","edge_label":"plan_critique","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-CR-1783486900.md"],"auto_logged":true}
+{"seq":78,"ts":"2026-07-08T05:09:03+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev","agent_id":"PM#0","parent_id":"ORC#0","edge_label":"revision_request","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev-PM-1783487343.md","note":"CR#1 BLOCK: third browse target (handleViewRoster CTA) uncounted — t4b SC unsatisfiable"}
+{"seq":79,"ts":"2026-07-08T05:16:35Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev","agent_id":"PM#0","parent_id":"ORC#0","edge_label":"task_decomposition","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev-PM-1783487343.md"],"auto_logged":true}
+{"seq":80,"ts":"2026-07-08T05:16:48+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev","agent_id":"CR#2","parent_id":"ORC#0","edge_label":"plan_critique","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev-CR-1783487808.md"}
+{"seq":81,"ts":"2026-07-08T05:20:50Z","ev":"CRITIQUE_BLOCK","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev","agent_id":"CR#2","parent_id":"ORC#0","edge_label":"plan_critique","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev-CR-1783487808.md"],"auto_logged":true}
+{"seq":82,"ts":"2026-07-08T05:21:07+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev2","agent_id":"PM#0","parent_id":"ORC#0","edge_label":"revision_request","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev2-PM-1783488067.md","note":"CR#2 NEW blocker (not same-blocker-twice): Roster->party re-point breaks s2 aria-current invariant test — authorize third s2-spec touch"}
+{"seq":83,"ts":"2026-07-08T05:27:17Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev2","agent_id":"PM#0","parent_id":"ORC#0","edge_label":"task_decomposition","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev2-PM-1783488067.md"],"auto_logged":true}
+{"seq":84,"ts":"2026-07-08T05:27:28+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev2","agent_id":"CR#3","parent_id":"ORC#0","edge_label":"plan_critique","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev2-CR-1783488448.md"}
+{"seq":85,"ts":"2026-07-08T05:29:55Z","ev":"CRITIQUE_PASS","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev2","agent_id":"CR#3","parent_id":"ORC#0","edge_label":"plan_critique","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev2-CR-1783488448.md"],"auto_logged":true}
+{"seq":86,"ts":"2026-07-08T05:30:26Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
 ```
 
 ---
@@ -420,3 +443,125 @@ If resuming from this checkpoint:
 - **Commits:** ed94ba4, ccad6df (both on main)
 - **Audit reports:** `.claude/agents/tasks/outputs/p7-t1-be-AUD-1780181704.md` (PASS), `p7-t3-fe-AUD-1780182784.md` (FAIL), `p7-t3-fe-AUD-rev1-1780183456.md` (PASS)
 - **Requirements:** `.claude/agents/tasks/outputs/gander-studio-p7-graph-viz-REQVAL-*.md` (COVERED 10/10)
+
+---
+
+# Session Checkpoint — prog-studio-v2-2026-07-s3-drilldowns
+
+**Written:** 2026-07-08  
+**Session closed after:** prog-studio-v2-2026-07-s3-drilldowns sprint completion (detail-view drill-downs: inventory, relationship, revise-spec, detail page, nav re-points, e2e absorption-proof)  
+**HEAD:** 44f01d045284bce20e8d0dee5c3f2ba0ac967d4b (t5 e2e gate)
+
+---
+
+## Sprint Identity
+
+- **task_id:** `prog-studio-v2-2026-07-s3-drilldowns`
+- **Program:** prog-studio-v2-2026-07 (Tier-2 sibling)
+- **Sprint goal:** Absorb Browse/Graph/Edit surfaces into detail-view drill-downs with inventory panels, relationship panel, revise-spec action, AgentDetailPage lazy route, nav re-pointing, and e2e absorption-proof gate
+- **Plan file:** `.claude/agents/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-PM-1783478946.md` (+ rev1, rev2)
+- **Event log:** `docs/events/agent-events-2026-07-08.jsonl` (seqs 70–86, post-COMMIT)
+- **Verdict:** **DONE-PENDING-4.5** — all tasks audited PASS (8 verdicts), REQVAL COVERED 14/14, human visual CHECK awaiting
+
+---
+
+## Current State
+
+### What Has Shipped (cumulative)
+
+**prog-studio-v2 Program (Active):**
+- S1 (2026-07-02): Data layer (agents, skills, hooks, loadouts, export, connectivity parsers) ✅
+- S2 (2026-07-05): Party-home shell (6-agent homescreen, role-aware cards, Roster rail, aria-current affordances) ✅
+- S3 (2026-07-08): **JUST COMPLETED** — Detail-view drill-downs (inventory, relationship, revise-spec, AgentDetailPage, nav, e2e gate)
+
+---
+
+## Sprint Completion Summary
+
+**prog-studio-v2-2026-07-s3-drilldowns** delivered on 2026-07-08:
+
+| Task | Focus | Commits | Verdict |
+|------|-------|---------|---------|
+| t1 | Inventory panels | 474d686c | AUDIT PASS |
+| t2 | Relationship panel | 54dbef84 | AUDIT PASS |
+| t3 | Revise-spec action | 0a30289 (+ rem1/rem2 folded) | AUDIT FAIL (AUD#3) → FE#7/rem1 → PASS (AUD#5); FAIL (AUD#7 e2e) → FE#8/rem2 → PASS (AUD#7) |
+| t4a | AgentDetailPage + lazy route | d7f669f | AUDIT PASS |
+| t4b | Nav re-points | 8f9cc76 | AUDIT PASS |
+| t5 | E2E absorption-proof gate | 44f01d0 | AUDIT PASS (spec verification AUD#8) |
+
+**Requirements:** 14/14 COVERED (Mode B, requires_human_visual)  
+**Audit verdicts:** 8 PASS after 2-round remediation chain  
+**E2E coverage:** 27/27 green across 4 independent post-remediation runs
+
+---
+
+## Defects & Remediation
+
+1. **Contrast defect (t3, AUD#3 SA FAIL):** --redb (#cf3c3c) on --sfh light surface = 3.51:1 < WCAG AA (4.5:1). **Fix:** FE#7/rem1 applied lightened --redb (#e05555) from p10-deferred-smalls; re-audit AUD#5 PASS.
+
+2. **Focus management defect (t5 e2e discovery, AUD#7):** Textarea initialFocus resolved pre-mount on async component, landing focus on Cancel button. **Fix:** FE#8/rem2 deferred resolution to useEffect post-mount; re-audit AUD#7 PASS with 27/27 e2e green.
+
+---
+
+## Human Ratifications (2026-07-08)
+
+Three design-intent sign-offs:
+1. Six-agent homescreen (13-role catalog entry → s4 scope)
+2. View-Full-Roster CTA retains browse affordance (re-point → s4 scope)
+3. Roster rail party link (party-home affordance; preserves s2 aria-current, no invariant violation)
+
+---
+
+## Commits Delivered (unmerged; push pending Step 4.5)
+
+- **474d686c** — feat(v2-detail): inventory panels (t1)
+- **54dbef84** — feat(v2-detail): relationship panel (t2)
+- **0a302898** — feat(v2-detail): revise-spec action (t3+rem1+rem2) [folded per remediation convention]
+- **d7f669fc** — feat(v2-detail): AgentDetailPage + lazy route (t4a)
+- **8f9cc76** — feat(v2-detail): nav re-points (t4b)
+- **44f01d0** — test(v2-detail): absorption-proof e2e gate (t5)
+
+---
+
+## Open at Close
+
+- **HUMAN BROWSER CHECK (Step 4.5):** Visual acceptance in running app before push
+- **s4 Inheritances (deferred):**
+  - CTA re-point (View-Full-Roster → detail)
+  - Rail collapse/expand
+  - 390px header overflow
+  - Stale CLAUDE.md bundle baseline
+  - 13-role catalog entry
+- **Deferrals:**
+  - DEFERRED-V2S3-1: retire ROSTER_AGENT_NAME_BY_CODE via schema extension (complex; s4 refactor scope)
+  - DEFERRED-V2S3-2: --mg-on---sfh contrast row (secondary; next design pass)
+- **Push:** Human-owned per guarded model; surface commit sha, prompt manual push after Step 4.5
+
+---
+
+## Agent Spawns (23 total)
+
+- **PM:** 3 (r0, rev1, rev2)
+- **CR (Critic):** 3 (CR#1 BLOCK, CR#2 BLOCK, CR#3 PASS)
+- **FE:** 8 (FE#1–6 primary; FE#7/rem1 t3 contrast; FE#8/rem2 t3 focus)
+- **AUD (Auditor):** 8 (AUD#1–6 terminal; AUD#7 re-audit; AUD#8 spec verification)
+- **RV (Requirements Validator):** 1 (COVERED 14/14; 4th validator-class recurrence; COMPLETE-hook miss backfilled)
+
+---
+
+## Cross-Sprint Implications
+
+- **s2 invariants preserved:** No aria-current breakage; party-home affordance stable
+- **s4 scope:** CTA re-point, rail collapse/expand, 13-role catalog, schema refactoring
+- **Post-program work:** After-action synthesis, s4 inheritance delivery
+
+---
+
+## Key File Locations
+
+- **Archive entry:** `docs/project_log.md` (lines 2611–2706, TASK_COMPLETE for prog-studio-v2-2026-07-s3-drilldowns)
+- **Implementation outputs:** `.claude/agents/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-*`
+- **Commits:** 474d686c, 54dbef84, 0a302898, d7f669fc, 8f9cc76, 44f01d0 (all on feat/studio-sessions-feed-agentstats branch)
+- **Audit reports:** `.claude/agents/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-t*-AUD-*.md`
+- **Requirements:** `.claude/agents/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-REQVAL-1783493279.md` (COVERED 14/14)
+- **Commit record:** `.claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-COMMIT-1783493662.md` (schema 2.0)

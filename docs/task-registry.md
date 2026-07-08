@@ -320,3 +320,39 @@ To recover: git reset --hard 814a0dd82a239d0b8e7eafd1a11cb09adf68011a
 **Commits:** 7 durability (7359da5 t1 → dbc4b87 t6) + ceremony 0a0536e; **Current rollback point:** dbc4b87 (t6)
 **Delivered:** v2 party screen LIVE as the default route — party cards (asset-free portraits, StatBars, popover quick-peek, keyboard-stable after t3-rem), SubmenuRail, 4 states, diagnostics footnote, route-level code-splitting (main chunk 1035.70→756.80 kB), 19-assertion Tier-2 e2e gate.
 **Open at close:** human browser check; HA-1 rail collapse/expand + HA-2 return-to-party affordance (both s4); DEFERRED-V2S2-1/2; branch push human-owned; 3rd consecutive archivist-drift correction appended (systemic — gander fix queued).
+
+**s2 4.5 UPDATE (2026-07-08):** human browser check CONFIRMED ("ok" ×3) — s2 fully DONE. Ratified: 6-agent homescreen; retained Browse CTA; Roster-as-party-home aria-current semantic.
+
+## Rollback Point
+commit: 86d2fd0395e666e1382171fff8572d50c48458d8
+recorded: 2026-07-08T05:34:09+00:00
+task_id: prog-studio-v2-2026-07-s3-drilldowns
+
+To recover: git reset --hard 86d2fd0395e666e1382171fff8572d50c48458d8
+
+<expectation_manifest>
+  <sprint_id>prog-studio-v2-2026-07-s3-drilldowns</sprint_id>
+  <generated>2026-07-08T05:34:09+00:00</generated>
+  <plan_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev2-PM-1783488067.md (CR#3 CRITIQUE_PASS; human ratified 6-of-13 + retained CTA + aria-current 2026-07-08)</plan_source>
+  <assignments>
+    <assignment><task_id>prog-studio-v2-2026-07-s3-drilldowns-t1</task_id><agent>FE#1</agent><wave>0</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-t1-FE-*.md</expected_file><blocks>t4a</blocks>
+      <receipt_check><item>Materia/Equipment/Abilities inventory panels w/ honest empty states (abilities contracted-empty per program.md §5n2); reuses s2 primitives; no qualityStats/StatBar rendering (t4a boundary); lint x3 + vitest green</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s3-drilldowns-t2</task_id><agent>FE#2</agent><wave>0</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-t2-FE-*.md</expected_file><blocks>t4a</blocks>
+      <receipt_check><item>Relationship panel: RF subgraph from relationships[], custom nodes carry Handle elements (RF v12 gotcha); reuses GraphPage RF+dagre patterns; lint x3</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s3-drilldowns-t3</task_id><agent>FE#3</agent><wave>0</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-t3-FE-*.md</expected_file><blocks>t4a</blocks>
+      <receipt_check><item>Revise-spec Dialog + TARGET-KEYED editor buffer (contamination class structurally prevented); reuses agent.save/skill.save; explicit focus/role on Dialog (s2-G2); lint x3 + buffer-lifecycle vitest</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s3-drilldowns-t4a</task_id><agent>FE#4</agent><wave>1</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-t4a-FE-*.md</expected_file><blocks>t4b</blocks>
+      <receipt_check><item>AgentDetailPage assembly (SC a-h): lazy-from-birth PAGE_MAP entry + 'agent-detail' AppMode; qualityStats w/ missing-reason handling at call site (StatBar :29/:51 facts); any-valid-ROSTER-code works (DI render); back-to-party affordance; bundle gate measured &lt;1000kB; lint x3 + build</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s3-drilldowns-t4b</task_id><agent>FE#5</agent><wave>2</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-t4b-FE-*.md</expected_file><blocks>t5</blocks>
+      <receipt_check><item>Nav re-points (SC a-e): handleSelect→'agent-detail'; RAIL_ITEMS Roster→'party'; handleViewRoster DELIBERATELY retains 'browse' + s4 TODO marker; only-remaining-browse check; lint x3</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s3-drilldowns-t5</task_id><agent>FE#6</agent><wave>3</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-t5-FE-*.md</expected_file><blocks>NONE</blocks>
+      <receipt_check><item>Tier-2 e2e: 3 absorption proofs (asset browsing; relationship layer; spec-revision w/ A→B→save buffer regression); keyboard a11y; EXACTLY THREE authorized s2-spec changes (card-Enter marker, rail-Roster marker, L313-325 aria-current rewrite) — L364-398 + all else unchanged; headless green evidence</item></receipt_check></assignment>
+  </assignments>
+</expectation_manifest>
+
+## Sprint Close — prog-studio-v2-2026-07-s3-drilldowns (2026-07-08)
+**Status:** DONE-PENDING-4.5 (8 terminal audit PASS incl. 2 remediation chains; REQVAL COVERED 14/14 + requires_human_visual) — **HUMAN BROWSER CHECK OPEN**
+**Commits:** 6 durability (474d686..44f01d0) + planning ceremony 86d2fd0 + close ceremony 68ec6e1; **Current rollback point:** 44f01d0 (t5)
+**Delivered:** agent-detail drill-downs absorbing Browse/Graph/Edit — Materia/Equipment/Abilities panels, RF relationship layer (visible-edge-proven), target-keyed revise-spec editor (contamination class structurally prevented + regression-proven), nav re-points (card→detail; Roster→party; CTA deliberately retained w/ s4 TODO), 8-test absorption-proof e2e suite (27/27 ×4 runs).
+**Gates earned their keep:** AUD#3 caught the historical legibility class BEFORE the human (first time); t5's e2e caught a second base-ui behavioral-default defect; Critic ×3 rounds caught 2 disk-verified plan defects. Archivist drift 4th sighting (synthesis layer) — correction addendum #4 appended; gander spec fix escalated.
+**Open at close:** human browser check; s4-retirement is the FINAL sibling (inheritances: CTA re-point, rail collapse/expand, 390px overflow, stale baseline, 13-role catalog entry, DEFERRED-V2S3-1/2); branch push human-owned.
