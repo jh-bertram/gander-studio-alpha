@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type AppMode = 'browse' | 'compose' | 'edit' | 'export' | 'sessions' | 'graph' | 'progression' | 'planning' | 'programs';
+export type AppMode = 'party' | 'browse' | 'compose' | 'edit' | 'export' | 'sessions' | 'graph' | 'progression' | 'planning' | 'programs';
 
 interface UIState {
   activeMode: AppMode;
@@ -18,7 +18,7 @@ interface UIState {
 export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
-      activeMode: 'browse',
+      activeMode: 'party',
       setActiveMode: (mode: AppMode) => set({ activeMode: mode }),
       muted: false,
       toggleMuted: () => set((s) => ({ muted: !s.muted })),
@@ -28,7 +28,7 @@ export const useUIStore = create<UIState>()(
     {
       name: 'gander-ui-store',
       // Partialize: persist ONLY muted — never activeMode.
-      // activeMode must reset to 'browse' on hydrate so navigation is always clean.
+      // activeMode must reset to 'party' on hydrate so navigation is always clean.
       partialize: (state) => ({ muted: state.muted }),
     },
   ),
