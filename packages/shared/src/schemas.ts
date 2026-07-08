@@ -379,3 +379,93 @@ export type ProgramGetDagInput = z.infer<typeof ProgramGetDagInputSchema>;
 
 export const ProgramGetDagOutputSchema = z.array(ProgramDagSchema);
 export type ProgramGetDagOutput = z.infer<typeof ProgramGetDagOutputSchema>;
+
+// ---------------------------------------------------------------------------
+// Party / Agent-Detail — v2 roster contract (roster.getParty, roster.getAgentDetail)
+// Analogy vocabulary is BINDING: equipment=tools, materia={skills,hooks}, abilities=workflows.
+// Source: docs/programs/prog-studio-v2-2026-07/sprints/.../orchestrator_brief.md
+// ---------------------------------------------------------------------------
+
+export const FeasibilitySchema = z.enum(['available', 'projected']);
+export type Feasibility = z.infer<typeof FeasibilitySchema>;
+
+export const PartyStatBarSchema = z.object({
+  label: z.string(),                // "Activity" | "Stamina" | "Accuracy"
+  raw: z.number().nullable(),       // underlying value (spawn count, rate fraction) or null when N/A
+  normalized: z.number().nullable(),// 0-100, or null when N/A
+  derivation: z.string(),           // derivation id, e.g. 'activity-spawns-normalized'
+  feasibility: FeasibilitySchema,
+  reason: z.string().optional(),    // populated when normalized is null (the N/A reason)
+});
+export type PartyStatBar = z.infer<typeof PartyStatBarSchema>;
+
+export const PartyMemberSchema = z.object({
+  code: z.string(),                                             // canonical role code, e.g. 'FE'
+  roleCategory: z.enum(['Impl', 'Command', 'Intel', 'Meta', 'Gate']),
+  materiaColorKey: z.string(),                                  // RUNTIME token NAME, e.g. '--mg' (never a hex)
+  portraitSeed: z.string(),                                     // deterministic, asset-free seed
+  stats: z.array(PartyStatBarSchema),
+  lastActivityTs: z.string().nullable(),                        // ISO ts of most-recent event; null if none
+  hasCorpusActivity: z.boolean(),                                // false for DI etc. — surfaced, never hidden
+});
+export type PartyMember = z.infer<typeof PartyMemberSchema>;
+
+export const PartyStatsSchema = z.object({                      // roster.getParty OUTPUT (envelope)
+  members: z.array(PartyMemberSchema),                          // sorted by activity recency (desc)
+  diagnostics: z.object({
+    totalRawLines: z.number(),
+    validEntries: z.number(),
+    invalidLineCount: z.number(),                               // schema-invalid lines COUNTED, not dropped
+    invalidLineSamples: z.array(z.string()),                    // truncated samples for observability
+    distinctEventTypes: z.number(),                             // §2.3 coverage
+    uncountedEventTypes: z.number(),                             // ev types no parser counts
+  }),
+  activityAnchor: z.number(),                                   // live max-spawns anchor (MEASURED at runtime)
+});
+export type PartyStats = z.infer<typeof PartyStatsSchema>;
+
+export const EquipmentSchema = z.object({ tool: z.string() });   // tools have no file provenance
+export type Equipment = z.infer<typeof EquipmentSchema>;
+
+export const MateriaSchema = z.object({
+  kind: z.enum(['skill', 'hook']),
+  name: z.string(),
+  provenancePath: z.string(),                                   // filePath under GANDER_ROOT
+});
+export type Materia = z.infer<typeof MateriaSchema>;
+
+export const AbilitySchema = z.object({
+  name: z.string(),
+  provenancePath: z.string(),
+});
+export type Ability = z.infer<typeof AbilitySchema>;
+
+export const RelationshipEdgeSchema = z.object({
+  target: z.string(),
+  edgeType: z.string(),
+  confidence: z.enum(['DETECTED', 'INFERRED']),
+});
+export type RelationshipEdge = z.infer<typeof RelationshipEdgeSchema>;
+
+export const QualityStatSchema = z.object({
+  label: z.string(),
+  raw: z.number().nullable(),
+  normalized: z.number().nullable(),
+  derivation: z.string(),
+  feasibility: FeasibilitySchema,
+  attribution: z.enum(['implementer-backward-look', 'direct-agent-id', 'gate-renderer']),
+});
+export type QualityStat = z.infer<typeof QualityStatSchema>;
+
+export const AgentDetailSchema = z.object({                     // roster.getAgentDetail OUTPUT
+  code: z.string(),
+  roleCategory: z.enum(['Impl', 'Command', 'Intel', 'Meta', 'Gate']),
+  materiaColorKey: z.string(),
+  equipment: z.array(EquipmentSchema),                          // tools
+  materia: z.object({ skills: z.array(MateriaSchema), hooks: z.array(MateriaSchema) }),
+  abilities: z.array(AbilitySchema),                            // workflows
+  relationships: z.array(RelationshipEdgeSchema),               // connectivity subset
+  qualityStats: z.array(QualityStatSchema),
+  dataQualityNotes: z.array(z.string()),                        // surfaced gaps (silent-empty forbidden)
+});
+export type AgentDetail = z.infer<typeof AgentDetailSchema>;
