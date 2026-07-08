@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "input_file": "/home/jhber/projects/gander-studio-alpha/.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-PM-1783472965.md",
+  "repo_root": "/home/jhber/projects/gander-studio-alpha",
+  "findings": [],
+  "summary": {
+    "total_commands_extracted": 5,
+    "satisfiable": 0,
+    "unsatisfiable": 0,
+    "self_defeating": 0,
+    "checked_at": "2026-07-08T01:24:16Z"
+  }
+}

@@ -287,3 +287,30 @@ To recover: git reset --hard 290de04dcc7f9fffd2b893cd25fc8d5ec4c6287a
 **Commits:** t1→t4 feat(v2-data) + ceremony + close bookkeeping on feat/studio-sessions-feed-agentstats; **Current rollback point:** 73a78f4 (t4)
 **Delivered:** v2 data layer — 10 Zod schemas, ROSTER canonical code→spec catalog, attribution-flip/ghost/coverage derivations, roster.getParty (PartyStatsSchema envelope) + roster.getAgentDetail. Two corpus-grounded deviations upheld (t2 §2.1 basis; t4 triggers_hook 102/102 hook→agent).
 **Open at close:** s2-party-shell next (tier 1); branch push HUMAN-OWNED (guard denied ORC push): git push origin feat/studio-sessions-feed-agentstats; §6 G1-G5 routed via after-action (archivist fabrication class G5 corrected in-log; PM corpus-fact-citation rule is the HIGH delta).
+
+## Rollback Point
+commit: 814a0dd82a239d0b8e7eafd1a11cb09adf68011a
+recorded: 2026-07-08T01:33:42+00:00
+task_id: prog-studio-v2-2026-07-s2-party-shell
+
+To recover: git reset --hard 814a0dd82a239d0b8e7eafd1a11cb09adf68011a
+
+<expectation_manifest>
+  <sprint_id>prog-studio-v2-2026-07-s2-party-shell</sprint_id>
+  <generated>2026-07-08T01:33:42+00:00</generated>
+  <plan_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-PM-1783472965.md + amend-PM-1783474258.md (CR#1 PASS + 5 WARNINGs resolved)</plan_source>
+  <assignments>
+    <assignment><task_id>prog-studio-v2-2026-07-s2-party-shell-t1</task_id><agent>FE#1</agent><wave>0</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-t1-FE-*.md</expected_file><blocks>t3,t5</blocks>
+      <receipt_check><item>ui-store selectedAgentCode contract + RAIL_ITEMS constants per packet; no AppMode union change (t5 owns it); lint x3 clean</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s2-party-shell-t2</task_id><agent>FE#2</agent><wave>0</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-t2-FE-*.md</expected_file><blocks>t3</blocks>
+      <receipt_check><item>PortraitFrame + StatBar + materiaTint helper (W1) + StatBar vitest; FF7 tokens explicit; no raw hex; W2 mapping recorded; lint x3 + client vitest green</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s2-party-shell-t3</task_id><agent>FE#3</agent><wave>1</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-t3-FE-*.md</expected_file><blocks>t4</blocks>
+      <receipt_check><item>PartyMemberCard (whole-card link, Popover quick-peek, aria) + SubmenuRail; imports materiaTint (grep color-mix in t3 files == 0, W1); W2 mapping recorded; lint x3</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s2-party-shell-t4</task_id><agent>FE#4</agent><wave>2</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-t4-FE-*.md</expected_file><blocks>t5</blocks>
+      <receipt_check><item>PartyPage + useParty (live roster.getParty envelope: members + diagnostics affordance); all 4 states; rail mounted page-local; W2 mapping; verify-then-implement note on trpc.roster exposure; lint x3</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s2-party-shell-t5</task_id><agent>FE#5</agent><wave>3</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-t5-FE-*.md</expected_file><blocks>t6</blocks>
+      <receipt_check><item>ATOMIC: 'party' in AppMode union + PAGE_MAP + default-route flip; ui-store serialized after t1 (G4); BottomTabBar untouched; lint x3 (compiler-exhaustive proof)</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s2-party-shell-t6</task_id><agent>FE#6</agent><wave>4</wave><expected_tag>ui_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-t6-FE-*.md</expected_file><blocks>NONE</blocks>
+      <receipt_check><item>Tier-2 e2e: default route renders live party; rail-nav asserts destination DOM markers (W3); popover; keyboard a11y; setViewportSize mobile legibility + screenshots both widths (W3); BottomTabBar no-regression; headless run evidence (npx playwright test) green</item></receipt_check></assignment>
+  </assignments>
+</expectation_manifest>

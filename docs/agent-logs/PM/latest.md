@@ -1,11 +1,12 @@
-# PM latest → prog-studio-v2-2026-07-s1-data-layer (COMPLETE)
+# PM latest → prog-studio-v2-2026-07-s2-party-shell (COMPLETE)
 
-Decomposition written: `.claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-PM-1783465967.md`
-4 serial BE packets (t1 schemas+role util → t2 event derivations+diagnostic reader → t3 party assembly+getParty →
-t4 agent-detail+getAgentDetail) + GATE-DEVSERVER (ORC Bash, SC7). Full log: PM/prog-studio-v2-2026-07-s1-data-layer.md
+Decomposition written: `.claude/tasks/outputs/prog-studio-v2-2026-07-s2-party-shell-PM-1783472965.md`
+6 FE packets, {t1 ∥ t2} → t3 → t4 → t5 → t6.
+Full log: `docs/agent-logs/PM/prog-studio-v2-2026-07-s2-party-shell.md`
 
-## [STAGE 3] INTERRUPTED
-- **At:** 2026-07-07T23:26:21.148481+00:00
-- **Detected by:** agent-stop-checkpoint hook (session ended without Stage 3)
-- **Action required:** Re-dispatch PM#0 (canonical: PM#0) for task `prog-studio-v2-2026-07-s1-data-layer`.
-  Read `docs/agent-logs/PM/latest.md` before starting — skip completed checkpoints.
+## [STAGE 3] COMPLETE
+- t1 store contract + rail constants (no deps) ∥ t2 Portrait+StatBar leaves (no deps)
+- t3 Card+Rail (deps t1,t2) → t4 PartyPage+useParty (deps t3) → t5 AppMode+PAGE_MAP+default (deps t4)
+  → t6 Playwright Tier-2 (deps t5)
+- append_serialization: ui-store.ts [t1 → t5]; sc-precheck delegated to ORC; push opt-in granted.
+- No-stub self-check PASS (6 packets inline). 8 risk_flags; verbatim audit covers 5 sprint SCs + 3 human phrases.

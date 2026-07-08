@@ -5,7 +5,7 @@ type: project-doc
 # Session Checkpoint
 
 **Project:** gander-studio-alpha
-**Updated:** 2026-06-30 20:34:01 UTC (auto-rebuilt by session-end-checkpoint hook)
+**Updated:** 2026-07-08 01:02:56 UTC (auto-rebuilt by session-end-checkpoint hook)
 
 ## ⚠ STALE — UNCOMMITTED DEBT PRESENT
 
@@ -14,14 +14,7 @@ reflects the CURRENT working tree state but the listed files have not been commi
 Do not treat this checkpoint as authoritative for sprint state until debt is resolved.
 
 **Uncommitted tracked paths (debt):**
-  - `docs/agent-logs/AR/latest.md`
-  - `docs/agent-logs/AUD/latest.md`
-  - `docs/agent-logs/BE/latest.md`
-  - `docs/agent-logs/CR/latest.md`
-  - `docs/agent-logs/FE/latest.md`
-  - `docs/agent-logs/PM/latest.md`
-  - `docs/agent-logs/UI/latest.md`
-  - `docs/programs/prog-studio-sessions-2026-05/program.md`
+  - `docs/events/agent-events-2026-07-08.jsonl`
 
 Ceremony-class files (chore(orchestration) commit class per
 `.claude/skills/commit-packet/SKILL.md §Two-Commit Pattern`) should be committed
@@ -29,7 +22,7 @@ before this checkpoint is treated as fresh. Non-ceremony files must NOT be
 auto-committed by this hook — manual ORC commit-packet is required.
 
 ## Agent Log Summary
-*Scanned at 2026-06-30T20:34:01.753003+00:00*
+*Scanned at 2026-07-08T01:02:56.417218+00:00*
 
 ### INTERRUPTED (1 task(s))
 
@@ -47,8 +40,9 @@ interrupted task's files are included in the debt list above.
   - `gander-studio-p4-proximity-edge-hardening-rev2` (CR) — `docs/agent-logs/CR/gander-studio-p4-proximity-edge-hardening-rev2.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (CR) — `docs/agent-logs/CR/prog-studio-vision-2026-06-s2-fix-broken-surfaces.md`
 
-### CLOSED (207 task(s) — Stage-3 COMPLETE or drained)
+### CLOSED (235 task(s) — Stage-3 COMPLETE or drained)
 
+  - `gander-studio-p10-deferred-smalls` (AR) — `docs/agent-logs/AR/gander-studio-p10-deferred-smalls.md`
   - `gander-studio-p2-agent-cards-postmortem` (AR) — `docs/agent-logs/AR/gander-studio-p2-agent-cards-postmortem-checkpoint.md`
   - `gander-studio-p2-canvas-link-postmortem` (AR) — `docs/agent-logs/AR/gander-studio-p2-canvas-link-postmortem.md`
   - `gander-studio-p2-p3-postmortem` (AR) — `docs/agent-logs/AR/gander-studio-p2-p3-postmortem.md`
@@ -58,6 +52,10 @@ interrupted task's files are included in the debt list above.
   - `gander-meta-p1-hone-skill-rollout-HR-001` (AUD) — `docs/agent-logs/AUD/gander-meta-p1-hone-skill-rollout-HR-001.md`
   - `gander-studio-p1-materia-canvas-remediation` (AUD) — `docs/agent-logs/AUD/gander-studio-p1-materia-canvas-remediation.md`
   - `gander-studio-p1-materia-canvas` (AUD) — `docs/agent-logs/AUD/gander-studio-p1-materia-canvas.md`
+  - `gander-studio-p11-v2-vision-t1` (AUD) — `docs/agent-logs/AUD/gander-studio-p11-v2-vision-t1.md`
+  - `gander-studio-p11-v2-vision-t2` (AUD) — `docs/agent-logs/AUD/gander-studio-p11-v2-vision-t2.md`
+  - `gander-studio-p11-v2-vision-t3` (AUD) — `docs/agent-logs/AUD/gander-studio-p11-v2-vision-t3.md`
+  - `gander-studio-p11-v2-vision-t4` (AUD) — `docs/agent-logs/AUD/gander-studio-p11-v2-vision-t4.md`
   - `gander-studio-p2-agent-cards-DS-001` (AUD) — `docs/agent-logs/AUD/gander-studio-p2-agent-cards-DS-001.md`
   - `gander-studio-p2-agent-cards-FE-001a` (AUD) — `docs/agent-logs/AUD/gander-studio-p2-agent-cards-FE-001a.md`
   - `gander-studio-p2-agent-cards-FE-001b` (AUD) — `docs/agent-logs/AUD/gander-studio-p2-agent-cards-FE-001b.md`
@@ -103,6 +101,10 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-sessions-2026-05-s2-list-edit-t6a` (AUD) — `docs/agent-logs/AUD/prog-studio-sessions-2026-05-s2-list-edit-t6a.md`
   - `prog-studio-sessions-2026-05-s2-list-edit-t6b-contrast-reaudit` (AUD) — `docs/agent-logs/AUD/prog-studio-sessions-2026-05-s2-list-edit-t6b-contrast-reaudit.md`
   - `prog-studio-sessions-2026-05-s2-list-edit-t6b` (AUD) — `docs/agent-logs/AUD/prog-studio-sessions-2026-05-s2-list-edit-t6b.md`
+  - `prog-studio-v2-2026-07-s1-data-layer-t1` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s1-data-layer-t1.md`
+  - `prog-studio-v2-2026-07-s1-data-layer-t2` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s1-data-layer-t2.md`
+  - `prog-studio-v2-2026-07-s1-data-layer-t3` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s1-data-layer-t3.md`
+  - `prog-studio-v2-2026-07-s1-data-layer-t4` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s1-data-layer-t4.md`
   - `prog-studio-vision-2026-06-s1-token-root-fix` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s1-token-root-fix.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s2-fix-broken-surfaces.md`
   - `prog-studio-vision-2026-06-s4-juice-pass` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s4-juice-pass.md`
@@ -113,6 +115,7 @@ interrupted task's files are included in the debt list above.
   - `s3-t7-be-gap-fill-events` (AUD) — `docs/agent-logs/AUD/s3-t7-be-gap-fill-events.md`
   - `s3-t8-timeline-scroll-units` (AUD) — `docs/agent-logs/AUD/s3-t8-timeline-scroll-units.md`
   - `t3a-nav-state` (AUD) — `docs/agent-logs/AUD/t3a-nav-state.md`
+  - `gander-studio-p10-deferred-smalls-004` (BE) — `docs/agent-logs/BE/gander-studio-p10-deferred-smalls-004.md`
   - `gander-studio-p2-canvas-link-001a` (BE) — `docs/agent-logs/BE/gander-studio-p2-canvas-link-001a.md`
   - `gander-studio-p3-001` (BE) — `docs/agent-logs/BE/gander-studio-p3-001.md`
   - `gander-studio-p3-003a` (BE) — `docs/agent-logs/BE/gander-studio-p3-003ab.md`
@@ -128,6 +131,10 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-sessions-2026-05-s1-backend-t4b` (BE) — `docs/agent-logs/BE/prog-studio-sessions-2026-05-s1-backend-t4b.md`
   - `prog-studio-sessions-2026-05-s1-backend-t5` (BE) — `docs/agent-logs/BE/prog-studio-sessions-2026-05-s1-backend-t5.md`
   - `prog-studio-sessions-2026-05-s2-list-edit-t2-be-raw` (BE) — `docs/agent-logs/BE/prog-studio-sessions-2026-05-s2-list-edit-t2-be-raw.md`
+  - `prog-studio-v2-2026-07-s1-data-layer-t1` (BE) — `docs/agent-logs/BE/prog-studio-v2-2026-07-s1-data-layer-t1.md`
+  - `prog-studio-v2-2026-07-s1-data-layer-t2` (BE) — `docs/agent-logs/BE/prog-studio-v2-2026-07-s1-data-layer-t2.md`
+  - `prog-studio-v2-2026-07-s1-data-layer-t3` (BE) — `docs/agent-logs/BE/prog-studio-v2-2026-07-s1-data-layer-t3.md`
+  - `prog-studio-v2-2026-07-s1-data-layer-t4` (BE) — `docs/agent-logs/BE/prog-studio-v2-2026-07-s1-data-layer-t4.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces-t2` (BE) — `docs/agent-logs/BE/prog-studio-vision-2026-06-s2-fix-broken-surfaces-t2.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces-t3` (BE) — `docs/agent-logs/BE/prog-studio-vision-2026-06-s2-fix-broken-surfaces-t3.md`
   - `prog-studio-vision-2026-06-s3-BE-01` (BE) — `docs/agent-logs/BE/prog-studio-vision-2026-06-s3-BE-01.md`
@@ -137,6 +144,8 @@ interrupted task's files are included in the debt list above.
   - `gander-meta-p1-hone-skill-rollout` (CR) — `docs/agent-logs/CR/gander-meta-p1-hone-skill-rollout.md`
   - `gander-studio-p1-materia-canvas-rev1` (CR) — `docs/agent-logs/CR/gander-studio-p1-materia-canvas-rev1.md`
   - `gander-studio-p1-materia-canvas` (CR) — `docs/agent-logs/CR/gander-studio-p1-materia-canvas.md`
+  - `gander-studio-p10-deferred-smalls` (CR) — `docs/agent-logs/CR/gander-studio-p10-deferred-smalls.md`
+  - `gander-studio-p11-v2-vision-rev` (CR) — `docs/agent-logs/CR/gander-studio-p11-v2-vision-rev.md`
   - `gander-studio-p2-agent-cards` (CR) — `docs/agent-logs/CR/gander-studio-p2-agent-cards-CR-002.md`
   - `gander-studio-p2-agent-cards-CR-003` (CR) — `docs/agent-logs/CR/gander-studio-p2-agent-cards-CR-003.md`
   - `gander-studio-p2-agent-cards` (CR) — `docs/agent-logs/CR/gander-studio-p2-agent-cards.md`
@@ -159,11 +168,17 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-sessions-2026-05-s2-list-edit` (CR) — `docs/agent-logs/CR/prog-studio-sessions-2026-05-s2-list-edit.md`
   - `prog-studio-sessions-2026-05-s3-analyze-rev1` (CR) — `docs/agent-logs/CR/prog-studio-sessions-2026-05-s3-analyze-rev1.md`
   - `prog-studio-sessions-2026-05-s3-analyze` (CR) — `docs/agent-logs/CR/prog-studio-sessions-2026-05-s3-analyze.md`
+  - `prog-studio-v2-2026-07-s1-data-layer-rev` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s1-data-layer-rev.md`
+  - `prog-studio-v2-2026-07-s1-data-layer` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s1-data-layer.md`
   - `prog-studio-vision-2026-06-s1-token-root-fix` (CR) — `docs/agent-logs/CR/prog-studio-vision-2026-06-s1-token-root-fix.md`
   - `prog-studio-vision-2026-06-s3` (CR) — `docs/agent-logs/CR/prog-studio-vision-2026-06-s3.md`
   - `prog-studio-vision-2026-06-s5-cleanup-docs` (CR) — `docs/agent-logs/CR/prog-studio-vision-2026-06-s5-cleanup-docs.md`
   - `s4-juice-pass` (CR) — `docs/agent-logs/CR/s4-juice-pass.md`
   - `gander-studio-p2-agent-cards-DS-001` (DS) — `docs/agent-logs/DS/gander-studio-p2-agent-cards-DS-001.md`
+  - `gander-studio-p10-deferred-smalls-003-gap2` (FE) — `docs/agent-logs/FE/gander-studio-p10-deferred-smalls-003-gap2.md`
+  - `gander-studio-p10-deferred-smalls-003` (FE) — `docs/agent-logs/FE/gander-studio-p10-deferred-smalls-003.md`
+  - `gander-studio-p10-deferred-smalls-006` (FE) — `docs/agent-logs/FE/gander-studio-p10-deferred-smalls-006.md`
+  - `gander-studio-p11-v2-vision-t4` (FE) — `docs/agent-logs/FE/gander-studio-p11-v2-vision-t4.md`
   - `gander-studio-p2-agent-cards-FE-001a` (FE) — `docs/agent-logs/FE/gander-studio-p2-agent-cards-FE-001a.md`
   - `gander-studio-p2-agent-cards-FE-001b` (FE) — `docs/agent-logs/FE/gander-studio-p2-agent-cards-FE-001b.md`
   - `gander-studio-p2-agent-cards-FE-002` (FE) — `docs/agent-logs/FE/gander-studio-p2-agent-cards-FE-002.md`
@@ -227,6 +242,8 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-sessions-2026-05-s2-list-edit-t6b-contrast-remediation` (FE) — `docs/agent-logs/FE/t6b-contrast-remediation.md`
   - `gander-meta-p1-hone-skill-rollout-rev` (PM) — `docs/agent-logs/PM/gander-meta-p1-hone-skill-rollout-rev.md`
   - `gander-studio-p1-materia-canvas` (PM) — `docs/agent-logs/PM/gander-studio-p1-materia-canvas.md`
+  - `gander-studio-p10-deferred-smalls` (PM) — `docs/agent-logs/PM/gander-studio-p10-deferred-smalls.md`
+  - `gander-studio-p11-v2-vision` (PM) — `docs/agent-logs/PM/gander-studio-p11-v2-vision.md`
   - `gander-studio-p2-agent-cards-rev1` (PM) — `docs/agent-logs/PM/gander-studio-p2-agent-cards-rev1.md`
   - `gander-studio-p2-agent-cards-rev2` (PM) — `docs/agent-logs/PM/gander-studio-p2-agent-cards-rev2.md`
   - `gander-studio-p2-agent-cards` (PM) — `docs/agent-logs/PM/gander-studio-p2-agent-cards.md`
@@ -245,10 +262,14 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-sessions-2026-05-s1-backend` (PM) — `docs/agent-logs/PM/prog-studio-sessions-2026-05-s1-backend.md`
   - `prog-studio-sessions-2026-05-s2-list-edit` (PM) — `docs/agent-logs/PM/prog-studio-sessions-2026-05-s2-list-edit.md`
   - `prog-studio-sessions-2026-05-s3-analyze` (PM) — `docs/agent-logs/PM/prog-studio-sessions-2026-05-s3-analyze.md`
+  - `prog-studio-v2-2026-07-s1-data-layer` (PM) — `docs/agent-logs/PM/prog-studio-v2-2026-07-s1-data-layer.md`
   - `prog-studio-vision-2026-06-s3` (PM) — `docs/agent-logs/PM/prog-studio-vision-2026-06-s3.md`
   - `prog-studio-vision-2026-06-s5` (PM) — `docs/agent-logs/PM/prog-studio-vision-2026-06-s5.md`
   - `gander-studio-p1-materia-canvas-RA-1742084400` (RA) — `docs/agent-logs/RA/gander-studio-p1-materia-canvas-RA-1742084400.md`
   - `gander-studio-p2-canvas-link-003-RA` (RA) — `docs/agent-logs/RA/gander-studio-p2-canvas-link-003-RA.md`
+  - `gander-studio-p11-v2-vision-t1` (ST) — `docs/agent-logs/ST/gander-studio-p11-v2-vision-t1.md`
+  - `gander-studio-p11-v2-vision-t2` (UI) — `docs/agent-logs/UI/gander-studio-p11-v2-vision-t2.md`
+  - `gander-studio-p11-v2-vision-t3` (UI) — `docs/agent-logs/UI/gander-studio-p11-v2-vision-t3.md`
   - `gander-studio-p2-canvas-link-002` (UI) — `docs/agent-logs/UI/gander-studio-p2-canvas-link-002.md`
   - `gander-studio-p9-sessions-feed-agentstats-t3` (UI) — `docs/agent-logs/UI/gander-studio-p9-sessions-feed-agentstats-t3.md`
   - `p5b-001-ui` (UI) — `docs/agent-logs/UI/p5b-001-ui.md`
@@ -258,19 +279,19 @@ interrupted task's files are included in the debt list above.
   - `s3-t1-ui-spec` (UI) — `docs/agent-logs/UI/s3-t1-ui-spec.md`
 
 ## Event Log Tail (last 10)
-*Source: agent-events-2026-06-30.jsonl*
+*Source: agent-events-2026-07-08.jsonl*
 
 ```
-{"seq":54,"ts":"2026-06-30T20:08:59Z","ev":"SPAWN","task_id":"gander-studio-p9-wallclock-format","agent_id":"ORC#0-direct","parent_id":"HUMAN_SESSION","edge_label":"format_wallclock_adaptive","expected_output":"adaptive formatWallClock + single-source + test","note":"trivial pure-fn display fix; ORC#0-direct (bg agents stall, workflow disproportionate for 2-file format change)"}
-{"seq":55,"ts":"2026-06-30T20:10:31Z","ev":"COMPLETE","task_id":"gander-studio-p9-wallclock-format","agent_id":"ORC#0-direct","parent_id":"HUMAN_SESSION","edge_label":"wallclock_done","note":"adaptive formatWallClock + single-source + 10 tests; lint/build/test pass; committed"}
-{"seq":56,"ts":"2026-06-30T20:10:39Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
-{"seq":57,"ts":"2026-06-30T20:20:06Z","ev":"POST_MORTEM","task_id":"gander-studio-p9-sessions-feed-agentstats-postmortem","agent_id":"ORC#0-direct","parent_id":"HUMAN_SESSION","edge_label":"after_action_written","output_files":["docs/after-actions/gander-studio-p9-sessions-feed-agentstats.md"],"note":"3-phase session after-action; key gaps G1 bg-agent stall (Workflow was only working path), G2 agent-log ceremony, G3 output-path drift, G4 auditor Bash. §9 proposes conditioning no-inline-fix on agent executability."}
-{"seq":58,"ts":"2026-06-30T20:20:17Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
-{"seq":59,"ts":"2026-06-30T20:20:38Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
-{"seq":60,"ts":"2026-06-30T20:21:03Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
-{"seq":61,"ts":"2026-06-30T20:22:26Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
-{"seq":62,"ts":"2026-06-30T20:22:34Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
-{"seq":63,"ts":"2026-06-30T20:34:01Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":12,"ts":"2026-07-08T00:41:09+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"RV#1","parent_id":"ORC#0","edge_label":"requirements_validation","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-REQVAL-1783471269.md","note":"Mode B spawned validator; 4 implementing packets"}
+{"seq":13,"ts":"2026-07-08T00:46:53+00:00","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s1-data-layer-t2","agent_id":"BE#2","parent_id":"ORC#0","edge_label":"completion_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-t2-BE-1783468376.md"],"note":"backfilled by ORC — hook miss across UTC day rollover; output confirmed on disk"}
+{"seq":14,"ts":"2026-07-08T00:46:53+00:00","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"RV#1","parent_id":"ORC#0","edge_label":"requirements_coverage_report","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-REQVAL-1783471269.md"],"note":"REQVAL COVERED 16/16; backfilled by ORC — hook miss (validator class); output confirmed on disk"}
+{"seq":15,"ts":"2026-07-08T00:46:53+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"AR#1","parent_id":"ORC#0","edge_label":"archive_entry","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-AR-1783471613.md"}
+{"seq":16,"ts":"2026-07-08T00:50:12Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"AR#1","parent_id":"ORC#0","edge_label":"archive_entry","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-AR-1783471613.md"],"auto_logged":true}
+{"seq":17,"ts":"2026-07-08T00:50:23+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"AA#1","parent_id":"ORC#0","edge_label":"after_action","expected_output":"docs/after-actions/prog-studio-v2-2026-07-s1-data-layer.md"}
+{"seq":18,"ts":"2026-07-08T00:59:47Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s1-data-layer","agent_id":"AA#1","parent_id":"ORC#0","edge_label":"completion_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-AA-1783471823.md"],"auto_logged":true}
+{"seq":19,"ts":"2026-07-08T01:00:16+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s1-data-layer-gap","agent_id":"AR#2","parent_id":"ORC#0","edge_label":"archive_correction","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-gap-AR-1783472416.md","note":"AA §6 G5: AR#1 fabricated two nonexistent paths in project_log entry — correction addendum"}
+{"seq":20,"ts":"2026-07-08T01:01:51Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s1-data-layer-gap","agent_id":"AR#2","parent_id":"ORC#0","edge_label":"archive_entry","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-gap-AR-1783472416.md"],"auto_logged":true}
+{"seq":21,"ts":"2026-07-08T01:02:56Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
 ```
 
 ---

@@ -120,3 +120,13 @@ corpus-wide sprint-id taxonomy, not ad-hoc suffix additions.
 ### DEFERRED-V2S1-2 — QualityStatSchema lacks a `reason` field
 
 N/A reasons currently route via dataQualityNotes; a typed `reason` on QualityStatSchema is a small s3-adjacent extension (REQVAL note 3).
+
+## Sprint: prog-studio-v2-2026-07-s2-party-shell (2026-07-08)
+
+### DEFERRED-V2S2-1 — 390px global header/main horizontal overflow (~16px, pre-existing)
+
+Header.tsx/ModeContent.tsx fixed 28px padding overflows the document at 390px width (t6 bounding-rect probe; PartyPage itself is flush). Route to s4 (nav/shell redesign scope).
+
+### DEFERRED-V2S2-2 — CLAUDE.md Known-Issues bundle baseline stale
+
+Says "~700KB"; reality: 1,025 kB pre-split, 756.80 kB after the s2 route-level code-split (PartyPage/GraphPage/ProgramDagPage/ComposePage now lazy). Update in s4's docs pass.
