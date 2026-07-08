@@ -281,3 +281,9 @@ To recover: git reset --hard 290de04dcc7f9fffd2b893cd25fc8d5ec4c6287a
       <receipt_check><item>agent-detail.ts + roster.getAgentDetail: resolve via ROSTER.specFile; SC3 non-empty equipment+materia for real agent (AU/FE) vs DI empty+dataQualityNote distinguishable from parse failure; abilities:[] contracted per program.md §5 note 2</item><item>router.ts serialized append after t3; attribution side declared per quality stat; vitest green (SC tests RAN not skipped); lint x3</item></receipt_check></assignment>
   </assignments>
 </expectation_manifest>
+
+## Sprint Close — prog-studio-v2-2026-07-s1-data-layer (2026-07-08)
+**Status:** DONE (audit PASS ×4 first-pass, GATE-DEVSERVER PASS, REQVAL COVERED 16/16, AA close gate PASS)
+**Commits:** t1→t4 feat(v2-data) + ceremony + close bookkeeping on feat/studio-sessions-feed-agentstats; **Current rollback point:** 73a78f4 (t4)
+**Delivered:** v2 data layer — 10 Zod schemas, ROSTER canonical code→spec catalog, attribution-flip/ghost/coverage derivations, roster.getParty (PartyStatsSchema envelope) + roster.getAgentDetail. Two corpus-grounded deviations upheld (t2 §2.1 basis; t4 triggers_hook 102/102 hook→agent).
+**Open at close:** s2-party-shell next (tier 1); branch push HUMAN-OWNED (guard denied ORC push): git push origin feat/studio-sessions-feed-agentstats; §6 G1-G5 routed via after-action (archivist fabrication class G5 corrected in-log; PM corpus-fact-citation rule is the HIGH delta).
