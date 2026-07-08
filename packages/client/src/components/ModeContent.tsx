@@ -27,6 +27,11 @@ const ComposePage = React.lazy(() => import('../pages/ComposePage'));
 const GraphPage = React.lazy(() => import('../pages/GraphPage'));
 const ProgramDagPage = React.lazy(() => import('../pages/ProgramDagPage'));
 
+// prog-studio-v2-2026-07-s3-drilldowns-t4a — LAZY FROM BIRTH (s2 AA §6 G1 recurring-pattern
+// guard): the new roster drill-down page must never enter the eager bundle, same pattern as the
+// four pages above.
+const AgentDetailPage = React.lazy(() => import('../pages/AgentDetailPage'));
+
 const PAGE_MAP: Record<AppMode, React.ComponentType> = {
   party: PartyPage,
   browse: BrowsePage,
@@ -38,6 +43,7 @@ const PAGE_MAP: Record<AppMode, React.ComponentType> = {
   progression: ProgressionPage,
   planning: PlanningPage,
   programs: ProgramDagPage,
+  'agent-detail': AgentDetailPage,
 };
 
 // Suspense fallback for the lazy-loaded chunk gap. Reuses the shimmer-box loading treatment
