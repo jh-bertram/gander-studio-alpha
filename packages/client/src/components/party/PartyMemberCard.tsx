@@ -179,6 +179,36 @@ export default function PartyMemberCard({ member, onSelect }: PartyMemberCardPro
         </div>
       </PopoverTrigger>
       <PopoverContent
+        // t3-rem fix (two parts, both required — verified against @base-ui/react source):
+        //
+        // 1. `initialFocus={false}` ("Do not move focus") stops base-ui's default open-time
+        //    focus-management effect (FloatingFocusManager) from programmatically moving DOM
+        //    focus into the popup on open. Without it, focus moving off the card trigger fired
+        //    the trigger's onBlur (isPeeking=false, popover closes), which returned focus to the
+        //    trigger (onFocus refires, isPeeking=true again) — a sustained self-driven open/close
+        //    oscillation that made keyboard Tab+Enter selection non-deterministic
+        //    (remediation_request, prog-studio-v2-2026-07-s2-party-shell-t3-rem).
+        //
+        // 2. `role="presentation"` removes base-ui's hardcoded `role="dialog"` default (Popover
+        //    always applies it internally via floating-ui-react's `useRole()`, with no public
+        //    prop to select a lighter role — confirmed by reading
+        //    node_modules/@base-ui/react/popover/root/PopoverRoot.js). That default role, PLUS
+        //    the popup having zero interactive children, makes base-ui's own
+        //    FloatingFocusManager coerce `tabindex="0"` onto the popup div (see
+        //    `handleTabIndex()` in floating-ui-react's FloatingFocusManager.js — it grants a
+        //    tabindex specifically when `role` contains "dialog"), turning the popup into an
+        //    unwanted, content-free native Tab stop between this card and the next one (caught by
+        //    this suite's own "keyboard tab order" regression test, which asserts Tab from one
+        //    card lands on the very next card with no intermediate stop). `role="presentation"`
+        //    is appropriate here independent of the tab-order mechanics too: the peek is a purely
+        //    decorative restatement of values already exposed via the card's own comprehensive
+        //    aria-label (`buildCardAriaLabel`) — design-spec <state name="card-hover"> confirms
+        //    it carries zero interactive elements, so it needs no accessibility-tree presence of
+        //    its own. `BaseUIComponentProps<'div', ...>` documents `PopoverPopup` as a consumer-
+        //    overridable `<div>`, so overriding `role` here is a supported customization path,
+        //    not an internals hack.
+        initialFocus={false}
+        role="presentation"
         style={{
           background: 'var(--sfm)',
           border: '1px solid var(--bdb)',
