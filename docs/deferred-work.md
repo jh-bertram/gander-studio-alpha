@@ -110,3 +110,13 @@ corpus-wide sprint-id taxonomy, not ad-hoc suffix additions.
 **What:** The 5 pre-existing tests in `packages/client/tests/e2e/s3-t3-timeline.spec.ts` pin fixture sessions dated 2026-05-06 / late-May. `session.list` returns a hardcoded `limit: 50` date-descending window, so as newer sessions accumulate the pinned fixtures fall out of the list and the tests fail against a live dev environment — a data-staleness defect, NOT a regression from the p10 tooltip change (the 4 new p10 a11y tests pass green in the same file, same run).
 **Why deferred:** Out of scope for packet 003-gap2 (hard constraint: no src edits); pre-existing.
 **Schedule as:** Small BE/FE packet — either (a) make the pinned fixtures discoverable via a stable query (fetch by session id instead of scanning the list), (b) raise/parameterize the limit for test environments, or (c) refresh the pinned fixture ids. Decide against how the suite is meant to age.
+
+## Sprint: prog-studio-v2-2026-07-s1-data-layer (2026-07-08)
+
+### DEFERRED-V2S1-1 — No durable workflow-usage ledger (abilities always empty)
+
+`AgentDetailSchema.abilities` (workflows) is contracted empty-with-note (program.md §5 note 2): base-plan portability makes workflow orchestration throwaway scaffolding, so no durable per-agent workflow-usage source exists. Candidate fix: a workflow-usage ledger appended at Workflow-accelerant close (same schema-extension family as DEFERRED-P9-1). Until then s3 renders an honest "no recorded abilities" state.
+
+### DEFERRED-V2S1-2 — QualityStatSchema lacks a `reason` field
+
+N/A reasons currently route via dataQualityNotes; a typed `reason` on QualityStatSchema is a small s3-adjacent extension (REQVAL note 3).

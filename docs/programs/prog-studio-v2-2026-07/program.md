@@ -58,6 +58,11 @@ Visualization: [program-map.html](program-map.html)
 | s2-to-s4-nav-shell | s2-party-shell | s4-retirement | v2 submenu rail component | React component + navigation constants | The rail is the sole v2 nav surface; s4 deletes BottomTabBar only after the rail covers Roster/Sessions/Progression/Programs routes |
 | s3-to-s4-absorption-proof | s3-drilldowns | s4-retirement | s3 ui_packet + e2e specs | Playwright Tier-2 specs green | Browse/Graph/Edit value demonstrably live in drill-downs (asset browsing, relationship layer, spec-revision action) before s4 cuts those surfaces |
 
+### Seam-interpretation notes (ORC-recorded, 2026-07-07 — s1 Critic round)
+
+1. **s1-to-s2-party-schema:** `roster.getParty` returns the `PartyStatsSchema` ENVELOPE `{members: PartyMember[], diagnostics, activityAnchor}` — not a bare array. The envelope carries the invalid-line diagnostics the silent-empty invariant requires (mirrors the `session.list` `{sessions, skipped}` precedent). s2 consumes `members` for cards and `diagnostics` for a data-quality affordance. The seam's "PartyMember[] sorted by activity recency" describes `members`' content and order.
+2. **s1-to-s3-agentdetail-schema:** `abilities` (workflows) has NO durable per-agent data source (base-plan portability makes workflow orchestration throwaway scaffolding). s1 ships `abilities: []` plus a surfaced `dataQualityNote`; s3 must render an honest "no recorded abilities" state, not hide the panel. A durable workflow-usage ledger is a candidate future schema extension (same family as DEFERRED-P9-1) — record in deferred-work at s1 close.
+
 ## 6. Success Criteria (program level)
 
 1. Default route renders the party screen with REAL corpus-backed stats (no sample-data hardcode) for the active roster; console-clean; AA-compliant per the spec's contrast_pairs.

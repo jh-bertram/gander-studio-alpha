@@ -253,3 +253,31 @@ To recover: git reset --hard f2e7df0a033667081056ef0fc1eacfdb387ef237
 To recover pre-sprint state: git reset --hard f2e7df0a033667081056ef0fc1eacfdb387ef237
 **Deliverables:** docs/v2-vision/{session-data-inventory,v1-critique,v2-vision,v2-design-spec}.md + mockup/party-screen.html
 **Open at close:** human ratification (v2 direction + palette); t3 states-vs-contrast_pairs advisory; card-hover Popover spec-only (eventual React build); DEFERRED-P9-1 tokens gap blocks real cost/MP stat; §6 G1-G5 routed via after-action (pm-preflight symlink-anchor fix is HIGH).
+
+## Agent Remits (prog-studio-v2-2026-07-s1-data-layer — delta over p11 extraction)
+<agent_remits source="extract-agent-remits.sh at 2026-07-07T23:20Z; pm/critic/statistician/frontend/code-auditor remits unchanged from p11 section above">
+  <agent name="backend-engineer" version="(live)">Domain Boundaries: BE/FE split — typed Zod schema is the stable boundary; never prescribe UI structure. BE/DS split — never write migrations; describe entities via data_request (N/A this sprint: file parsers only, no DB). TypeScript for all server logic, Zod at every API boundary.</agent>
+</agent_remits>
+
+## Rollback Point
+commit: 290de04dcc7f9fffd2b893cd25fc8d5ec4c6287a
+recorded: 2026-07-07T23:44:54+00:00
+task_id: prog-studio-v2-2026-07-s1-data-layer
+
+To recover: git reset --hard 290de04dcc7f9fffd2b893cd25fc8d5ec4c6287a
+
+<expectation_manifest>
+  <sprint_id>prog-studio-v2-2026-07-s1-data-layer</sprint_id>
+  <generated>2026-07-07T23:44:54+00:00</generated>
+  <plan_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-rev-PM-1783467209.md (CR#2 CRITIQUE_PASS)</plan_source>
+  <assignments>
+    <assignment><task_id>prog-studio-v2-2026-07-s1-data-layer-t1</task_id><agent>BE#1</agent><wave>0</wave><expected_tag>completion_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-t1-BE-*.md</expected_file><blocks>t2,t3,t4</blocks>
+      <receipt_check><item>schemas.ts: PartyMember/PartyStats/AgentDetail (+subs) exported, z.infer types, no existing schema modified</item><item>agent-role.ts: ROSTER {code,roleCategory,materiaColorKey,specFile} — 12 verbatim spec filenames + DI null + canonical-mapping maintenance note</item><item>vitest green incl. new SC5 spec-file resolution (mock fixture + live-glob, RAN not skipped); lint x3 clean</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s1-data-layer-t2</task_id><agent>BE#2</agent><wave>1</wave><expected_tag>completion_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-t2-BE-*.md</expected_file><blocks>t3,t4</blocks>
+      <receipt_check><item>event-log-parser additive extension + party-stats.ts: attribution flip (gate-id vs implementer fixtures BOTH directions + FE#1+FE#2→FE grouping), ghost rate, event-type coverage, invalid-line diagnostics (counted+surfaced, absent≠zero)</item><item>vitest green; lint x3 clean; no client changes</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s1-data-layer-t3</task_id><agent>BE#3</agent><wave>2</wave><expected_tag>completion_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-t3-BE-*.md</expected_file><blocks>t4</blocks>
+      <receipt_check><item>party-roster.ts + roster.getParty returning PartyStatsSchema envelope {members sorted by activity recency, diagnostics, activityAnchor} per program.md §5 note 1</item><item>tokens/cost = projected placeholder w/ DEFERRED-P9-1 citation at definition site; vitest green; lint x3</item></receipt_check></assignment>
+    <assignment><task_id>prog-studio-v2-2026-07-s1-data-layer-t4</task_id><agent>BE#4</agent><wave>3</wave><expected_tag>completion_packet</expected_tag><expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-t4-BE-*.md</expected_file><blocks>GATE-DEVSERVER</blocks>
+      <receipt_check><item>agent-detail.ts + roster.getAgentDetail: resolve via ROSTER.specFile; SC3 non-empty equipment+materia for real agent (AU/FE) vs DI empty+dataQualityNote distinguishable from parse failure; abilities:[] contracted per program.md §5 note 2</item><item>router.ts serialized append after t3; attribution side declared per quality stat; vitest green (SC tests RAN not skipped); lint x3</item></receipt_check></assignment>
+  </assignments>
+</expectation_manifest>

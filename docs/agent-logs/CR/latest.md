@@ -1,18 +1,18 @@
-# CR latest — gander-studio-p10-deferred-smalls (round 2, rev1)
+# CR latest → prog-studio-v2-2026-07-s1-data-layer-rev (CR#2)
 
-Verdict: PASS. Stage 3 COMPLETE.
-All CR#1 items resolved by rev1:
-- BLOCKER (006 SC#4): fixed via CR option (a) — live-site update + DR-D historical-record exception (containment check). No self-defeating pair.
-- W1 (003 SC#4): discriminating feedbackLoops/auditOutcome field + runtime render duty.
-- W2 (003 stale-closure): hard constraint CHANGE-4 + SC#6; VERIFIED agentMarkers at line 986 in scope at call site.
-- W3 (003 a11y): SC#8 runtime a11y-auditor duty added.
-- W4 (006 SC#2): re-anchored on 5.22:1/resolved + case-insensitive below-aa; VERIFIED "below AA" only at line 357.
-No new defects. Output: .claude/tasks/outputs/gander-studio-p10-deferred-smalls-cr2-CR-1783019996.md
-
-(Round 1 verdict was BLOCK, CR-1783019352 — superseded by this PASS.)
+Stage 3 COMPLETE. Verdict: CRITIQUE_PASS.
+- CR#1 BLOCKER (code→spec mapping) DISCHARGED via ROSTER.specFile — 12/12 spec filenames verified on
+  disk under ${GANDER_ROOT}/.claude/agents/; contradictory clause deleted; t1 SC5 + t4 SC3 added.
+  Does NOT survive → no same-blocker-twice escalation.
+- WARNING 1 (getParty envelope) DISCHARGED — ORC-recorded program.md §5 note 1; t3 cites as primary.
+- WARNING 2 (abilities empty) DISCHARGED — ORC-recorded §5 note 2; deferred-work item in risk_flags.
+- t2 multi-instance fixture sound; renumbering + manifest receipt_checks consistent; sc-precheck 0 findings.
+- Residual audit-risk (audit_risk_forecast only): GANDER_ROOT-unset skip false-pass — already PM-flagged +
+  ORC-mitigated; auditor must confirm t1 SC5 / t4 SC3 RAN (not skipped).
+Output: .claude/tasks/outputs/prog-studio-v2-2026-07-s1-data-layer-rev-CR-1783467644.md
 
 ## [STAGE 3] INTERRUPTED
-- **At:** 2026-07-07T21:28:56.312675+00:00
+- **At:** 2026-07-07T23:44:09.717073+00:00
 - **Detected by:** agent-stop-checkpoint hook (session ended without Stage 3)
-- **Action required:** Re-dispatch CR#1 (canonical: CR#1) for task `gander-studio-p11-v2-vision`.
+- **Action required:** Re-dispatch CR#2 (canonical: CR#2) for task `prog-studio-v2-2026-07-s1-data-layer-rev`.
   Read `docs/agent-logs/CR/latest.md` before starting — skip completed checkpoints.
