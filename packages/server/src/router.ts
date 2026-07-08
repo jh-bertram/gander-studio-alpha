@@ -21,6 +21,8 @@ import {
   PlanningListOutputSchema,
   ProgramGetDagInputSchema,
   ProgramGetDagOutputSchema,
+  PartyStatsSchema,
+  AgentDetailSchema,
   type ConnectivityGraph,
   type ProgressionEntry,
   type SessionStats,
@@ -41,6 +43,8 @@ import { parseProgramDags } from './parsers/program-dag-parser.js';
 import { fileURLToPath } from 'node:url';
 import { synthesizeSessions } from './parsers/session-synthesis.js';
 import { sprintRoot } from './session-slug-match.js';
+import { assembleParty } from './parsers/party-roster.js';
+import { assembleAgentDetail } from './parsers/agent-detail.js';
 
 const t = initTRPC.create();
 
@@ -777,6 +781,36 @@ const progressionRouter = t.router({
 });
 
 // ---------------------------------------------------------------------------
+// Roster router — v2 party/agent-detail contract (prog-studio-v2-2026-07).
+// getParty (t3) ships here; getAgentDetail (t4) appends to this SAME router.
+// ---------------------------------------------------------------------------
+
+const rosterRouter = t.router({
+  getParty: t.procedure
+    .output(PartyStatsSchema)
+    .query(async () => {
+      return assembleParty(SESSIONS_SOURCE_DIRS.map((dir) => path.join(dir, 'docs', 'events')));
+    }),
+  getAgentDetail: t.procedure
+    .input(z.object({ code: z.string() }))
+    .output(AgentDetailSchema)
+    .query(async ({ input }) => {
+      try {
+        return await assembleAgentDetail(
+          input.code,
+          GANDER_ROOT,
+          SESSIONS_SOURCE_DIRS.map((dir) => path.join(dir, 'docs', 'events')),
+        );
+      } catch (err) {
+        if (err instanceof Error && err.message.startsWith('Unknown role code')) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Unknown role code' });
+        }
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Operation failed' });
+      }
+    }),
+});
+
+// ---------------------------------------------------------------------------
 // App router
 // ---------------------------------------------------------------------------
 
@@ -792,6 +826,7 @@ export const appRouter = t.router({
   progression: progressionRouter,
   planning: planningRouter,
   program: programRouter,
+  roster: rosterRouter,
 });
 
 export type AppRouter = typeof appRouter;
