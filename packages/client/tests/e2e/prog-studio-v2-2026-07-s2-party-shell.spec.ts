@@ -236,9 +236,11 @@ test('whole-card is keyboard-operable: Tab+Enter triggers selection deterministi
   // Deterministic Tab+Enter selection after the sustained window.
   await page.keyboard.press('Enter');
 
-  // Component mechanism: onSelect -> setSelectedAgentCode(code) + setActiveMode('browse').
-  // The real DOM consequence is the Browse surface replacing the party surface.
-  await expect(page.getByTestId('browse-page')).toBeVisible({ timeout: 8000 });
+  // Component mechanism (prog-studio-v2-2026-07-s3-drilldowns-t4b, AUTHORIZED cross-sprint
+  // update — the only s2-spec destination changed here): onSelect -> setSelectedAgentCode(code) +
+  // setActiveMode('agent-detail'). The real DOM consequence is the new agent-detail drill-down
+  // page (s3) replacing the party surface, not Browse.
+  await expect(page.getByTestId('agent-detail-page')).toBeVisible({ timeout: 8000 });
 });
 
 // ================================================================================
@@ -302,26 +304,34 @@ test.describe('SC4 — rail navigation (KEEP destinations)', () => {
     await expect(getProgramsMarker(page).first()).toBeVisible({ timeout: 15000 });
   });
 
-  test('rail: Roster (interim) click lands on the Browse destination marker', async ({ page }) => {
+  // AUTHORIZED cross-sprint update (prog-studio-v2-2026-07-s3-drilldowns-t4b): Roster now maps to
+  // 'party' (the party/roster home), not the interim 'browse' target — s3's nav-contract
+  // resolution. Clicking Roster from the rail therefore lands back on the party surface itself.
+  test('rail: Roster click lands on the party-home destination marker', async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     await gotoParty(page);
 
     await getRailNav(page).getByRole('button', { name: 'Roster' }).click();
-    await expect(page.getByTestId('browse-page')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('party-page')).toBeVisible({ timeout: 10000 });
   });
 
-  test('rail: aria-current is absent on the party surface (R-3 known consequence — see ui_packet)', async ({
+  // AUTHORIZED cross-sprint update (prog-studio-v2-2026-07-s3-drilldowns-t4b/t5, FIX 1 from CR#2):
+  // this invariant is REWRITTEN, not merely re-pointed. The old assertion held that
+  // activeMode === 'party' never matches a RAIL_ITEMS mode, so no rail item could ever read
+  // aria-current="page" while on the party surface. That premise is now FALSE: RAIL_ITEMS' Roster
+  // entry maps to mode:'party' (see the comment above), so SubmenuRail's existing, UNMODIFIED
+  // isActive -> aria-current="page" logic (SubmenuRail.tsx :33/:40) now legitimately marks Roster
+  // as current the moment the party surface is showing — which is semantically CORRECT (you ARE
+  // on the roster/party home). This test now asserts that TRUE current-render state.
+  test('rail: Roster carries aria-current="page" on the party surface (intended nav side-effect of the Roster->party re-point)', async ({
     page,
   }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     await gotoParty(page);
 
-    // activeMode === 'party' never matches a RAIL_ITEMS mode (Roster/Sessions/Progression/
-    // Programs), so no rail item is ever marked aria-current="page" while the rail itself is
-    // mounted (the rail unmounts with PartyPage the instant a KEEP click navigates away). This
-    // is a documented, low-severity consequence of the Critic-ratified R-3 page-local rail
-    // scoping — asserted here as the CORRECT current-render state, not a defect to fix.
-    await expect(getRailNav(page).locator('[aria-current="page"]')).toHaveCount(0);
+    const current = getRailNav(page).locator('[aria-current="page"]');
+    await expect(current).toHaveCount(1);
+    await expect(current).toHaveAccessibleName('Roster');
   });
 });
 
