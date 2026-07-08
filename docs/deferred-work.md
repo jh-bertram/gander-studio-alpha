@@ -130,3 +130,13 @@ Header.tsx/ModeContent.tsx fixed 28px padding overflows the document at 390px wi
 ### DEFERRED-V2S2-2 — CLAUDE.md Known-Issues bundle baseline stale
 
 Says "~700KB"; reality: 1,025 kB pre-split, 756.80 kB after the s2 route-level code-split (PartyPage/GraphPage/ProgramDagPage/ComposePage now lazy). Update in s4's docs pass.
+
+## Sprint: prog-studio-v2-2026-07-s3-drilldowns (2026-07-08)
+
+### DEFERRED-V2S3-1 — Retire ROSTER_AGENT_NAME_BY_CODE via schema extension
+
+AgentDetailSchema lacks the frontmatter agent name ReviseSpecAction targets; t4a ships a sanctioned 12-entry client map (AUD#4). BE follow-up: add agentName/specFile to AgentDetailSchema + assembleAgentDetail, then delete the client map.
+
+### DEFERRED-V2S3-2 — contrast_pairs row for --mg on --sfh
+
+4.85:1 (numerically AA) but unrowed; add the row to v2-design-spec.md's table before any text ever uses that pair (AUD#3 advisory; currently accent-only).
