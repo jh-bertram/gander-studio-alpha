@@ -195,13 +195,16 @@ export default function PartyPage() {
   const state = derivePartyGridState({ isLoading, isError, members: data?.members });
 
   function handleSelect(code: string) {
-    // INTERIM (amendment R-4): routes to today's agent-catalog surface until s3 lands the
-    // dedicated roster/agent-detail mode. The store contract (setSelectedAgentCode) is the
-    // real s3 seam deliverable and is set correctly regardless of the interim destination.
+    // s3 nav-contract resolution (t4b): routes to the dedicated agent-detail drill-down,
+    // registered as an AppMode + lazy PAGE_MAP entry by t4a. setSelectedAgentCode remains the
+    // seam that scopes AgentDetailPage's getAgentDetail query to the clicked card.
     setSelectedAgentCode(code);
-    setActiveMode('browse');
+    setActiveMode('agent-detail');
   }
 
+  // TODO(s4-cut): re-point "View Full Roster" when BrowsePage is deleted — 'browse' leaves the
+  // AppMode union, so this must retarget the 13-role roster catalog (or 'party'). Deferred-work
+  // pointer: prog-studio-v2 s4 Browse-cut packet. (nav-contract retain decision, s3.)
   function handleViewRoster() {
     setActiveMode('browse');
   }

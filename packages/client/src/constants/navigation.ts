@@ -27,9 +27,10 @@ interface RailItemDef {
 
 // s2-to-s4-nav-shell: SubmenuRail item constants (t3 builds the rail component).
 export const RAIL_ITEMS: RailItemDef[] = [
-  // INTERIM: Roster maps to 'browse' (today's agent-catalog surface) until s3
-  // introduces a dedicated roster/agent-detail mode.
-  { label: 'Roster', mode: 'browse', icon: Users },
+  // s3 nav-contract resolution (t4b): Roster now maps to 'party' — the party-home affordance.
+  // This is the intended target; SubmenuRail's isActive→aria-current logic legitimately marks
+  // Roster as current while on the party home (human-ratified aria-current-at-home semantic).
+  { label: 'Roster', mode: 'party', icon: Users },
   { label: 'Sessions', mode: 'sessions', icon: FileClock },
   { label: 'Progression', mode: 'progression', icon: TrendingUp },
   { label: 'Programs', mode: 'programs', icon: GitBranch },
