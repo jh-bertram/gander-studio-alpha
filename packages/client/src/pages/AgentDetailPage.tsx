@@ -241,7 +241,13 @@ export default function AgentDetailPage() {
         <>
           <AgentDetailHeader detail={detailQuery.data} />
 
-          <div className="flex flex-col gap-4">
+          {/* prog-studio-p12-detail-statbox-grid — human visual-review amendment: the four boxed
+              drilldown panels (Materia, Equipment, Abilities, Relationship) now sit two-up on
+              medium+ viewports so two statboxes fit side-by-side per row, single column below
+              the `md` breakpoint (390px overflow deferral, DEFERRED per s4 — this does not widen
+              that gap). ReviseSpecAction and DataQualityNotes stay full-width siblings below this
+              grid (action row / footnote strip, not statboxes). */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <MateriaPanel
               skills={detailQuery.data.materia.skills}
               hooks={detailQuery.data.materia.hooks}
@@ -249,9 +255,8 @@ export default function AgentDetailPage() {
             />
             <EquipmentPanel equipment={detailQuery.data.equipment} dataQualityNotes={detailQuery.data.dataQualityNotes} />
             <AbilitiesPanel abilities={detailQuery.data.abilities} dataQualityNotes={detailQuery.data.dataQualityNotes} />
+            <RelationshipPanel code={detailQuery.data.code} relationships={detailQuery.data.relationships} />
           </div>
-
-          <RelationshipPanel code={detailQuery.data.code} relationships={detailQuery.data.relationships} />
 
           <div>
             {reviseAgentName ? (
