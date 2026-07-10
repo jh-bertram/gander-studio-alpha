@@ -5,7 +5,7 @@ type: project-doc
 # Session Checkpoint
 
 **Project:** gander-studio-alpha
-**Updated:** 2026-07-08 05:30:26 UTC (auto-rebuilt by session-end-checkpoint hook)
+**Updated:** 2026-07-10 18:08:46 UTC (auto-rebuilt by session-end-checkpoint hook)
 
 ## ⚠ STALE — UNCOMMITTED DEBT PRESENT
 
@@ -22,12 +22,13 @@ before this checkpoint is treated as fresh. Non-ceremony files must NOT be
 auto-committed by this hook — manual ORC commit-packet is required.
 
 ## Agent Log Summary
-*Scanned at 2026-07-08T05:30:26.873508+00:00*
+*Scanned at 2026-07-10T18:08:46.166064+00:00*
 
-### INTERRUPTED (4 task(s))
+### INTERRUPTED (5 task(s))
 
 These agents have a [STAGE 3] INTERRUPTED marker and require re-dispatch:
 
+  - `prog-studio-v2-2026-07-s3-drilldowns-gap` (AR) — `docs/agent-logs/AR/prog-studio-v2-2026-07-s3-drilldowns-gap.md`
   - `gander-studio-p8-sessions-graph-fix` (BE) — `docs/agent-logs/BE/gander-studio-p8-sessions-graph-fix.md`
   - `prog-studio-v2-2026-07-s3-drilldowns-rev2` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s3-drilldowns-rev2.md`
   - `prog-studio-v2-2026-07-s3-drilldowns` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s3-drilldowns.md`
@@ -43,7 +44,7 @@ interrupted task's files are included in the debt list above.
   - `gander-studio-p4-proximity-edge-hardening-rev2` (CR) — `docs/agent-logs/CR/gander-studio-p4-proximity-edge-hardening-rev2.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (CR) — `docs/agent-logs/CR/prog-studio-vision-2026-06-s2-fix-broken-surfaces.md`
 
-### CLOSED (255 task(s) — Stage-3 COMPLETE or drained)
+### CLOSED (271 task(s) — Stage-3 COMPLETE or drained)
 
   - `gander-studio-p10-deferred-smalls` (AR) — `docs/agent-logs/AR/gander-studio-p10-deferred-smalls.md`
   - `gander-studio-p2-agent-cards-postmortem` (AR) — `docs/agent-logs/AR/gander-studio-p2-agent-cards-postmortem-checkpoint.md`
@@ -116,6 +117,14 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-v2-2026-07-s2-party-shell-t5-reaudit` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s2-party-shell-t5-reaudit.md`
   - `prog-studio-v2-2026-07-s2-party-shell-t5` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s2-party-shell-t5.md`
   - `prog-studio-v2-2026-07-s2-party-shell-t6` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s2-party-shell-t6.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t1` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t1.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t2` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t2.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t3-rem` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t3-rem.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t3-rem2` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t3-rem2.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t3` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t3.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t4a` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t4a.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t4b` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t4b.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t5` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t5.md`
   - `prog-studio-vision-2026-06-s1-token-root-fix` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s1-token-root-fix.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s2-fix-broken-surfaces.md`
   - `prog-studio-vision-2026-06-s4-juice-pass` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s4-juice-pass.md`
@@ -237,6 +246,14 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-v2-2026-07-s2-party-shell-t5-rem2` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t5-rem2.md`
   - `prog-studio-v2-2026-07-s2-t5` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t5.md`
   - `prog-studio-v2-2026-07-s2-party-shell-t6` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s2-party-shell-t6.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t1` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t1.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t2` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t2.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t3-rem` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t3-rem.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t3-rem2` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t3-rem2.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t3` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t3.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t4a` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t4a.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t4b` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t4b.md`
+  - `prog-studio-v2-2026-07-s3-drilldowns-t5` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t5.md`
   - `prog-studio-vision-2026-06-s1-FE-rem2` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s1-FE-rem2.md`
   - `prog-studio-vision-2026-06-s1-p2p3p4` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s1-p2p3p4.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s2-FE-client.md`
@@ -302,19 +319,11 @@ interrupted task's files are included in the debt list above.
   - `s3-t1-ui-spec` (UI) — `docs/agent-logs/UI/s3-t1-ui-spec.md`
 
 ## Event Log Tail (last 10)
-*Source: agent-events-2026-07-08.jsonl*
+*Source: agent-events-2026-07-10.jsonl*
 
 ```
-{"seq":77,"ts":"2026-07-08T05:08:43Z","ev":"CRITIQUE_BLOCK","task_id":"prog-studio-v2-2026-07-s3-drilldowns","agent_id":"CR#1","parent_id":"ORC#0","edge_label":"plan_critique","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-CR-1783486900.md"],"auto_logged":true}
-{"seq":78,"ts":"2026-07-08T05:09:03+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev","agent_id":"PM#0","parent_id":"ORC#0","edge_label":"revision_request","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev-PM-1783487343.md","note":"CR#1 BLOCK: third browse target (handleViewRoster CTA) uncounted — t4b SC unsatisfiable"}
-{"seq":79,"ts":"2026-07-08T05:16:35Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev","agent_id":"PM#0","parent_id":"ORC#0","edge_label":"task_decomposition","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev-PM-1783487343.md"],"auto_logged":true}
-{"seq":80,"ts":"2026-07-08T05:16:48+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev","agent_id":"CR#2","parent_id":"ORC#0","edge_label":"plan_critique","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev-CR-1783487808.md"}
-{"seq":81,"ts":"2026-07-08T05:20:50Z","ev":"CRITIQUE_BLOCK","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev","agent_id":"CR#2","parent_id":"ORC#0","edge_label":"plan_critique","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev-CR-1783487808.md"],"auto_logged":true}
-{"seq":82,"ts":"2026-07-08T05:21:07+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev2","agent_id":"PM#0","parent_id":"ORC#0","edge_label":"revision_request","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev2-PM-1783488067.md","note":"CR#2 NEW blocker (not same-blocker-twice): Roster->party re-point breaks s2 aria-current invariant test — authorize third s2-spec touch"}
-{"seq":83,"ts":"2026-07-08T05:27:17Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev2","agent_id":"PM#0","parent_id":"ORC#0","edge_label":"task_decomposition","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev2-PM-1783488067.md"],"auto_logged":true}
-{"seq":84,"ts":"2026-07-08T05:27:28+00:00","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev2","agent_id":"CR#3","parent_id":"ORC#0","edge_label":"plan_critique","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev2-CR-1783488448.md"}
-{"seq":85,"ts":"2026-07-08T05:29:55Z","ev":"CRITIQUE_PASS","task_id":"prog-studio-v2-2026-07-s3-drilldowns-rev2","agent_id":"CR#3","parent_id":"ORC#0","edge_label":"plan_critique","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev2-CR-1783488448.md"],"auto_logged":true}
-{"seq":86,"ts":"2026-07-08T05:30:26Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":1,"ts":"2026-07-10T18:08:05Z","ev":"RESUME","task_id":"session-resume","agent_id":"ORC#0","parent_id":"HU","edge_label":"session_start","note":"Resumed from docs/SESSION-CHECKPOINT.md (2026-07-08, prog-studio-v2-2026-07-s3-drilldowns DONE-PENDING-4.5); status query, gap-window ghost sweep clean"}
+{"seq":2,"ts":"2026-07-10T18:08:46Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
 ```
 
 ---
