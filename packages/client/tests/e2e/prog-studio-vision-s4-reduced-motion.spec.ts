@@ -108,8 +108,12 @@ test.describe('prefers-reduced-motion suppression — s4 animation classes', () 
 
     await page.goto(BASE_URL);
 
-    // Navigate to Progression
-    const progressionTab = page.getByRole('tab', { name: /progression/i });
+    // Navigate to Progression via the SubmenuRail (MIGRATED s4 FE-1b: role="navigation",
+    // aria-label "Main navigation", hoisted global by FE-1a — the 9-tab v1 BottomTabBar
+    // role="tab" is retired).
+    const progressionTab = page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByRole('button', { name: /progression/i });
     await expect(progressionTab).toBeVisible({ timeout: 8000 });
     await progressionTab.click();
 

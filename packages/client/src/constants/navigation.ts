@@ -1,23 +1,10 @@
 import { Users, FileClock, TrendingUp, GitBranch, type LucideIcon } from 'lucide-react';
 import type { AppMode } from '../store/ui-store';
 
-interface NavItemDef {
-  mode: AppMode;
-  label: string;
-  dotColor: string;
-}
-
-export const NAV_ITEMS: NavItemDef[] = [
-  { mode: 'browse', label: 'Browse', dotColor: 'var(--mt)' },
-  { mode: 'compose', label: 'Compose', dotColor: 'var(--my)' },
-  { mode: 'edit', label: 'Edit', dotColor: 'var(--mg)' },
-  { mode: 'export', label: 'Export', dotColor: 'var(--mb)' },
-  { mode: 'sessions', label: 'Sessions', dotColor: 'var(--mp)' },
-  { mode: 'graph', label: 'Graph', dotColor: 'var(--mr)' },
-  { mode: 'progression', label: 'Progression', dotColor: 'var(--mo)' },
-  { mode: 'planning', label: 'Planning', dotColor: 'var(--my)' },
-  { mode: 'programs', label: 'Programs', dotColor: 'var(--cgr)' },
-];
+// s4-retirement (FE-1b): the 9-tab v1 nav config is retired. RAIL_ITEMS
+// (below) is the sole nav-destination source of truth, consumed by both SubmenuRail (>=640px)
+// and the repurposed BottomTabBar <640px fold (components/BottomTabBar.tsx) — byte-identical,
+// unchanged by this retirement.
 
 interface RailItemDef {
   label: string;

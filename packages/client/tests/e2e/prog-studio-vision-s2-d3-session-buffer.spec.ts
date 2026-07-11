@@ -25,12 +25,17 @@ import { test, expect } from '@playwright/test';
 
 const BASE = 'http://localhost:5173';
 
+// MIGRATED (s4 FE-1b): nav via the SubmenuRail (role="navigation", aria-label "Main
+// navigation", hoisted global by FE-1a) — the 9-tab v1 BottomTabBar (role="tab") that this
+// helper previously navigated via is retired.
 async function navigateToSessions(page: import('@playwright/test').Page): Promise<void> {
   await page.goto(BASE);
   await page.waitForLoadState('networkidle', { timeout: 15000 });
-  // Use role="tab" selector to target the BottomTabBar tab button specifically,
-  // avoiding false matches on <p> elements that also contain "Sessions" text.
-  const sessionsNav = page.locator('[role="tab"]', { hasText: /^Sessions$/i }).first();
+  // Use the rail's role="button" selector, scoped to the "Main navigation" landmark to avoid
+  // false matches on <p> elements that also contain "Sessions" text.
+  const sessionsNav = page
+    .getByRole('navigation', { name: 'Main navigation' })
+    .getByRole('button', { name: /^Sessions$/i });
   const hasSessions = await sessionsNav.isVisible({ timeout: 3000 }).catch(() => false);
   if (hasSessions) {
     await sessionsNav.click();

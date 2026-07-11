@@ -10,8 +10,16 @@
  * CRITICAL: Uses /programs/i for tab selection — NOT /graph/i — to avoid C1 selector collision.
  * aria-label "Program dependency graph" does NOT match /graph/i (graph-page.spec.ts uses /graph/i tab).
  * All geometry via boundingBox() — no width arithmetic.
+ *
+ * MIGRATED (s4 FE-1b): nav uses the SubmenuRail (role="navigation", aria-label
+ * "Main navigation", hoisted global by FE-1a) — the 9-tab v1 BottomTabBar (role="tab") that
+ * this file previously navigated via is retired.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+function getProgramsNavButton(page: Page) {
+  return page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: /programs/i });
+}
 
 test.describe('ProgramDagPage', () => {
   test('load test — Programs tab visible and DAG canvas renders', async ({ page }) => {
@@ -22,8 +30,8 @@ test.describe('ProgramDagPage', () => {
 
     await page.goto('http://localhost:5173');
 
-    // Navigate via Programs tab (NOT /graph/i — C1 collision prevention)
-    const programsTab = page.getByRole('tab', { name: /programs/i });
+    // Navigate via Programs (NOT /graph/i — C1 collision prevention)
+    const programsTab = getProgramsNavButton(page);
     await expect(programsTab).toBeVisible();
     await programsTab.click();
 
@@ -46,7 +54,7 @@ test.describe('ProgramDagPage', () => {
 
     await page.goto('http://localhost:5173');
 
-    const programsTab = page.getByRole('tab', { name: /programs/i });
+    const programsTab = getProgramsNavButton(page);
     await programsTab.click();
 
     // Wait for React Flow nodes to appear
@@ -99,7 +107,7 @@ test.describe('ProgramDagPage', () => {
 
     await page.goto('http://localhost:5173');
 
-    const programsTab = page.getByRole('tab', { name: /programs/i });
+    const programsTab = getProgramsNavButton(page);
     await programsTab.click();
 
     // Wait for content: DAG, error alert, or status

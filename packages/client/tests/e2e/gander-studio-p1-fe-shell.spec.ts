@@ -1,9 +1,16 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
-// NOTE: nav is rendered by BottomTabBar using role="tab" on each button.
-// The old .nav-item CSS class was removed in prog-studio-vision-2026-06-s5-DELETE
-// (Sidebar.tsx was already removed in gander-studio-p7-1-sidebar-removal).
-// All selectors below use role="tab" (the live ARIA role on BottomTabBar buttons).
+// MIGRATED (s4 FE-1b): nav is now rendered globally by SubmenuRail (role="navigation",
+// aria-label "Main navigation", hoisted by FE-1a) — the 9-tab v1 BottomTabBar (role="tab",
+// NAV_ITEMS: Browse/Compose/Edit/Export/...) is retired. Selectors below target the rail's
+// role="button" items (RAIL_ITEMS: Roster/Sessions/Progression/Programs). The first test below
+// ("Browse mode active") asserts a default-mode premise that was already false pre-FE-1a
+// (default activeMode is 'party', not 'browse') — left untouched per the packet's "do NOT fix
+// baseline-red specs" instruction.
+
+function getRail(page: Page) {
+  return page.getByRole('navigation', { name: 'Main navigation' });
+}
 
 test('app shell loads with header and Browse mode active', async ({ page }) => {
   await page.goto('http://localhost:5173');
@@ -16,20 +23,24 @@ test('app shell loads with header and Browse mode active', async ({ page }) => {
 
 test('clicking a nav item switches mode content', async ({ page }) => {
   await page.goto('http://localhost:5173');
-  // Click Compose (second tab)
-  await page.locator('[role="tab"]').nth(1).click();
-  await expect(page.getByTestId('compose-page')).toBeVisible();
-  await expect(page.getByTestId('browse-page')).not.toBeVisible();
-  // Click Edit (third tab)
-  await page.locator('[role="tab"]').nth(2).click();
-  await expect(page.getByTestId('edit-page')).toBeVisible();
+  // Click Sessions via the rail (a KEEP destination — Compose/Edit are cut surfaces, removed
+  // from RAIL_ITEMS by this packet's retirement; their own migration is FE-2/FE-4's).
+  await getRail(page).getByRole('button', { name: 'Sessions' }).click();
+  await expect(page.getByTestId('sessions-list-page')).toBeVisible();
+  await expect(page.getByTestId('party-page')).not.toBeVisible();
+  // Click Progression via the rail (second KEEP destination)
+  await getRail(page).getByRole('button', { name: 'Progression' }).click();
+  await expect(page.getByRole('heading', { name: 'PROGRESSION LEDGER' })).toBeVisible({ timeout: 10000 });
 });
 
 test('mode content renders empty-state placeholder when no data is present', async ({ page }) => {
   await page.goto('http://localhost:5173');
-  // Browse page shows placeholder text (server may be offline — page still renders)
+  // Party (default) page shows placeholder text (server may be offline — page still renders)
   await expect(page.locator('#mode-content')).toBeVisible();
-  // Navigating to Export shows placeholder
-  await page.locator('[role="tab"]').nth(3).click();
-  await expect(page.getByTestId('export-page')).toBeVisible();
+  // Navigating to Programs via the rail shows its own empty/loading/settled marker
+  await getRail(page).getByRole('button', { name: 'Programs' }).click();
+  const programsMarker = page.locator(
+    '.react-flow__pane, :text("PROGRAM DAG UNAVAILABLE"), :text("NO PROGRAM DATA")',
+  );
+  await expect(programsMarker.first()).toBeVisible({ timeout: 15000 });
 });

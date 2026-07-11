@@ -1,11 +1,17 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 /**
  * Progression page e2e spec — p5b-003-fe
  * Tier 2: load, data-visible, and error/empty-state tests.
- * Nav uses role="tab" (BottomTabBar) — confirmed pattern from graph-page.spec.ts.
+ * MIGRATED (s4 FE-1b): nav uses the SubmenuRail (role="navigation", aria-label
+ * "Main navigation", hoisted global by FE-1a) — the 9-tab v1 BottomTabBar (role="tab") that
+ * this file previously navigated via is retired.
  * Does NOT run live here; auditor runs the live pass.
  */
+
+function getProgressionNavButton(page: Page) {
+  return page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: /progression/i });
+}
 
 test.describe('ProgressionPage', () => {
   test('load test — Progression nav tab is present and renders the page', async ({ page }) => {
@@ -16,8 +22,8 @@ test.describe('ProgressionPage', () => {
 
     await page.goto('http://localhost:5173');
 
-    // Navigate via the BottomTabBar (role="tab", accessible name matches /progression/i)
-    const progressionTab = page.getByRole('tab', { name: /progression/i });
+    // Navigate via the SubmenuRail (role="button", accessible name matches /progression/i)
+    const progressionTab = getProgressionNavButton(page);
     await expect(progressionTab).toBeVisible();
     await progressionTab.click();
 
@@ -31,7 +37,7 @@ test.describe('ProgressionPage', () => {
   test('primary interaction — at least one real sprint_id is visible in the ledger', async ({ page }) => {
     await page.goto('http://localhost:5173');
 
-    const progressionTab = page.getByRole('tab', { name: /progression/i });
+    const progressionTab = getProgressionNavButton(page);
     await progressionTab.click();
 
     // Wait for the ledger to load (surface coverage heading — role-scoped to avoid prose collision)
@@ -49,7 +55,7 @@ test.describe('ProgressionPage', () => {
   test('empty/error state — loading state or error card is shown when data is unavailable', async ({ page }) => {
     await page.goto('http://localhost:5173');
 
-    const progressionTab = page.getByRole('tab', { name: /progression/i });
+    const progressionTab = getProgressionNavButton(page);
     await progressionTab.click();
 
     // One of three valid states MUST appear: loading, error card, or the ledger heading
