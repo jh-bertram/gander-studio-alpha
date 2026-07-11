@@ -5,7 +5,7 @@ type: project-doc
 # Session Checkpoint
 
 **Project:** gander-studio-alpha
-**Updated:** 2026-07-11 01:47:06 UTC (auto-rebuilt by session-end-checkpoint hook)
+**Updated:** 2026-07-11 06:41:18 UTC (auto-rebuilt by session-end-checkpoint hook)
 
 ## ⚠ STALE — UNCOMMITTED DEBT PRESENT
 
@@ -14,29 +14,8 @@ reflects the CURRENT working tree state but the listed files have not been commi
 Do not treat this checkpoint as authoritative for sprint state until debt is resolved.
 
 **Uncommitted tracked paths (debt):**
-  - `docs/agent-logs/AUD/latest.md`
-  - `docs/agent-logs/CR/latest.md`
-  - `docs/agent-logs/FE/latest.md`
-  - `docs/agent-logs/PM/latest.md`
-  - `docs/events/agent-events-2026-07-10.jsonl`
-  - `docs/task-registry.md`
-  - `packages/client/src/AppShell.tsx`
-  - `packages/client/src/components/BottomTabBar.tsx`
-  - `packages/client/src/components/party/SubmenuRail.tsx`
-  - `packages/client/src/constants/navigation.ts`
-  - `packages/client/src/globals.css`
-  - `packages/client/src/pages/PartyPage.tsx`
-  - `packages/client/tests/e2e/gander-studio-p1-fe-shell.spec.ts`
-  - `packages/client/tests/e2e/layout-sidebar-removal.spec.ts`
-  - `packages/client/tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts`
-  - `packages/client/tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts`
-  - `packages/client/tests/e2e/prog-studio-vision-s2-d3-session-buffer.spec.ts`
-  - `packages/client/tests/e2e/prog-studio-vision-s2-d4-prose-slug.spec.ts`
-  - `packages/client/tests/e2e/prog-studio-vision-s3-program-dag.spec.ts`
-  - `packages/client/tests/e2e/prog-studio-vision-s4-legibility.spec.ts`
-  - `packages/client/tests/e2e/prog-studio-vision-s4-reduced-motion.spec.ts`
-  - `packages/client/tests/e2e/prog-studio-vision-s4-render-loop.spec.ts`
-  - `packages/client/tests/e2e/progression.spec.ts`
+  - `docs/events/agent-events-2026-07-11.jsonl`
+  - `docs/project_log.md`
 
 Ceremony-class files (chore(orchestration) commit class per
 `.claude/skills/commit-packet/SKILL.md §Two-Commit Pattern`) should be committed
@@ -44,7 +23,7 @@ before this checkpoint is treated as fresh. Non-ceremony files must NOT be
 auto-committed by this hook — manual ORC commit-packet is required.
 
 ## Agent Log Summary
-*Scanned at 2026-07-11T01:47:06.809995+00:00*
+*Scanned at 2026-07-11T06:41:18.917104+00:00*
 
 ### INTERRUPTED (6 task(s))
 
@@ -68,7 +47,7 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (CR) — `docs/agent-logs/CR/prog-studio-vision-2026-06-s2-fix-broken-surfaces.md`
   - `prog-studio-v2-2026-07-s4-retirement-rev2-append` (PM) — `docs/agent-logs/PM/prog-studio-v2-2026-07-s4-retirement-rev2-append.md`
 
-### CLOSED (278 task(s) — Stage-3 COMPLETE or drained)
+### CLOSED (294 task(s) — Stage-3 COMPLETE or drained)
 
   - `gander-studio-p10-deferred-smalls` (AR) — `docs/agent-logs/AR/gander-studio-p10-deferred-smalls.md`
   - `gander-studio-p2-agent-cards-postmortem` (AR) — `docs/agent-logs/AR/gander-studio-p2-agent-cards-postmortem-checkpoint.md`
@@ -150,8 +129,16 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-v2-2026-07-s3-drilldowns-t4a` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t4a.md`
   - `prog-studio-v2-2026-07-s3-drilldowns-t4b` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t4b.md`
   - `prog-studio-v2-2026-07-s3-drilldowns-t5` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t5.md`
+  - `prog-studio-v2-2026-07-s4-retirement-BE-1` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-BE-1.md`
+  - `prog-studio-v2-2026-07-s4-retirement-DOCS-1-reaudit` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-DOCS-1-reaudit.md`
+  - `prog-studio-v2-2026-07-s4-retirement-DOCS-1` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-DOCS-1.md`
   - `prog-studio-v2-2026-07-s4-retirement-FE-1a` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-FE-1a.md`
   - `prog-studio-v2-2026-07-s4-retirement-FE-1b` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-FE-1b.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-2` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-FE-2.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-3` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-FE-3.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-4` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-FE-4.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-CAT` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-FE-CAT.md`
+  - `prog-studio-v2-2026-07-s4-retirement-navshell-rem` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-navshell-rem.md`
   - `prog-studio-vision-2026-06-s1-token-root-fix` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s1-token-root-fix.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s2-fix-broken-surfaces.md`
   - `prog-studio-vision-2026-06-s4-juice-pass` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s4-juice-pass.md`
@@ -182,6 +169,7 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-v2-2026-07-s1-data-layer-t2` (BE) — `docs/agent-logs/BE/prog-studio-v2-2026-07-s1-data-layer-t2.md`
   - `prog-studio-v2-2026-07-s1-data-layer-t3` (BE) — `docs/agent-logs/BE/prog-studio-v2-2026-07-s1-data-layer-t3.md`
   - `prog-studio-v2-2026-07-s1-data-layer-t4` (BE) — `docs/agent-logs/BE/prog-studio-v2-2026-07-s1-data-layer-t4.md`
+  - `prog-studio-v2-2026-07-s4-retirement-BE-1` (BE) — `docs/agent-logs/BE/prog-studio-v2-2026-07-s4-retirement-BE-1.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces-t2` (BE) — `docs/agent-logs/BE/prog-studio-vision-2026-06-s2-fix-broken-surfaces-t2.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces-t3` (BE) — `docs/agent-logs/BE/prog-studio-vision-2026-06-s2-fix-broken-surfaces-t3.md`
   - `prog-studio-vision-2026-06-s3-BE-01` (BE) — `docs/agent-logs/BE/prog-studio-vision-2026-06-s3-BE-01.md`
@@ -282,8 +270,15 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-v2-2026-07-s3-drilldowns-t4a` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t4a.md`
   - `prog-studio-v2-2026-07-s3-drilldowns-t4b` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t4b.md`
   - `prog-studio-v2-2026-07-s3-drilldowns-t5` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t5.md`
+  - `prog-studio-v2-2026-07-s4-retirement-DOCS-1-rem` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s4-retirement-DOCS-1-rem.md`
+  - `prog-studio-v2-2026-07-s4-retirement-DOCS-1` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s4-retirement-DOCS-1.md`
   - `prog-studio-v2-2026-07-s4-retirement-FE-1a` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s4-retirement-FE-1a.md`
   - `prog-studio-v2-2026-07-s4-retirement-FE-1b` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s4-retirement-FE-1b.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-2` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s4-retirement-FE-2.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-3` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s4-retirement-FE-3.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-4` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s4-retirement-FE-4.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-CAT` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s4-retirement-FE-CAT.md`
+  - `prog-studio-v2-2026-07-s4-retirement-navshell-rem` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s4-retirement-navshell-rem.md`
   - `prog-studio-vision-2026-06-s1-FE-rem2` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s1-FE-rem2.md`
   - `prog-studio-vision-2026-06-s1-p2p3p4` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s1-p2p3p4.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s2-FE-client.md`
@@ -353,12 +348,16 @@ interrupted task's files are included in the debt list above.
 *Source: agent-events-2026-07-11.jsonl*
 
 ```
-{"seq":1,"ts":"2026-07-11T01:30:44Z","ev":"NOTE","task_id":"prog-studio-v2-2026-07-s4-retirement-FE-1b","agent_id":"ORC#0","note":"REFLECTION ITEM (human-flagged): ORC resume-dispatch omitted the literal ## Output Path block (path was embedded in step 4 prose); PreToolUse:Agent hook caught it and required manual human confirmation. Recurrence of the output-path-block discipline on the RESUME template specifically \u2014 after-action \u00a76 candidate: resume-dispatch prompts must retain the literal block verbatim."}
-{"seq":2,"ts":"2026-07-11T01:30:59Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s4-retirement-FE-1b","agent_id":"FE#2","parent_id":"ORC#0","edge_label":"ui_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-1b-FE-1783719780.md"],"note":"backfilled by ORC \u2014 PreToolUse warned Output Path block missing on resume dispatch; auto-log predictably missed; SPAWN is 2026-07-10 seq 49 (cross-day pair)"}
-{"seq":3,"ts":"2026-07-11T01:31:14Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement-FE-1b","agent_id":"AUD#2","parent_id":"ORC#0","edge_label":"audit_review","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-1b-AUD-1783733473.md"}
-{"seq":4,"ts":"2026-07-11T01:45:20Z","ev":"AUDIT_PASS","task_id":"prog-studio-v2-2026-07-s4-retirement-FE-1b","agent_id":"AUD#2","parent_id":"ORC#0","edge_label":"audit_review PASS","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-1b-AUD-1783733473.md"]}
-{"seq":5,"ts":"2026-07-11T01:46:38Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement-amend3","agent_id":"PM#0","parent_id":"ORC#0","edge_label":"plan_amendment","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-amend3-PM-1783734397.md","note":"orphan spec s5-reconcile.spec.ts wave assignment (FE-1b + AUD#2 routing flag)"}
-{"seq":6,"ts":"2026-07-11T01:47:07Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=1 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":1,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":38,"ts":"2026-07-11T06:19:04Z","ev":"AUDIT_FAIL","task_id":"prog-studio-v2-2026-07-s4-retirement-DOCS-1","agent_id":"AUD#9","parent_id":"ORC#0","edge_label":"audit_review FAIL","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-AUD-1783750241.md"],"reason":"CLAUDE.md tRPC note claims ConnectivityGraphSchema has no consumer; agent-detail.ts imports+safeParses it"}
+{"seq":39,"ts":"2026-07-11T06:19:42Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement-DOCS-1-rem","agent_id":"FE#9","parent_id":"ORC#0","edge_label":"remediation_request","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-rem-FE-1783750782.md","note":"AUD#9 QA FAIL: one-sentence CLAUDE.md fix (ConnectivityGraphSchema active-consumer)"}
+{"seq":40,"ts":"2026-07-11T06:21:06Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s4-retirement-DOCS-1-rem","agent_id":"FE#9","parent_id":"ORC#0","edge_label":"ui_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-rem-FE-1783750782.md"],"auto_logged":true}
+{"seq":41,"ts":"2026-07-11T06:21:12Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement-DOCS-1-reaudit","agent_id":"AUD#10","parent_id":"ORC#0","edge_label":"audit_review","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-reaudit-AUD-1783750872.md","note":"scoped reconfirm of the one-sentence rem"}
+{"seq":42,"ts":"2026-07-11T06:27:32Z","ev":"AUDIT_PASS","task_id":"prog-studio-v2-2026-07-s4-retirement-DOCS-1-reaudit","agent_id":"AUD#10","parent_id":"ORC#0","edge_label":"audit_review PASS","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-reaudit-AUD-1783750872.md"]}
+{"seq":43,"ts":"2026-07-11T06:28:20Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement","agent_id":"RV#1","parent_id":"ORC#0","edge_label":"requirements_validation","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-REQVAL-1783751300.md","note":"Mode B; 8 packets + 2 rem rounds all audit-PASS"}
+{"seq":44,"ts":"2026-07-11T06:34:40Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s4-retirement","agent_id":"RV#1","parent_id":"ORC#0","edge_label":"requirements_coverage_report","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-REQVAL-1783751300.md"],"note":"REQVAL 15/16 COVERED + requires_human_visual (R-005 Step 4.5); backfilled by ORC (validator-class hook miss, 5th consecutive \u2014 the dispatch-task checklist line is now standing practice)"}
+{"seq":45,"ts":"2026-07-11T06:38:32Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement","agent_id":"AR#1","parent_id":"ORC#0","edge_label":"archive_entry","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-AR-1783751912.md"}
+{"seq":46,"ts":"2026-07-11T06:40:53Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s4-retirement","agent_id":"AR#1","parent_id":"ORC#0","edge_label":"archive_entry","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-AR-1783751912.md"],"auto_logged":true}
+{"seq":47,"ts":"2026-07-11T06:41:19Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
 ```
 
 ---

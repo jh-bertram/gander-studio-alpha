@@ -1,6 +1,6 @@
 # Task Registry — Gander Studio
 
-Last updated: 2026-07-07T23:05:00Z
+Last updated: 2026-07-11T06:30:00Z
 
 ---
 
@@ -596,3 +596,20 @@ To recover: git reset --hard 6c58f4007e6a8d602468bc5cea81710544c37fa0
 
 ### ORC baseline-capture addendum (CR#4 W1 recipe)
 - Pre-FE-1a full-suite Playwright baseline captured by ORC at HEAD 6c58f40 BEFORE FE-1a dispatch: pass/fail set at `/tmp/claude-1000/-home-jhber-projects-gander-studio-alpha/1a4d552d-df87-4fb7-a862-857e674976ff/scratchpad/pre-fe1a-baseline.json` (reconciled copy to be committed as ceremony at close). FE-1b floor-completeness SC references this captured set, reconciled against the t5 57-failure list.
+
+## Sprint: prog-studio-v2-2026-07-s4-retirement — CLOSE-OUT (Step 4.9 refresh)
+
+**Status:** CLOSED — human-VERIFIED at Step 4.5 ("okay looks good", 2026-07-11); REQVAL 16/16 (15 + R-005 closed by 4.5); AA close gate PASS (docs/after-actions/prog-studio-v2-2026-07-s4-retirement.md); archived (docs/project_log.md ~L2742). Pipeline: PM r0→amend1→rev1→amend2→rev2→rev3 | CR#1 BLOCK → CR#2/3 PASS+W → CR#4 PASS | jidoka REPARTITION (6 findings) | 8 packets + 2 rems, 10 audit PASS | 10 commits.
+
+### Rollback Point (CURRENT — post-close)
+commit: a7e4b96 (DOCS-1 durability commit; full close-state incl. ceremony 3acdfab)
+recorded: 2026-07-11T06:30:00Z
+task_id: prog-studio-v2-2026-07-s4-retirement
+To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard a7e4b96
+(Prior current point superseded: 6c58f40, recorded at s4 OPEN 2026-07-10.)
+
+## Closed Tasks (Archive) — v2 program
+
+| Task ID | Sprint | Status | Commits | Closed | Notes |
+|---|---|---|---|---|---|
+| prog-studio-v2-2026-07-s4-retirement | s4 (final sibling) | CLOSED | 3acdfab..a7e4b96 (10) | 2026-07-11 | v1 CUT/ABSORB surfaces retired client+server; catalog added; docs v2; program awaits skein |
