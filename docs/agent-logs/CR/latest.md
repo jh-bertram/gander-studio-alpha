@@ -1,17 +1,18 @@
-# CR log — prog-studio-v2-2026-07-s3-drilldowns rev2 (round 3)
+# CR Log — prog-studio-v2-2026-07-s4-retirement rev3 (CR#4, scoped FE-1a/FE-1b confirmation)
 
 ## Stage 3: COMPLETE — CRITIQUE_PASS
-Bounded rev2 re-adjudication. All 5 verification checks pass:
-1. FIX 1: t5 authorizes EXACTLY three named s2-spec changes; fourth forbidden; L364-398 protected; manifest receipt_check matches. RESOLVED.
-2. FIX 2: t4a context path → StatBar.tsx w/ :29/:51 (disk-reconfirmed); no dangling client party-roster.ts. RESOLVED.
-3. FIX 3: risk_flags carry both 6-of-13 ratification + aria-current semantic note. RESOLVED.
-4. No regressions: 6 packets, dependency order unchanged, only SC tightening (no weakening).
-5. CR#2 aria-current blocker does NOT survive; third-order s2-spec scan (tab-order L248, BottomTabBar L426, KEEP-clicks) clean — no further Roster-mode/browse coupling.
+Verdict: PASS (1 WARNING w/ recipe, 0 BLOCKERs). Scoped to 3 items; rest carried verbatim from CR#3.
 
-Verdict: PASS. Output: .claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-rev2-CR-1783488448.md
+Item 1 (FE-1a/FE-1b split): CONFIRMED. File-disjoint writes (FE-1a: AppShell/globals.css/PartyPage/SubmenuRail; FE-1b: navigation.ts/BottomTabBar/specs, AppShell read-only). Hoist-first, 9-tab bar retained as fallback -> never zero-nav. Each independently lint x3 + build gated (FE-1a not full-e2e-gated; hands hoist-red classification to FE-1b). agent_count 7->8, dep order updated.
+
+Item 2 (W2 floor framing): CONFIRMED. FE-1b list is a FLOOR; owns any KEEP spec the nav change breaks; discriminator (nav-click=migrate / goto+in-page-Analyze-tab=skip) embedded in step 3 + out_of_scope + ui_packet classification duty.
+
+Item 3 (pre-FE-1a reference point): reference point CORRECT (gap-free; pre-FE-1a == t5-green set since no s4 nav landed yet). WARNING: SC names the reference but not HOW it's captured (leans on month-old t5 artifact). Recipe given: ORC runs npx playwright test at HEAD before FE-1a dispatches, saves it as the pre-FE-1a baseline; FE-1b floor-completeness SC references that captured set (t5-derivation acceptable fallback if stated).
+
+Output: .claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-rev3-CR-1783716600.md
 
 ## [STAGE 3] INTERRUPTED
-- **At:** 2026-07-08T05:29:55.232954+00:00
+- **At:** 2026-07-10T20:53:17.426741+00:00
 - **Detected by:** agent-stop-checkpoint hook (session ended without Stage 3)
-- **Action required:** Re-dispatch CR#3 (canonical: CR#3) for task `prog-studio-v2-2026-07-s3-drilldowns-rev2`.
+- **Action required:** Re-dispatch CR#1 (canonical: CR#1) for task `prog-studio-v2-2026-07-s4-retirement-rev3`.
   Read `docs/agent-logs/CR/latest.md` before starting — skip completed checkpoints.

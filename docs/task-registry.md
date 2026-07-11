@@ -356,3 +356,243 @@ To recover: git reset --hard 86d2fd0395e666e1382171fff8572d50c48458d8
 **Delivered:** agent-detail drill-downs absorbing Browse/Graph/Edit — Materia/Equipment/Abilities panels, RF relationship layer (visible-edge-proven), target-keyed revise-spec editor (contamination class structurally prevented + regression-proven), nav re-points (card→detail; Roster→party; CTA deliberately retained w/ s4 TODO), 8-test absorption-proof e2e suite (27/27 ×4 runs).
 **Gates earned their keep:** AUD#3 caught the historical legibility class BEFORE the human (first time); t5's e2e caught a second base-ui behavioral-default defect; Critic ×3 rounds caught 2 disk-verified plan defects. Archivist drift 4th sighting (synthesis layer) — correction addendum #4 appended; gander spec fix escalated.
 **Open at close:** human browser check; s4-retirement is the FINAL sibling (inheritances: CTA re-point, rail collapse/expand, 390px overflow, stale baseline, 13-role catalog entry, DEFERRED-V2S3-1/2); branch push human-owned.
+
+## Agent Remits (prog-studio-v2-2026-07-s4-retirement, extracted 2026-07-10)
+
+<agent_remits source="auto-extracted from /home/jhber/.claude/agents/*.md at 2026-07-10T18:43:08Z">
+  <agent name="project-manager" version="2.4.0" source_file="/home/jhber/.claude/agents/pm.md">
+    ## Core Responsibilities
+    
+    **Decomposition:** When given a goal, break it into the smallest possible independent units of work, each ownable by a single agent with a clear success condition. A task is atomic when: (a) it has one owner, (b) its completion can be verified without ambiguity, and (c) failure doesn't block multiple other tasks simultaneously.
+    
+    **Context guarding:** Each agent receives only what it needs. Don't include the entire codebase in a spawned agent's context — provide the specific files relevant to its task. This keeps agent outputs focused and prevents context overflow.
+    
+    **Static content embedding rule:** Any static content the implementing agent cannot derive from the codebase — lookup tables, enumeration values, copy strings, schema definitions, complete data structures — must be embedded **verbatim** in the task packet, not referenced by description ("see the human's message") or summarized. If the content is too large to inline safely, write it to a dedicated context file and list that path in `<context_files>`. Do not include large tables directly in the dispatch prompt — agents read the task packet file; ORC references that file path, not the inline content.
+    
+    **Gate enforcement:** No task is complete until the auditor has reviewed it and returned PASS. This is non-negotiable. A "done" task without audit is a liability, not an asset.
+    
+    **Failure handling:** If an agent fails the audit, return the auditor's report to the implementing agent with a single, specific remediation request — not a list. If the same agent fails three consecutive times on the same issue, stop and escalate to the human with a summary of what was tried.
+    
+    ## Tool-Call Budget Discipline
+    
+    Every PM dispatch operates against a **soft tool-call budget of 8 reads per decomposition**. The budget is the load-bearing operational discipline — when PM reads beyond ~10 reference files in one turn, stream-idle timeouts become the dominant failure mode (post-mortem root cause: `gander-p6-moirai-skein-skills` §6 Gap A — two of three PM dispatches timed out at 40–60 min with zero output written; PM#1 attempted ~18 reads before timing out, PM#3 attempted ~10 reads on a revision task; PM#2 succeeded with exactly 4 reads on a leaner brief).
+    
+    **Hard rules:**
+    
+    - The PM's `<orchestrator_brief>` always names a fixed set of reference files to read. Read those files and **stop**. Do not opportunistically explore the codebase, browse adjacent skills, or re-read files already excerpted in the brief.
+    - If the brief does not name reference files explicitly, default to ≤ 8 reads total: the brief itself, plus at most 7 reference reads. Surface a `<budget_exceeded>` warning to ORC if you find yourself at read 8 with the decomposition incomplete.
+    - The brief's `<context>` and `<agent_remits>` blocks contain content that has been pre-extracted **for the explicit purpose of avoiding additional reads**. Treat them as the canonical excerpt — do not re-fetch the source file unless a specific ambiguity in the excerpt requires resolution.
+    - **Halt-and-surface clause:** if you reach the budget cap and decomposition is still incomplete, write what you have to the output file, append a `<budget_exceeded>` block listing the unresolved questions, and return. Do not continue silently — the half-finished output with an explicit budget-exceeded marker is more useful than a stream-idle timeout that produces nothing.
+    
+    **Why a soft budget rather than a hard cap:** some sprints legitimately need more reads (multi-domain decompositions, sprints touching unfamiliar tooling). The rule is "halt and surface", not "halt at 8 unconditionally" — a PM that needs a 9th read should write its progress, surface the budget-exceeded marker, and let ORC decide whether to authorize a continuation, dispatch a leaner re-brief, or fall back to mediation. The point is to convert silent timeouts into observable budget overruns.
+    
+    **Retry pattern after timeout:** if a prior PM attempt for this sprint timed out, the next dispatch must come with a strictly leaner brief (≤ 4 named reference reads, with all critical content excerpted inline in the brief). Do not re-attempt with the same brief — the same brief produced the same timeout in the prior attempt.
+    
+    ## What the PM Does Not Do
+    
+    The PM does not write code, design components, or route completed packets between agents. Routing is the Orchestrator's responsibility. The PM's job is decomposition and planning — not execution or coordination.
+    
+    The PM does not escalate to the human directly. All escalations flow through the Orchestrator.
+    
+    If a planning consultation (RA, UI Designer, or DS) raises more questions than it resolves, incorporate what you have, flag remaining unknowns in `<risk_flags>`, and return the decomposition. The Orchestrator will determine whether to pause for human input.
+    
+    The PM's deliverable is a complete, accurate `<task_decomposition>` that the Orchestrator can execute without ambiguity.
+  </agent>
+  <agent name="frontend-engineer" version="2.1.2" source_file="/home/jhber/.claude/agents/frontend.md">
+    ## Task Boundary Compliance
+    
+    **You must only implement what your task_id authorizes.** If your task_id is `005b-callbacks`, you are not authorized to implement `005b-infra` — even if the work appears small or obviously related. Each task_id represents a Critic-approved scope boundary. Consolidating tasks the Critic has explicitly split bypasses the 50-line ceiling gate and is a protocol violation.
+    
+    **Rule:** If your brief contains a single task_id, deliver exactly that task. If you believe consolidation is warranted (e.g., the split creates an awkward dependency), emit a `BLOCKED` event to ORC explaining why — do not proceed with consolidated work. Consolidation requires explicit ORC approval in the task prompt before you start, not a unilateral decision.
+    
+    **Enforcement signal:** Before issuing your `ui_packet`, confirm your task_id matches the task_id in your prompt. If you have implemented work described under a different task_id, this is a scope violation — omit that work and flag it in `<integration_status>`.
+    
+    ---
+    
+    ## Domain Boundaries (and Why They Exist)
+    
+    The FE/BE split means you consume data contracts, you don't define them. When you need data from the server, ask the PM to have BE produce a Zod schema first. Then build against that schema. If the schema doesn't exist yet, build against a typed mock that matches the expected shape — mark integration status as MOCKED in your output packet.
+    
+    This boundary exists because API shape decisions involve backend concerns (database queries, auth, caching) that FE shouldn't need to know about. Conversely, rendering decisions (layout, animation, empty states) are FE concerns that BE shouldn't prescribe. The Zod schema is the stable contract between them.
+    
+    The FE/UI Designer split: when a `<design_spec>` exists from the UI Designer, implement it faithfully. Don't redesign components during implementation — if the spec is wrong or incomplete, flag it in your output packet rather than improvising.
+  </agent>
+  <agent name="backend-engineer" version="1.5.2" source_file="/home/jhber/.claude/agents/backend.md">
+    ## Domain Boundaries (and Why They Exist)
+    
+    The BE/FE split exists to prevent tight coupling between API shape and rendering logic. If you write JSX or CSS, the FE agent can't safely refactor the component tree without risking breakage of your assumptions. Conversely, if FE engineers write API contracts, the contract becomes implicit and untested. Keeping these domains separate means each side can evolve independently with a typed Zod schema as the stable boundary.
+    
+    The BE/DS split exists because database migrations carry risk that pure server logic doesn't. A bad API route is a runtime error; a bad migration can corrupt data. The DB Specialist owns that risk surface. Your job is to define what data you need (via entity types and Zod schemas) and let DS figure out how to persist it safely.
+    
+    **In practice:**
+    - Write TypeScript for all server-side logic, validated at every API boundary with Zod
+    - When you need a new table or column, describe the entity to the DB Specialist via a `<data_request>` — never write migrations yourself
+    - When you need the FE to render something, expose a typed Zod response schema — never prescribe UI structure
+  </agent>
+  <agent name="code-auditor" version="3.4.0" source_file="/home/jhber/.claude/agents/auditor.md">
+    <!-- WARNING: no remit section found — spec lacks an explicit remit/constraint heading. This is itself a finding. -->
+  </agent>
+  <agent name="critic" version="2.1.0" source_file="/home/jhber/.claude/agents/critic.md">
+    <!-- WARNING: no remit section found — spec lacks an explicit remit/constraint heading. This is itself a finding. -->
+  </agent>
+</agent_remits>
+
+<jidoka_synthesis sprint_id="prog-studio-v2-2026-07-s4-retirement" timestamp="2026-07-10T20:20:00Z">
+  <planners_returned>2/2 (FEP#1 consolidated ×6 packets; BEP#1 ×1)</planners_returned>
+  <overall_recommendation>repartition</overall_recommendation>
+  <findings>
+    <finding type="file_conflict">
+      <affected_tasks>FE-2, FE-3</affected_tasks>
+      <description>canvas-store.ts enumerated for deletion in FE-2 but ExportPage.tsx (deleted in FE-3) imports it at ~15 call sites — FE-2's lint SC unachievable as written</description>
+      <recommended_action>Move canvas-store.ts deletion to FE-3</recommended_action>
+    </finding>
+    <finding type="assumption_wrong">
+      <affected_tasks>FE-2, FE-4</affected_tasks>
+      <description>constants/canvas.ts transitively required by hooks/useLinkSound.ts (alive via GraphPage/EditPage until FE-4); neither file enumerated for deletion anywhere</description>
+      <recommended_action>Enumerate both; delete with FE-4</recommended_action>
+    </finding>
+    <finding type="assumption_wrong">
+      <affected_tasks>FE-3, FE-4</affected_tasks>
+      <description>prog-studio-vision-s2-d2-edit-save.spec.ts marked KEEP but tests CUT v1 EditPage (agent.save/skill.save, testid edit-page); real session-save spec is s2-d3-session-buffer.spec.ts</description>
+      <recommended_action>Reassign to FE-4 deletion list</recommended_action>
+    </finding>
+    <finding type="scope_drift">
+      <affected_tasks>FE-1</affected_tasks>
+      <description>8 KEEP-surface e2e specs navigate via role="tab" at desktop viewport and break when 9-tab bar hidden >640px; none in FE-1 context_files (progression, program-dag, s4-legibility, s4-reduced-motion, s4-render-loop, s2-d3-session-buffer, s2-d4-prose-slug, s2-list-edit-fe)</description>
+      <recommended_action>Add authorized nav-selector migration of these 8 specs to FE-1 scope + context_files</recommended_action>
+    </finding>
+    <finding type="assumption_wrong">
+      <affected_tasks>BE-1</affected_tasks>
+      <description>packages/shared/src/types.ts imports LoadoutSchema (derives type Loadout); dangling import fails the FIRST lint pass (shared) — file absent from BE-1 context_files/enumeration. HIGH.</description>
+      <recommended_action>Add types.ts to BE-1 enumeration (remove Loadout type derivation) + prune router.ts dead ConnectivityGraphSchema import</recommended_action>
+    </finding>
+    <finding type="assumption_wrong">
+      <affected_tasks>FE-4, FE-2</affected_tasks>
+      <description>Retention corrections (planner-verified): analyzeStore.ts RETAIN (3 Sessions importers, zero Browse/Graph); constants/browse.ts RETAIN despite name (AgentTimeline.tsx consumer)</description>
+      <recommended_action>Mark both RETAIN explicitly in packet out_of_scope to prevent overzealous deletion</recommended_action>
+    </finding>
+  </findings>
+  <partitions_proposed>none — both split_recommendations were NO; repartition = enumeration/sequencing fixes within the existing 7-packet structure</partitions_proposed>
+  <notes>Consolidated per-type dispatch (FEP#1 ×6 + BEP#1 ×1) — mixed-type variant of the codified consolidated mode. BEP#1 tooling note: BE spec session lacked Glob/Grep registration; used read-only Bash grep/ls/find honoring plan-only intent (working tree verified unmodified). Positive confirmations: 24→18 procedure count exact; all removed-procedure consumers deleted by strictly-preceding packets; ConnectivityGraphSchema protection holds; env.ts zero edits; planning-parser.test.ts self-contained.</notes>
+</jidoka_synthesis>
+
+## Rollback Point
+commit: 6c58f4007e6a8d602468bc5cea81710544c37fa0
+recorded: 2026-07-10T20:53:50Z
+task_id: prog-studio-v2-2026-07-s4-retirement
+
+To recover: git reset --hard 6c58f4007e6a8d602468bc5cea81710544c37fa0
+
+## Names Registry
+| Concept (stable) | Authoritative name (as of 2026-07-10T20:55Z) | Introduced by | Notes |
+|---|---|---|---|
+| 13-role catalog AppMode | `catalog` | prog-studio-v2-2026-07-s4-retirement rev1 (PM) | Critic-ratified CR#2; human-scoped 2026-07-10 |
+| catalog page component | `RosterCatalogPage` | prog-studio-v2-2026-07-s4-retirement FE-CAT packet | PascalCase per conventions; corrected 2026-07-11 — ORC's initial `CatalogPage` entry was transcription drift vs rev3:265 (authoritative); delivered file is pages/RosterCatalogPage.tsx |
+
+## Expectation Manifest — prog-studio-v2-2026-07-s4-retirement (from rev3, PM-authored, ORC-adopted 2026-07-10)
+
+## Expectation Manifest (rev3)
+
+<expectation_manifest>
+  <sprint_id>prog-studio-v2-2026-07-s4-retirement</sprint_id>
+  <generated>2026-07-10 (rev3)</generated>
+  <assignments>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s4-retirement-FE-1a</task_id>
+      <agent>FE#1</agent>
+      <expected_tag>ui_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-1a-{ts}.md</expected_file>
+      <blocks>FE-1b (+ all downstream)</blocks>
+      <receipt_check>
+        <item>SubmenuRail global (before BottomTabBar) + grid re-templated (≥640px rail area) + page-local mount removed; aria-label "Main navigation"</item>
+        <item>NAV_ITEMS + BottomTabBar.tsx UNTOUCHED (9-tab fallback intact); nav never zero; rail verified global on a non-party surface</item>
+        <item>NO e2e spec edited; hoist-caused-red classification recorded for FE-1b; lint ×3 + build green</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s4-retirement-FE-1b</task_id>
+      <agent>FE#2</agent>
+      <expected_tag>ui_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-1b-{ts}.md</expected_file>
+      <blocks>FE-2 (+ all downstream)</blocks>
+      <receipt_check>
+        <item>NAV_ITEMS retired; <640px fold live (BottomTabBar→RAIL_ITEMS gated); nav reachable at desktop AND <640px; no zero-nav</item>
+        <item>FLOOR + beyond: every pre-FE-1a-green KEEP spec green via RUN; each red classified migrate-vs-t5-baseline</item>
+        <item>render-loop Progression-only; 4 t6b sub-tests removed; in-page Analyze-tab specs NOT migrated; lint ×3 + build + RUN</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s4-retirement-FE-2</task_id>
+      <agent>FE#3</agent>
+      <expected_tag>ui_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-2-{ts}.md</expected_file>
+      <blocks>FE-3 (+ downstream), BE-1</blocks>
+      <receipt_check>
+        <item>Compose deleted incl. compose-store; canvas-store NOT deleted (explicit); 'compose' off union/PAGE_MAP; no trpc.loadout</item>
+        <item>7 Compose specs deleted; lint ×3 + build + Playwright RUN; KEEP specs green</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s4-retirement-FE-3</task_id>
+      <agent>FE#4</agent>
+      <expected_tag>ui_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-3-{ts}.md</expected_file>
+      <blocks>FE-CAT (+ downstream), BE-1</blocks>
+      <receipt_check>
+        <item>Export+Planning+canvas-store deleted; agent-roles.ts orphan decision w/ re-scan; 'export'/'planning' off union/PAGE_MAP</item>
+        <item>s2-d3-session-buffer (KEEP) untouched; s2-d2-edit-save left for FE-4; no trpc.export/planning; lint ×3 + build + RUN</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s4-retirement-FE-CAT</task_id>
+      <agent>FE#5</agent>
+      <expected_tag>ui_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-CAT-{ts}.md</expected_file>
+      <blocks>FE-4, DOCS-1</blocks>
+      <receipt_check>
+        <item>catalog reuses getParty (not agent.list), uncapped; 'catalog' mode not in rail; party 6-cap unchanged</item>
+        <item>persistent populated-home CTA → catalog + Tier-2 assertion (cite ratification); data-driven count; new spec name + green; lint ×3 + build + RUN</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s4-retirement-FE-4</task_id>
+      <agent>FE#6</agent>
+      <expected_tag>ui_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-4-{ts}.md</expected_file>
+      <blocks>BE-1, DOCS-1</blocks>
+      <receipt_check>
+        <item>s3 absorption cited green; RETAIN confirmations for analyzeStore + constants/browse.ts (KEEP consumer named)</item>
+        <item>s2-d2-edit-save edit-page testid CONFIRMED before deletion (or BLOCKED); useLinkSound + constants/canvas.ts deleted w/ re-scan</item>
+        <item>empty-state CTA → catalog; PartyPage compiles; no 'browse' literal; render-loop Graph sub-test removed; s2-party CTA testid updated; lint ×3 + build + RUN (s3/s2/catalog green)</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s4-retirement-BE-1</task_id>
+      <agent>BE#1</agent>
+      <expected_tag>completion_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-BE-1-{ts}.md</expected_file>
+      <blocks>DOCS-1</blocks>
+      <receipt_check>
+        <item>pre-removal scan; ConnectivityGraphSchema distinction (router.ts import pruned; definition + agent-detail import retained)</item>
+        <item>types.ts Loadout-derivation removed + shared (first) tsc pass clean; final 18-procedure list for DOCS-1</item>
+        <item>agent.list/skill.list/hook.list retained; env.ts unchanged; lint ×3 + server vitest + client build green; no inline commit</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s4-retirement-DOCS-1</task_id>
+      <agent>FE#7</agent>
+      <expected_tag>completion_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-{ts}.md</expected_file>
+      <blocks>NONE (terminal; feeds Step 4.5 + skein)</blocks>
+      <receipt_check>
+        <item>surfaces table = 6 v2 surfaces incl. Roster Catalog; nav = global rail ("Main navigation") + <640px fold + catalog-via-CTA</item>
+        <item>procedure table matches router.ts at HEAD (18, derived/confirmed); ConnectivityGraphSchema-retained note; architecture tree matches disk (analyzeStore retained; session-picker corrected)</item>
+        <item>bundle baseline updated w/ source; DESIGN.md IA record (no tokens); deferred-work has the 4 deferrals w/ 2026-07-10 authorization</item>
+      </receipt_check>
+    </assignment>
+  </assignments>
+</expectation_manifest>
+
+
+### ORC baseline-capture addendum (CR#4 W1 recipe)
+- Pre-FE-1a full-suite Playwright baseline captured by ORC at HEAD 6c58f40 BEFORE FE-1a dispatch: pass/fail set at `/tmp/claude-1000/-home-jhber-projects-gander-studio-alpha/1a4d552d-df87-4fb7-a862-857e674976ff/scratchpad/pre-fe1a-baseline.json` (reconciled copy to be committed as ceremony at close). FE-1b floor-completeness SC references this captured set, reconciled against the t5 57-failure list.

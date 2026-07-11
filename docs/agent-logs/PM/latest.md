@@ -1,14 +1,10 @@
-# PM latest → prog-studio-v2-2026-07-s3-drilldowns (COMPLETE)
+# PM latest → prog-studio-v2-2026-07-s4-retirement (COMPLETE — amend3, FE-2 orphan-spec assignment)
 
-Decomposition written: `.claude/tasks/outputs/prog-studio-v2-2026-07-s3-drilldowns-PM-1783486174.md`
-6 FE packets: {t1 ∥ t2 ∥ t3} → t4a → t4b → t5.
-Full log: `docs/agent-logs/PM/prog-studio-v2-2026-07-s3-drilldowns.md`
+Plan of record = rev3 (`.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-rev3-PM-1783715959.md`) + amend3 (`.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-amend3-PM-1783734397.md`).
+Full log: `docs/agent-logs/PM/prog-studio-v2-2026-07-s4-retirement.md` (+ rev2/rev3 append).
 
-## [STAGE 3] COMPLETE
-- t1 inventory panels (Browse absorb) ∥ t2 relationship panel (Graph absorb) ∥ t3 revise-spec (Edit absorb) — no deps.
-- t4a page assembly + AppMode/PAGE_MAP-lazy + bundle gate (deps t1,t2,t3) → t4b nav re-points (deps t4a) → t5 Tier-2 e2e + s2-spec re-point (deps t4a,t4b).
-- Nav-contract: card→'agent-detail'; Roster rail→'party'; Back-to-party affordance. Full 13-role catalog DEFERRED (risk-flagged).
-- No BE packet (QualityStat reason field declined; consume dataQualityNotes as-is → s3 stays client-only).
-- append_serialization: N/A (no shared-file writers across packets). sc-precheck delegated to ORC; NO diff-gated/locked-value SCs authored.
-- DISPATCH GATE: execution blocked on human s2 browser confirmation ("plan now, execute on OK").
-- No-stub self-check PASS (6 <task_packet> inline == 6 declared). Reads 6/8. 8 risk_flags; verbatim audit covers 5 sprint SCs + human phrases.
+## [STAGE 3] COMPLETE (amend3 — SC-level single-file enumeration; no structural change, no Critic re-gate)
+- Finding (FE-1b ui_packet §4B ORPHAN + AUD#2, disk-verified twice): `prog-studio-vision-2026-06-s5-reconcile.spec.ts` named in no wave's list, red post-NAV_ITEMS-retirement. FE-2 dispatch was holding on this.
+- PM read the file (100 lines, 3 tests): Test 1 + Test 2 = Compose materia-canvas coupled (FE-2 surface, non-defensive waitFor); Test 3 = BrowsePage hooks duplicate-key (Browse = CUT, deleted FE-4), NOT KEEP. ALL 3 CUT-coupled → WHOLE FILE DELETES (no extraction).
+- Assigned to FE-2's deletion list (now 8 Compose-wave specs) + context_files + receipt_check. Whole-file delete; zero compile impact (navigation by runtime text= locator, no module import). Provenance cited.
+- Scope self-check: SC-level enumeration only; agent_count unchanged (8); no-stub unaffected. Reads: 1 (the spec file).

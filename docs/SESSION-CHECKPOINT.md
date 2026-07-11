@@ -5,7 +5,7 @@ type: project-doc
 # Session Checkpoint
 
 **Project:** gander-studio-alpha
-**Updated:** 2026-07-10 18:08:46 UTC (auto-rebuilt by session-end-checkpoint hook)
+**Updated:** 2026-07-11 01:47:06 UTC (auto-rebuilt by session-end-checkpoint hook)
 
 ## ⚠ STALE — UNCOMMITTED DEBT PRESENT
 
@@ -14,7 +14,29 @@ reflects the CURRENT working tree state but the listed files have not been commi
 Do not treat this checkpoint as authoritative for sprint state until debt is resolved.
 
 **Uncommitted tracked paths (debt):**
-  - `docs/events/agent-events-2026-07-08.jsonl`
+  - `docs/agent-logs/AUD/latest.md`
+  - `docs/agent-logs/CR/latest.md`
+  - `docs/agent-logs/FE/latest.md`
+  - `docs/agent-logs/PM/latest.md`
+  - `docs/events/agent-events-2026-07-10.jsonl`
+  - `docs/task-registry.md`
+  - `packages/client/src/AppShell.tsx`
+  - `packages/client/src/components/BottomTabBar.tsx`
+  - `packages/client/src/components/party/SubmenuRail.tsx`
+  - `packages/client/src/constants/navigation.ts`
+  - `packages/client/src/globals.css`
+  - `packages/client/src/pages/PartyPage.tsx`
+  - `packages/client/tests/e2e/gander-studio-p1-fe-shell.spec.ts`
+  - `packages/client/tests/e2e/layout-sidebar-removal.spec.ts`
+  - `packages/client/tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts`
+  - `packages/client/tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts`
+  - `packages/client/tests/e2e/prog-studio-vision-s2-d3-session-buffer.spec.ts`
+  - `packages/client/tests/e2e/prog-studio-vision-s2-d4-prose-slug.spec.ts`
+  - `packages/client/tests/e2e/prog-studio-vision-s3-program-dag.spec.ts`
+  - `packages/client/tests/e2e/prog-studio-vision-s4-legibility.spec.ts`
+  - `packages/client/tests/e2e/prog-studio-vision-s4-reduced-motion.spec.ts`
+  - `packages/client/tests/e2e/prog-studio-vision-s4-render-loop.spec.ts`
+  - `packages/client/tests/e2e/progression.spec.ts`
 
 Ceremony-class files (chore(orchestration) commit class per
 `.claude/skills/commit-packet/SKILL.md §Two-Commit Pattern`) should be committed
@@ -22,9 +44,9 @@ before this checkpoint is treated as fresh. Non-ceremony files must NOT be
 auto-committed by this hook — manual ORC commit-packet is required.
 
 ## Agent Log Summary
-*Scanned at 2026-07-10T18:08:46.166064+00:00*
+*Scanned at 2026-07-11T01:47:06.809995+00:00*
 
-### INTERRUPTED (5 task(s))
+### INTERRUPTED (6 task(s))
 
 These agents have a [STAGE 3] INTERRUPTED marker and require re-dispatch:
 
@@ -32,19 +54,21 @@ These agents have a [STAGE 3] INTERRUPTED marker and require re-dispatch:
   - `gander-studio-p8-sessions-graph-fix` (BE) — `docs/agent-logs/BE/gander-studio-p8-sessions-graph-fix.md`
   - `prog-studio-v2-2026-07-s3-drilldowns-rev2` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s3-drilldowns-rev2.md`
   - `prog-studio-v2-2026-07-s3-drilldowns` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s3-drilldowns.md`
+  - `prog-studio-v2-2026-07-s4-retirement` (CR) — `docs/agent-logs/CR/prog-studio-v2-2026-07-s4-retirement.md`
   - `prog-studio-v2-2026-07-s3-drilldowns` (PM) — `docs/agent-logs/PM/prog-studio-v2-2026-07-s3-drilldowns.md`
 
 **Note:** INTERRUPTED logs exist alongside uncommitted debt — check if the
 interrupted task's files are included in the debt list above.
 
-### IN-FLIGHT (4 task(s) — no Stage-3 yet)
+### IN-FLIGHT (5 task(s) — no Stage-3 yet)
 
   - `agent-improvement-2026-04-28-1` (AR) — `docs/agent-logs/AR/agent-improvement-2026-04-28-1-checkpoint.md`
   - `gander-studio-p2-agent-cards-postmortem` (AR) — `docs/agent-logs/AR/gander-studio-p2-agent-cards-postmortem.md`
   - `gander-studio-p4-proximity-edge-hardening-rev2` (CR) — `docs/agent-logs/CR/gander-studio-p4-proximity-edge-hardening-rev2.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (CR) — `docs/agent-logs/CR/prog-studio-vision-2026-06-s2-fix-broken-surfaces.md`
+  - `prog-studio-v2-2026-07-s4-retirement-rev2-append` (PM) — `docs/agent-logs/PM/prog-studio-v2-2026-07-s4-retirement-rev2-append.md`
 
-### CLOSED (271 task(s) — Stage-3 COMPLETE or drained)
+### CLOSED (278 task(s) — Stage-3 COMPLETE or drained)
 
   - `gander-studio-p10-deferred-smalls` (AR) — `docs/agent-logs/AR/gander-studio-p10-deferred-smalls.md`
   - `gander-studio-p2-agent-cards-postmortem` (AR) — `docs/agent-logs/AR/gander-studio-p2-agent-cards-postmortem-checkpoint.md`
@@ -60,6 +84,7 @@ interrupted task's files are included in the debt list above.
   - `gander-studio-p11-v2-vision-t2` (AUD) — `docs/agent-logs/AUD/gander-studio-p11-v2-vision-t2.md`
   - `gander-studio-p11-v2-vision-t3` (AUD) — `docs/agent-logs/AUD/gander-studio-p11-v2-vision-t3.md`
   - `gander-studio-p11-v2-vision-t4` (AUD) — `docs/agent-logs/AUD/gander-studio-p11-v2-vision-t4.md`
+  - `gander-studio-p12-detail-statbox-grid` (AUD) — `docs/agent-logs/AUD/gander-studio-p12-detail-statbox-grid.md`
   - `gander-studio-p2-agent-cards-DS-001` (AUD) — `docs/agent-logs/AUD/gander-studio-p2-agent-cards-DS-001.md`
   - `gander-studio-p2-agent-cards-FE-001a` (AUD) — `docs/agent-logs/AUD/gander-studio-p2-agent-cards-FE-001a.md`
   - `gander-studio-p2-agent-cards-FE-001b` (AUD) — `docs/agent-logs/AUD/gander-studio-p2-agent-cards-FE-001b.md`
@@ -125,6 +150,8 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-v2-2026-07-s3-drilldowns-t4a` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t4a.md`
   - `prog-studio-v2-2026-07-s3-drilldowns-t4b` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t4b.md`
   - `prog-studio-v2-2026-07-s3-drilldowns-t5` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s3-drilldowns-t5.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-1a` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-FE-1a.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-1b` (AUD) — `docs/agent-logs/AUD/prog-studio-v2-2026-07-s4-retirement-FE-1b.md`
   - `prog-studio-vision-2026-06-s1-token-root-fix` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s1-token-root-fix.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s2-fix-broken-surfaces.md`
   - `prog-studio-vision-2026-06-s4-juice-pass` (AUD) — `docs/agent-logs/AUD/prog-studio-vision-2026-06-s4-juice-pass.md`
@@ -201,6 +228,7 @@ interrupted task's files are included in the debt list above.
   - `gander-studio-p10-deferred-smalls-003` (FE) — `docs/agent-logs/FE/gander-studio-p10-deferred-smalls-003.md`
   - `gander-studio-p10-deferred-smalls-006` (FE) — `docs/agent-logs/FE/gander-studio-p10-deferred-smalls-006.md`
   - `gander-studio-p11-v2-vision-t4` (FE) — `docs/agent-logs/FE/gander-studio-p11-v2-vision-t4.md`
+  - `gander-studio-p12-detail-statbox-grid` (FE) — `docs/agent-logs/FE/gander-studio-p12-detail-statbox-grid.md`
   - `gander-studio-p2-agent-cards-FE-001a` (FE) — `docs/agent-logs/FE/gander-studio-p2-agent-cards-FE-001a.md`
   - `gander-studio-p2-agent-cards-FE-001b` (FE) — `docs/agent-logs/FE/gander-studio-p2-agent-cards-FE-001b.md`
   - `gander-studio-p2-agent-cards-FE-002` (FE) — `docs/agent-logs/FE/gander-studio-p2-agent-cards-FE-002.md`
@@ -254,6 +282,8 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-v2-2026-07-s3-drilldowns-t4a` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t4a.md`
   - `prog-studio-v2-2026-07-s3-drilldowns-t4b` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t4b.md`
   - `prog-studio-v2-2026-07-s3-drilldowns-t5` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s3-drilldowns-t5.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-1a` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s4-retirement-FE-1a.md`
+  - `prog-studio-v2-2026-07-s4-retirement-FE-1b` (FE) — `docs/agent-logs/FE/prog-studio-v2-2026-07-s4-retirement-FE-1b.md`
   - `prog-studio-vision-2026-06-s1-FE-rem2` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s1-FE-rem2.md`
   - `prog-studio-vision-2026-06-s1-p2p3p4` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s1-p2p3p4.md`
   - `prog-studio-vision-2026-06-s2-fix-broken-surfaces` (FE) — `docs/agent-logs/FE/prog-studio-vision-2026-06-s2-FE-client.md`
@@ -303,6 +333,7 @@ interrupted task's files are included in the debt list above.
   - `prog-studio-sessions-2026-05-s3-analyze` (PM) — `docs/agent-logs/PM/prog-studio-sessions-2026-05-s3-analyze.md`
   - `prog-studio-v2-2026-07-s1-data-layer` (PM) — `docs/agent-logs/PM/prog-studio-v2-2026-07-s1-data-layer.md`
   - `prog-studio-v2-2026-07-s2-party-shell` (PM) — `docs/agent-logs/PM/prog-studio-v2-2026-07-s2-party-shell.md`
+  - `prog-studio-v2-2026-07-s4-retirement` (PM) — `docs/agent-logs/PM/prog-studio-v2-2026-07-s4-retirement.md`
   - `prog-studio-vision-2026-06-s3` (PM) — `docs/agent-logs/PM/prog-studio-vision-2026-06-s3.md`
   - `prog-studio-vision-2026-06-s5` (PM) — `docs/agent-logs/PM/prog-studio-vision-2026-06-s5.md`
   - `gander-studio-p1-materia-canvas-RA-1742084400` (RA) — `docs/agent-logs/RA/gander-studio-p1-materia-canvas-RA-1742084400.md`
@@ -319,11 +350,15 @@ interrupted task's files are included in the debt list above.
   - `s3-t1-ui-spec` (UI) — `docs/agent-logs/UI/s3-t1-ui-spec.md`
 
 ## Event Log Tail (last 10)
-*Source: agent-events-2026-07-10.jsonl*
+*Source: agent-events-2026-07-11.jsonl*
 
 ```
-{"seq":1,"ts":"2026-07-10T18:08:05Z","ev":"RESUME","task_id":"session-resume","agent_id":"ORC#0","parent_id":"HU","edge_label":"session_start","note":"Resumed from docs/SESSION-CHECKPOINT.md (2026-07-08, prog-studio-v2-2026-07-s3-drilldowns DONE-PENDING-4.5); status query, gap-window ghost sweep clean"}
-{"seq":2,"ts":"2026-07-10T18:08:46Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":1,"ts":"2026-07-11T01:30:44Z","ev":"NOTE","task_id":"prog-studio-v2-2026-07-s4-retirement-FE-1b","agent_id":"ORC#0","note":"REFLECTION ITEM (human-flagged): ORC resume-dispatch omitted the literal ## Output Path block (path was embedded in step 4 prose); PreToolUse:Agent hook caught it and required manual human confirmation. Recurrence of the output-path-block discipline on the RESUME template specifically \u2014 after-action \u00a76 candidate: resume-dispatch prompts must retain the literal block verbatim."}
+{"seq":2,"ts":"2026-07-11T01:30:59Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s4-retirement-FE-1b","agent_id":"FE#2","parent_id":"ORC#0","edge_label":"ui_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-1b-FE-1783719780.md"],"note":"backfilled by ORC \u2014 PreToolUse warned Output Path block missing on resume dispatch; auto-log predictably missed; SPAWN is 2026-07-10 seq 49 (cross-day pair)"}
+{"seq":3,"ts":"2026-07-11T01:31:14Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement-FE-1b","agent_id":"AUD#2","parent_id":"ORC#0","edge_label":"audit_review","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-1b-AUD-1783733473.md"}
+{"seq":4,"ts":"2026-07-11T01:45:20Z","ev":"AUDIT_PASS","task_id":"prog-studio-v2-2026-07-s4-retirement-FE-1b","agent_id":"AUD#2","parent_id":"ORC#0","edge_label":"audit_review PASS","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-1b-AUD-1783733473.md"]}
+{"seq":5,"ts":"2026-07-11T01:46:38Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement-amend3","agent_id":"PM#0","parent_id":"ORC#0","edge_label":"plan_amendment","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-amend3-PM-1783734397.md","note":"orphan spec s5-reconcile.spec.ts wave assignment (FE-1b + AUD#2 routing flag)"}
+{"seq":6,"ts":"2026-07-11T01:47:07Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=1 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":1,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
 ```
 
 ---
