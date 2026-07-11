@@ -30,27 +30,6 @@ export const HookSchema = z.object({
   body: z.string(),
 });
 
-// Loadout — user-composed selection of agents, skills, hooks
-export const LoadoutSchema = z.object({
-  name: z.string(),
-  agents: z.array(z.string()),
-  skills: z.array(z.string()),
-  hooks: z.array(z.string()),
-  createdAt: z.string(),
-  connections: z.array(z.object({ source: z.string(), target: z.string() })).default([]),
-  cardTitle: z.string().optional(),
-});
-
-// ExportInputSchema — input for export.spawn procedure
-export const ExportInputSchema = z.object({
-  loadout: LoadoutSchema,
-  targetDirName: z
-    .string()
-    .regex(/^[a-zA-Z0-9_-]+$/, 'Invalid directory name'),
-  includeStandards: z.boolean().default(false),
-  targetBasePath: z.string().optional(),
-});
-
 // EventLogEntrySchema — one parsed JSONL event-log line
 // ev is z.string() (not z.enum) — live corpus has open-ended event types
 export const EventLogEntrySchema = z.object({
@@ -268,53 +247,6 @@ export const ProgressionEntrySchema = z.object({
 });
 
 export type ProgressionEntry = z.infer<typeof ProgressionEntrySchema>;
-
-// ---------------------------------------------------------------------------
-// Planning Backlog — output of planning.list procedure
-// Sources: docs/deferred-work.md (DEFERRED-NNN items) + docs/task-registry.md (sprint rows)
-// ---------------------------------------------------------------------------
-
-export const PlanningItemSchema = z.object({
-  /** Identifier: DEFERRED-NNN slug or sprint task_id */
-  id: z.string(),
-  /** Short title / heading text */
-  title: z.string(),
-  /** 'deferred' | 'done' | 'sprint-goal' | 'sprint-task' */
-  kind: z.enum(['deferred', 'done', 'sprint-goal', 'sprint-task']),
-  /** Full text body of the item */
-  body: z.string(),
-  /** Schedule-as line (deferred items only) */
-  scheduleAs: z.string().optional(),
-  /** Sprint this item belongs to */
-  sprint: z.string(),
-  /** ISO-8601 resolution date for done items */
-  resolvedAt: z.string().optional(),
-  /** Rollback commit sha (sprint items only) */
-  rollbackCommit: z.string().optional(),
-});
-export type PlanningItem = z.infer<typeof PlanningItemSchema>;
-
-export const PlanningSprintSchema = z.object({
-  /** Sprint id, e.g. "gander-studio-p7-graph-viz" */
-  sprint: z.string(),
-  /** Sprint goal text */
-  goal: z.string().optional(),
-  /** Sprint status string */
-  status: z.string().optional(),
-  /** All items in this sprint */
-  items: z.array(PlanningItemSchema),
-});
-export type PlanningSprint = z.infer<typeof PlanningSprintSchema>;
-
-export const PlanningListInputSchema = z.object({});
-export type PlanningListInput = z.infer<typeof PlanningListInputSchema>;
-
-export const PlanningListOutputSchema = z.object({
-  sprints: z.array(PlanningSprintSchema),
-  /** Number of source files that failed to parse (allSettled-skipped) */
-  skipped: z.number(),
-});
-export type PlanningListOutput = z.infer<typeof PlanningListOutputSchema>;
 
 // ---------------------------------------------------------------------------
 // Program DAG — output of program.getDag procedure
