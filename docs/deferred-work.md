@@ -127,9 +127,11 @@ N/A reasons currently route via dataQualityNotes; a typed `reason` on QualitySta
 
 Header.tsx/ModeContent.tsx fixed 28px padding overflows the document at 390px width (t6 bounding-rect probe; PartyPage itself is flush). Route to s4 (nav/shell redesign scope).
 
-### DEFERRED-V2S2-2 — CLAUDE.md Known-Issues bundle baseline stale
+### DEFERRED-V2S2-2 — CLAUDE.md Known-Issues bundle baseline stale — ✅ DONE (2026-07-10)
 
-Says "~700KB"; reality: 1,025 kB pre-split, 756.80 kB after the s2 route-level code-split (PartyPage/GraphPage/ProgramDagPage/ComposePage now lazy). Update in s4's docs pass.
+**Resolution:** Fixed in `prog-studio-v2-2026-07-s4-retirement` (task `prog-studio-v2-2026-07-s4-retirement-DOCS-1`). Re-measured via a fresh `npm run build -w @gander-studio/client`: max chunk 407.00 kB / gzip 120.62 kB (`index-*.js`), no Vite chunk-size warning. CLAUDE.md Known Issues line updated with the new figure + measurement source.
+
+**Source:** Says "~700KB"; reality: 1,025 kB pre-split, 756.80 kB after the s2 route-level code-split (PartyPage/GraphPage/ProgramDagPage/ComposePage now lazy). Update in s4's docs pass.
 
 ## Sprint: prog-studio-v2-2026-07-s3-drilldowns (2026-07-08)
 
@@ -140,3 +142,35 @@ AgentDetailSchema lacks the frontmatter agent name ReviseSpecAction targets; t4a
 ### DEFERRED-V2S3-2 — contrast_pairs row for --mg on --sfh
 
 4.85:1 (numerically AA) but unrowed; add the row to v2-design-spec.md's table before any text ever uses that pair (AUD#3 advisory; currently accent-only).
+
+---
+
+## Sprint: prog-studio-v2-2026-07-s4-retirement (2026-07-10)
+
+### DEFERRED-V2S4-1 — Roster rail collapse/expand not implemented
+
+**Source:** s3 inheritance (b) — human-approved deferral, human-ratified 2026-07-10 (ORC-witnessed).
+**What it is:** The hoisted global `SubmenuRail` (FE-1a) ships fixed at 240px width with no collapse/expand affordance. This is a polish item distinct from the delivered `<640px` bottom-bar fold (FE-1b), which IS shipped and provides the mobile nav form.
+**Why deferred:** Human-ratified 2026-07-10 (ORC-witnessed) as out of scope for `prog-studio-v2-2026-07-s4-retirement`; the rail is fully functional, keyboard-navigable, and accessible at its fixed width.
+**Schedule as:** Small FE packet on `SubmenuRail.tsx` + `AppShell.tsx` (collapse toggle, persisted width preference, animated grid-track transition).
+
+### DEFERRED-V2S2-1 — 390px global header/main horizontal overflow (carried forward, still open)
+
+**Source:** Originally logged above under `## Sprint: prog-studio-v2-2026-07-s2-party-shell` (2026-07-08), routed there to "s4 (nav/shell redesign scope)"; re-confirmed still open and deferred, human-ratified 2026-07-10 (ORC-witnessed).
+**What it is:** `Header.tsx`/`ModeContent.tsx` fixed 28px padding still overflows the document by ~16px at 390px width. No `prog-studio-v2-2026-07-s4-retirement` packet (FE-1a/FE-1b/FE-2/FE-3/FE-CAT/FE-4/BE-1) touched `Header.tsx` or `ModeContent.tsx` padding — the nav-shell rework (rail hoist, retirement, `<640px` fold) is orthogonal to this pre-existing padding overflow, so it remains unresolved.
+**Why deferred:** Human-ratified 2026-07-10 (ORC-witnessed) as out of scope for the nav-retirement sprint (no `Header.tsx`/`ModeContent.tsx` padding edits were authorized in any s4 packet).
+**Schedule as:** Small FE packet on `Header.tsx`/`ModeContent.tsx` padding (see the original `DEFERRED-V2S2-1` entry above for full detail).
+
+### DEFERRED-V2S3-1 — Retire ROSTER_AGENT_NAME_BY_CODE via schema extension (carried forward, still open)
+
+**Source:** Originally logged above under `## Sprint: prog-studio-v2-2026-07-s3-drilldowns` (2026-07-08); re-confirmed still open and deferred, human-ratified 2026-07-10 (ORC-witnessed).
+**What it is:** `AgentDetailSchema` still lacks the frontmatter agent name `ReviseSpecAction` targets; the sanctioned 12-entry client map remains in place. No `prog-studio-v2-2026-07-s4-retirement` packet touched `AgentDetailSchema` or `ReviseSpecAction.tsx`.
+**Why deferred:** Additive schema extension, human-approved 2026-07-10 (ORC-witnessed) as out of scope for the retirement sprint.
+**Schedule as:** Small BE packet — add `agentName`/`specFile` to `AgentDetailSchema` + `assembleAgentDetail`, then delete the client map (unchanged from the original `DEFERRED-V2S3-1` recommendation above).
+
+### DEFERRED-V2S3-2 — contrast_pairs row for --mg on --sfh (carried forward, still open)
+
+**Source:** Originally logged above under `## Sprint: prog-studio-v2-2026-07-s3-drilldowns` (2026-07-08); re-confirmed still open and deferred, human-ratified 2026-07-10 (ORC-witnessed).
+**What it is:** `--mg` on `--sfh` measures 4.85:1 (numerically AA) but remains unrowed in `v2-design-spec.md`'s `contrast_pairs` table. DOCS-1 (this packet) confirms no new design tokens or contrast pairs were introduced this sprint (`design_system_source: DESIGN_MD`, structural/IA record only), so this item remains open and unaddressed.
+**Why deferred:** Conditional design-pass item, human-approved 2026-07-10 (ORC-witnessed) as out of scope for a docs-only/nav-retirement sprint.
+**Schedule as:** Design-pass packet on `v2-design-spec.md`'s `contrast_pairs` table (unchanged from the original `DEFERRED-V2S3-2` recommendation above).

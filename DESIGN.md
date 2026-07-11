@@ -425,4 +425,29 @@ The auditor must verify that every `animation:` / `animation-name:` reference ac
 
 **Regression guard.** `--redb`/`--destructive` is consumed in two places: (1) the Shadcn destructive button variant, which renders `text-destructive` (red text) on `bg-destructive/10` (a 10%-alpha tint of the same red) — text-on-tint, not white-on-solid-red; lightening the source hex only raises this text/tint contrast, so no regression is possible here. (2) `AgentTimeline.tsx` uses `--redb` as a graphical marker/legend color (AUDIT_FAIL/FAIL states), which requires only the WCAG non-text 3:1 threshold — comfortably cleared by the new value. No solid-red-background + light-foreground-text pairing exists anywhere in the codebase for this token, so the historical AA failure is fully resolved with no new failure introduced.
 
+---
+
+## Decision Record E — v2 IA: 9→6 Surface Consolidation & Nav-Shell Retirement (s4-retirement, 2026-07-10)
+
+**Type.** Structural / information-architecture record. `design_system_source: DESIGN_MD`. No new visual tokens introduced — every element below reuses existing FF7 Remake Intergrade tokens already defined in this document's Color Tokens table (`--sf` rail surface, `--sfh` active-item background, `--mt` active accent, `--wm` inactive label, `--bd` border).
+
+**Ratification chain.**
+- **2026-07-07** — `docs/v2-vision/v2-design-spec.md` (UI#2, `gander-studio-p11-v2-vision-t3`): the v2 design package establishing the party-home + agent-detail + rail-nav vision that this record formalizes into the live IA.
+- **2026-07-08** — `prog-studio-v2-2026-07-s3-drilldowns` sign-offs: AgentDetailPage assembly + nav re-pointing (party card → agent-detail; Roster rail → party) ratified and shipped green (s3-drilldowns.spec.ts 8/8, s2-party-shell.spec.ts 19/19).
+- **2026-07-10** — human-ratified, ORC-witnessed: the 13-role Roster Catalog surface + its persistent "View Full Roster" CTA placement, and the four deferrals recorded this same sprint in `docs/deferred-work.md` (rail collapse/expand, 390px header overflow, DEFERRED-V2S3-1, DEFERRED-V2S3-2).
+
+**Problem.** The v1 IA exposed 9 flat surfaces (Browse, Compose, Edit, Export, Sessions, Graph, Progression, Planning, Programs) behind a single 9-tab `BottomTabBar`. The v2 vision (2026-07-07) established that agent-loadout browsing/composition/editing/export and the standalone connectivity graph are superseded by a roster-first IA: a party home, per-agent drill-down detail pages, and a full-roster catalog, all fed by the new `roster.getParty` / `roster.getAgentDetail` contracts (s1 data layer).
+
+**Resolution — surface consolidation (9→6).** `Compose`, `Edit`, `Export`, `Planning` are retired outright (client + server, `prog-studio-v2-2026-07-s4-retirement` FE-2/FE-3); `Browse` and `Graph` are retired with their value absorbed into the new `Agent Detail` (relationship panel absorbs the connectivity graph's per-agent edges) and `Roster Catalog` (absorbs Browse's full-list browsing) surfaces. The retained/added set is exactly six: **Party** (home, default), **Agent Detail**, **Roster Catalog**, **Sessions**, **Progression**, **Programs**.
+
+**Resolution — nav-shell retirement.** The v1 9-tab `BottomTabBar` (`NAV_ITEMS`, one tab per flat surface) is retired. In its place, a single `RAIL_ITEMS` source of truth (4 entries — Roster→`party`, Sessions, Progression, Programs) drives two rendering forms of the *same* "Main navigation" landmark:
+- **`SubmenuRail`** (`role="navigation"`, `aria-label="Main navigation"`) — hoisted into `AppShell.tsx` (global, not page-local) as a persistent 240px left rail at ≥640px viewport width. Reuses the `Button variant="ghost"` primitive; active item styled `--sfh` background / `--mt` text per the accessibility_spec contrast_pairs table (5.38:1 AA), consistent with the already-ratified "Active submenu label" pairing.
+- **`BottomTabBar`** (repurposed, not deleted) — `role="tablist"`/`role="tab"`, same `RAIL_ITEMS`, same `aria-label="Main navigation"` — folds in as the sole nav form below 640px, mutually exclusive with the rail via the same 640px breakpoint value (no new breakpoint introduced).
+
+Exactly one "Main navigation" landmark is visible at any viewport width; nav is never zero at any point in the retirement sequence (hoist-first sequencing: FE-1a added the global rail while the 9-tab bar stayed as fallback; only after the rail was proven global did FE-1b retire the 9-tab config).
+
+**Resolution — homescreen + catalog.** `PartyPage` renders a 6-agent-cap grid (`PARTY_GRID_DISPLAY_CAP = 6`, "six front-row cards, not all thirteen" per the sample-data appendix) with a persistent "View Full Roster" CTA. The CTA — human-ratified 2026-07-10 — routes to `catalog` (`RosterCatalogPage`), which renders the same `roster.getParty` envelope uncapped (all 13 roles, zero-corpus-activity roles included, never silently hidden — v2-design-spec `<submenu_structure>` #1). `catalog` and `agent-detail` are deliberately **not** `RAIL_ITEMS` entries: they are reached contextually (party card → agent-detail; persistent CTA → catalog), not via the persistent rail, to keep the rail's destination count small and stable.
+
+**Non-goals (this record).** No visual/token changes. Rail collapse/expand, the 390px header/main overflow, `ROSTER_AGENT_NAME_BY_CODE` retirement, and the `--mg`-on-`--sfh` contrast_pairs row are explicitly out of scope for this record and this sprint — see the four corresponding entries in `docs/deferred-work.md` under `## Sprint: prog-studio-v2-2026-07-s4-retirement (2026-07-10)`.
+
 **Ratification.** Target value `#e05555` is ledger-ratified (deferred-work.md line 22, "lighten-in-place" default — no new token variant). This Decision Record documents the mechanical doc-sync applied at the three live sites referencing `--color-error` / `--destructive` contrast (Color Tokens table, Decision Record A, Decision Record B) plus this changelog entry.
