@@ -371,10 +371,28 @@ test('a11y: detail page is keyboard-operable — Tab reaches the revise trigger,
 
   // Tab forward from Back-to-party until the revise trigger receives focus. Bounded loop (not an
   // exact-stop-count assertion) — React Flow's Controls buttons add a data-independent-but-
-  // count-variable number of tab stops between the back button and the trigger.
+  // count-variable number of tab stops between the back button and the trigger, AND (harden,
+  // prog-studio-v2-2026-07-s4-retirement-navshell-rem investigation) the relationship panel's
+  // node/edge count is itself genuinely data-driven: `openAgentDetail(page, 0)` opens whichever
+  // agent is currently most-recently-active (party-roster.ts `byActivityRecencyDesc` — a LIVE
+  // sort, not a static fixture), and `RelationshipPanel` renders one focusable RF node + edge per
+  // `relationships[]` entry with no cap (`buildRelationshipGraph`). For a heavily-connected agent
+  // (e.g. the orchestrator, which is systemically the most-connected role) this can legitimately
+  // run into the dozens — a fixed 40-press bound was empirically proven to undercount (orchestrator
+  // measured at 26 nodes + 25 edges = 55 required presses). NOTE: this is NOT a nav-shell/rail
+  // regression — traced and confirmed the global SubmenuRail sits before `detail-back` in DOM
+  // order and contributes zero tab stops on this forward-only path. The bound below scales with
+  // the panel's actual current size instead of assuming it is always small.
+  const relationshipPanel = page.getByTestId('detail-relationship-panel');
+  await expect(relationshipPanel).toBeVisible();
+  const rfFocusableCount =
+    (await relationshipPanel.locator('.react-flow__node').count()) +
+    (await relationshipPanel.locator('.react-flow__edge').count());
+  const tabBound = Math.max(40, rfFocusableCount + 20);
+
   const reviseTrigger = page.getByTestId('revise-spec-trigger');
   let reached = false;
-  for (let i = 0; i < 40 && !reached; i += 1) {
+  for (let i = 0; i < tabBound && !reached; i += 1) {
     await page.keyboard.press('Tab');
     reached = await reviseTrigger.evaluate((el) => el === document.activeElement).catch(() => false);
   }
