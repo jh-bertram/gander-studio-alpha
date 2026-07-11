@@ -6,7 +6,7 @@
  * S2 RUNTIME LESSON: never `useStore(selectorReturningNewObject)` — Zustand v5
  * infinite-loop. All selectors must return primitives or stable slices.
  *
- * Visits three surfaces and asserts zero:
+ * Visits two surfaces and asserts zero:
  *   - "Maximum update depth exceeded" (React render loop)
  *   - "getSnapshot should be cached" (Zustand v5 infinite-loop signal)
  *   - "Too many re-renders" (React render bailout)
@@ -14,7 +14,9 @@
  * Surfaces:
  *   - Sessions page → AgentTimeline Analyze tab (AgentTimeline, s4-p4)
  *   - Progression page (ProgressionPage, s4-p5)
- *   - Graph page (GraphPage, s4-p6)
+ *
+ * s4-retirement (FE-4): the GraphPage sub-test is REMOVED — GraphPage is retired this sprint
+ * (absorbed into the s3 drill-downs). Sessions + Progression sub-tests are unaffected.
  *
  * Runs against the LIVE dev stack (http://localhost:5173).
  */
@@ -43,7 +45,7 @@ function attachRenderLoopListener(page: import('@playwright/test').Page): () => 
   return () => errors;
 }
 
-test.describe('Render-loop probe — Sessions + Progression + Graph (s4)', () => {
+test.describe('Render-loop probe — Sessions + Progression (s4)', () => {
   test('Sessions/AgentTimeline: zero render-loop errors when visiting timeline surface', async ({ page }) => {
     const getErrors = attachRenderLoopListener(page);
 
@@ -101,7 +103,12 @@ test.describe('Render-loop probe — Sessions + Progression + Graph (s4)', () =>
 
     await page.goto(BASE_URL);
 
-    const progressionTab = page.getByRole('tab', { name: /progression/i });
+    // MIGRATED (s4 FE-1b, Progression sub-test): nav via the SubmenuRail (role="navigation",
+    // aria-label "Main navigation", hoisted global by FE-1a) — the 9-tab v1 BottomTabBar
+    // (role="tab") is retired.
+    const progressionTab = page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByRole('button', { name: /progression/i });
     await expect(progressionTab).toBeVisible({ timeout: 8000 });
     await progressionTab.click();
 
@@ -122,59 +129,5 @@ test.describe('Render-loop probe — Sessions + Progression + Graph (s4)', () =>
       .or(page.locator('[role="status"]').first())
       .or(page.locator('[role="alert"]').first());
     await expect(meaningful.first()).toBeAttached({ timeout: 5000 });
-  });
-
-  test('GraphPage: zero render-loop errors when visiting graph surface with hover interaction', async ({ page }) => {
-    const getErrors = attachRenderLoopListener(page);
-
-    await page.goto(BASE_URL);
-
-    const graphTab = page.getByRole('tab', { name: /graph/i });
-    await expect(graphTab).toBeVisible({ timeout: 8000 });
-    await graphTab.click();
-
-    // Wait for the graph page to settle: either the RF pane appears,
-    // or an error/loading state renders. Give 25s for data fetch + layout.
-    const rfPane = page.locator('.react-flow__pane');
-    const loadingState = page.locator('[aria-label="Loading graph"]');
-    const errorState = page.locator('[role="alert"]');
-
-    // Wait up to 25s for any of the three states to appear
-    await Promise.race([
-      rfPane.waitFor({ state: 'visible', timeout: 25000 }).catch(() => {}),
-      loadingState.waitFor({ state: 'visible', timeout: 25000 }).catch(() => {}),
-      errorState.waitFor({ state: 'visible', timeout: 25000 }).catch(() => {}),
-    ]);
-
-    // Allow React Flow layout to complete if loading resolved to RF pane
-    const rfPaneVisible = await rfPane.isVisible().catch(() => false);
-
-    if (rfPaneVisible) {
-      // Hover over first node to trigger hoveredNodeId state change (s4-p6 juice)
-      const firstNode = page.locator('.react-flow__node').first();
-      const hasNode = await firstNode.isVisible({ timeout: 5000 }).catch(() => false);
-
-      if (hasNode) {
-        await firstNode.hover();
-        // Wait for any re-renders triggered by hover state update
-        await page.waitForTimeout(500);
-        // Move mouse away to trigger hover-exit
-        await page.mouse.move(0, 0);
-        await page.waitForTimeout(300);
-      }
-    } else {
-      // Loading or error state — just let it settle
-      await page.waitForTimeout(500);
-    }
-
-    // Render-loop gate — must pass regardless of whether RF pane rendered
-    const errors = getErrors();
-    expect(errors, `Render loop on GraphPage: ${errors[0] ?? ''}`).toHaveLength(0);
-
-    // DOM-presence guard: graph page rendered something (RF pane, loading, or error)
-    const graphSurface = rfPane
-      .or(loadingState)
-      .or(errorState);
-    await expect(graphSurface.first()).toBeAttached({ timeout: 5000 });
   });
 });

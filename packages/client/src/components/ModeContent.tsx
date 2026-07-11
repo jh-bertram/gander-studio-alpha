@@ -1,12 +1,8 @@
 import React, { Suspense } from 'react';
 import { useUIStore } from '../store/ui-store';
 import type { AppMode } from '../store/ui-store';
-import BrowsePage from '../pages/BrowsePage';
-import EditPage from '../pages/EditPage';
-import ExportPage from '../pages/ExportPage';
 import SessionsRouter from '../pages/sessions/SessionsRouter';
 import ProgressionPage from '../pages/ProgressionPage';
-import PlanningPage from '../pages/PlanningPage';
 import ShimmerBox from './ui/shimmer-box';
 
 // Route-level code-split (remediation t5-rem, AUD#5): t5's PAGE_MAP wiring was the sole/first
@@ -17,14 +13,13 @@ import ShimmerBox from './ui/shimmer-box';
 const PartyPage = React.lazy(() => import('../pages/PartyPage'));
 
 // Route-level code-split (remediation t5-rem2, residual QA Bundle Size Gate fail): rem1's
-// PartyPage split alone left the main chunk 25.44 kB over the 1000 kB gate. GraphPage and
-// ProgramDagPage both statically import @xyflow/react (react-flow), and ComposePage pulls the
-// same library for the materia canvas — this pre-existing weight, unrelated to Party, is the
-// bulk of the residual overage. Deferring all three to their own dynamic-import chunks (same
+// PartyPage split alone left the main chunk 25.44 kB over the 1000 kB gate. ProgramDagPage
+// statically imports @xyflow/react (react-flow) — this pre-existing weight, unrelated to Party,
+// is the bulk of the residual overage. Deferring it to its own dynamic-import chunk (same
 // pattern as PartyPage, same shared Suspense boundary) removes react-flow from the main chunk
-// entirely; it now loads only when the user switches to graph/programs/compose.
-const ComposePage = React.lazy(() => import('../pages/ComposePage'));
-const GraphPage = React.lazy(() => import('../pages/GraphPage'));
+// entirely; it now loads only when the user switches to programs.
+// s4-retirement (FE-4): GraphPage (the other react-flow consumer originally referenced by this
+// comment) is RETIRED — its value is absorbed into the s3 drill-downs; see the AppMode union.
 const ProgramDagPage = React.lazy(() => import('../pages/ProgramDagPage'));
 
 // prog-studio-v2-2026-07-s3-drilldowns-t4a — LAZY FROM BIRTH (s2 AA §6 G1 recurring-pattern
@@ -32,18 +27,19 @@ const ProgramDagPage = React.lazy(() => import('../pages/ProgramDagPage'));
 // four pages above.
 const AgentDetailPage = React.lazy(() => import('../pages/AgentDetailPage'));
 
+// prog-studio-v2-2026-07-s4-retirement-FE-CAT — LAZY FROM BIRTH (same s3 pattern as
+// AgentDetailPage above): the 13-role roster catalog is reached only via the party home's
+// persistent "View Full Roster" CTA, never on the initial default route, so it must never enter
+// the eager bundle.
+const RosterCatalogPage = React.lazy(() => import('../pages/RosterCatalogPage'));
+
 const PAGE_MAP: Record<AppMode, React.ComponentType> = {
   party: PartyPage,
-  browse: BrowsePage,
-  compose: ComposePage,
-  edit: EditPage,
-  export: ExportPage,
   sessions: SessionsRouter,
-  graph: GraphPage,
   progression: ProgressionPage,
-  planning: PlanningPage,
   programs: ProgramDagPage,
   'agent-detail': AgentDetailPage,
+  catalog: RosterCatalogPage,
 };
 
 // Suspense fallback for the lazy-loaded chunk gap. Reuses the shimmer-box loading treatment

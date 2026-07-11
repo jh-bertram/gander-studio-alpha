@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type AppMode = 'party' | 'browse' | 'compose' | 'edit' | 'export' | 'sessions' | 'graph' | 'progression' | 'planning' | 'programs' | 'agent-detail';
+// s4-retirement (FE-CAT, Critic-ratified mode id): 'catalog' is the 13-role roster catalog,
+// reached via the persistent "View Full Roster" CTA on the populated party home — NOT a rail
+// destination (RAIL_ITEMS stays 4 entries).
+// s4-retirement (FE-4): 'browse'/'edit'/'graph' RETIRED — their value is absorbed into the s3
+// drill-downs (AgentDetailPage) and the s4 roster catalog; s3-drilldowns.spec.ts (8/8) +
+// s2-party-shell.spec.ts (19/19) cited green this wave as the cut authorization.
+export type AppMode = 'party' | 'sessions' | 'progression' | 'programs' | 'agent-detail' | 'catalog';
 
 interface UIState {
   activeMode: AppMode;

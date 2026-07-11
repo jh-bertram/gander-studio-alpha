@@ -3,7 +3,6 @@ import type { PartyMember } from '@gander-studio/shared';
 import { useParty } from '../hooks/useParty';
 import { useUIStore } from '../store/ui-store';
 import PartyMemberCard from '../components/party/PartyMemberCard';
-import SubmenuRail from '../components/party/SubmenuRail';
 import ShimmerBox from '../components/ui/shimmer-box';
 import ErrorState from '../components/ui/error-state';
 import { Button } from '../components/ui/button';
@@ -23,15 +22,15 @@ import { Button } from '../components/ui/button';
 // token system (memorized S2 gotcha: Shadcn defaults → invisible text). CR#1 disk-verified this
 // substitution and ratified it — DRY + collision-avoidance, not a fidelity shortfall.
 //
-// RAIL MOUNT (plan R-3): SubmenuRail is mounted page-local here (desktop-only, hidden below
-// `lg`), NOT hoisted into the global AppShell this sprint — s4 lifts it when it removes
-// BottomTabBar. `AppShell.tsx`/`ModeContent.tsx` are untouched by this packet (t5 owns wiring
-// PartyPage into PAGE_MAP; this file exists unrouted until then).
+// RAIL MOUNT (plan R-3, RECONCILED s4 FE-1a): the party submenu rail is no longer mounted
+// page-local here — FE-1a hoisted it into the GLOBAL `AppShell.tsx` (rendered on every surface,
+// not just this page). This page no longer owns the rail's mount, sizing, or visibility; see
+// `AppShell.tsx` + `globals.css` `.app-shell-rail` for the hoisted rail's grid placement, and
+// `components/party/` for the rail component itself.
 
-const PARTY_GRID_CLASS = 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3';
-// DESIGN.md "Collapsible sidebar" Component Rule open width. Collapse/expand interaction is
-// explicitly DEFERRED to s4 (amendment W5 R-9) — the rail renders at this single fixed width.
-const RAIL_COLUMN_WIDTH_PX = '240px';
+// Exported (DRY, FE-CAT): RosterCatalogPage reuses this class + the state-view components below
+// verbatim for its own uncapped grid — same visual contract, no duplicated Tailwind string.
+export const PARTY_GRID_CLASS = 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3';
 const SKELETON_CARD_COUNT = 6;
 const PARTY_GRID_DISPLAY_CAP = 6; // sample_data_appendix: "six front-row cards, not all thirteen"
 
@@ -83,7 +82,15 @@ export function formatPartyError(error: unknown): string {
   return `Couldn't load party data — ${detail}.`;
 }
 
-function PartyScreenHeader({ members }: { members: PartyMember[] | undefined }) {
+// Exported (DRY, FE-CAT): RosterCatalogPage reuses this header verbatim via the `title` override
+// — same rule accent bar + ScopeSummary treatment, only the heading text differs.
+export function PartyScreenHeader({
+  members,
+  title = 'Party Screen',
+}: {
+  members: PartyMember[] | undefined;
+  title?: string;
+}) {
   return (
     <header className="flex flex-col gap-2">
       <h1
@@ -107,7 +114,7 @@ function PartyScreenHeader({ members }: { members: PartyMember[] | undefined }) 
             display: 'inline-block',
           }}
         />
-        Party Screen
+        {title}
       </h1>
       {members ? (
         <p
@@ -126,7 +133,9 @@ function PartyScreenHeader({ members }: { members: PartyMember[] | undefined }) 
   );
 }
 
-function PartyGridSkeleton() {
+// Exported (DRY, FE-CAT): RosterCatalogPage reuses this loading skeleton verbatim (same
+// SKELETON_CARD_COUNT placeholder treatment) rather than duplicating the shimmer grid.
+export function PartyGridSkeleton() {
   return (
     <div aria-busy="true" className={PARTY_GRID_CLASS}>
       <span className="sr-only">Loading party roster…</span>
@@ -176,7 +185,10 @@ function EmptyPartyState({ onViewRoster }: { onViewRoster: () => void }) {
   );
 }
 
-function ErrorPartyState({ error, onRetry }: { error: unknown; onRetry: () => void }) {
+// Exported (DRY, FE-CAT): RosterCatalogPage reuses this error view verbatim (same
+// formatPartyError + Retry-button contract) — the underlying data source is the identical
+// `roster.getParty` query, so the wording stays accurate on both surfaces.
+export function ErrorPartyState({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   return (
     <div className="flex flex-col items-start gap-3">
       <ErrorState error={formatPartyError(error)} />
@@ -202,11 +214,21 @@ export default function PartyPage() {
     setActiveMode('agent-detail');
   }
 
-  // TODO(s4-cut): re-point "View Full Roster" when BrowsePage is deleted — 'browse' leaves the
-  // AppMode union, so this must retarget the 13-role roster catalog (or 'party'). Deferred-work
-  // pointer: prog-studio-v2 s4 Browse-cut packet. (nav-contract retain decision, s3.)
+  // s4-retirement (FE-4): re-pointed from the retired 'browse' target to 'catalog' — the 13-role
+  // roster catalog is the ratified true destination for the empty-state "View Full Roster" CTA
+  // (human-ratified 2026-07-10, ORC-witnessed; see FE-CAT for the separate persistent
+  // populated-home CTA, which this function does NOT touch).
   function handleViewRoster() {
-    setActiveMode('browse');
+    setActiveMode('catalog');
+  }
+
+  // s4-retirement (FE-CAT, human-ratified 2026-07-10, ORC-witnessed): a SEPARATE, persistent
+  // entry point to the 13-role catalog on the POPULATED party home — distinct from
+  // handleViewRoster above (the empty-state CTA, FE-4's re-point target). Placed AFTER the party
+  // grid in DOM order (below) so it does not insert a new Tab stop between the rail's last item
+  // and the first party card (s2 keyboard-tab-order invariant).
+  function handleViewFullRoster() {
+    setActiveMode('catalog');
   }
 
   const showDiagnostics =
@@ -218,30 +240,31 @@ export default function PartyPage() {
     <div data-testid="party-page" className="flex flex-col gap-6">
       <PartyScreenHeader members={data?.members} />
 
-      <div className="flex gap-6">
-        <div className="hidden lg:flex" style={{ width: RAIL_COLUMN_WIDTH_PX, flexShrink: 0 }}>
-          <SubmenuRail />
-        </div>
-
-        <div className="flex flex-1 flex-col gap-4">
-          {state === 'loading' && <PartyGridSkeleton />}
-          {state === 'error' && <ErrorPartyState error={error} onRetry={refetch} />}
-          {state === 'empty' && <EmptyPartyState onViewRoster={handleViewRoster} />}
-          {state === 'default' && data && (
+      <div className="flex flex-1 flex-col gap-4">
+        {state === 'loading' && <PartyGridSkeleton />}
+        {state === 'error' && <ErrorPartyState error={error} onRetry={refetch} />}
+        {state === 'empty' && <EmptyPartyState onViewRoster={handleViewRoster} />}
+        {state === 'default' && data && (
+          <>
             <div className={PARTY_GRID_CLASS}>
               {data.members.slice(0, PARTY_GRID_DISPLAY_CAP).map((member) => (
                 <PartyMemberCard key={member.code} member={member} onSelect={handleSelect} />
               ))}
             </div>
-          )}
+            <div className="flex justify-center">
+              <Button type="button" variant="outline" onClick={handleViewFullRoster}>
+                View Full Roster
+              </Button>
+            </div>
+          </>
+        )}
 
-          {showDiagnostics && data && (
-            <p style={{ fontSize: '10px', color: 'var(--wm)', margin: 0 }}>
-              data quality: {data.diagnostics.invalidLineCount} unparsed lines ·{' '}
-              {data.diagnostics.uncountedEventTypes} uncounted event types
-            </p>
-          )}
-        </div>
+        {showDiagnostics && data && (
+          <p style={{ fontSize: '10px', color: 'var(--wm)', margin: 0 }}>
+            data quality: {data.diagnostics.invalidLineCount} unparsed lines ·{' '}
+            {data.diagnostics.uncountedEventTypes} uncounted event types
+          </p>
+        )}
       </div>
     </div>
   );

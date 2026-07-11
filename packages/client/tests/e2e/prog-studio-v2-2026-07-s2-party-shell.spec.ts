@@ -46,8 +46,10 @@ function getCards(page: Page) {
   return page.getByTestId('party-page').locator('button[aria-label]');
 }
 
+// MIGRATED (s4 FE-1a): SubmenuRail's aria-label changed from "Party screen submenus" to
+// "Main navigation" when it was hoisted from PartyPage-local into the global AppShell.
 function getRailNav(page: Page) {
-  return page.getByRole('navigation', { name: 'Party screen submenus' });
+  return page.getByRole('navigation', { name: 'Main navigation' });
 }
 
 /** House convention (prog-studio-vision-s3-program-dag.spec.ts): `.react-flow__pane` is the
@@ -371,7 +373,10 @@ test.describe('SC3 — mocked PartyGrid states', () => {
     await expect(getCards(page).first()).toBeVisible({ timeout: 8000 });
   });
 
-  test('empty: zero-member response renders the empty state with a Browse CTA', async ({ page }) => {
+  // AUTHORIZED cross-sprint update (prog-studio-v2-2026-07-s4-retirement-FE-4, rev3:326): the
+  // empty-state "View Full Roster" CTA now targets 'catalog' (RosterCatalogPage) — 'browse' is
+  // retired this sprint. Testid updated to RosterCatalogPage's confirmed root testid.
+  test('empty: zero-member response renders the empty state with a Roster Catalog CTA', async ({ page }) => {
     await page.route('**/trpc/roster.getParty**', async (route) => {
       await route.fulfill({
         status: 200,
@@ -405,7 +410,7 @@ test.describe('SC3 — mocked PartyGrid states', () => {
     const cta = page.getByRole('button', { name: 'View Full Roster' });
     await expect(cta).toBeVisible();
     await cta.click();
-    await expect(page.getByTestId('browse-page')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByTestId('roster-catalog-page')).toBeVisible({ timeout: 8000 });
   });
 
   test('error: network failure renders the alert with a Retry that refetches to the default state', async ({
@@ -430,18 +435,22 @@ test.describe('SC3 — mocked PartyGrid states', () => {
 });
 
 // ================================================================================
-// SC4 — no regression: BottomTabBar still shows 9 tabs and switching still works
+// SC4 — <640px fold: BottomTabBar renders the 4 RAIL_ITEMS destinations, switching still works
 // ================================================================================
 
-test('no regression: BottomTabBar renders 9 tabs; switching to Sessions and Programs still works', async ({
+// MIGRATED (s4 FE-1b): the 9-tab v1 BottomTabBar (NAV_ITEMS) is retired. BottomTabBar is now the
+// <640px-only mobile fold of the rail, rendering the same 4 RAIL_ITEMS destinations SubmenuRail
+// renders at >=640px (docs/v2-vision/v2-design-spec.md <responsive> lines 85-88).
+test('fold: BottomTabBar renders 4 tabs at <640px; switching to Sessions and Programs still works', async ({
   page,
 }) => {
   const guard = attachRenderLoopGuard(page);
+  await page.setViewportSize(MOBILE_VIEWPORT);
   await gotoParty(page);
 
   const tablist = page.getByRole('tablist', { name: 'Main navigation' });
   await expect(tablist).toBeVisible();
-  await expect(tablist.getByRole('tab')).toHaveCount(9);
+  await expect(tablist.getByRole('tab')).toHaveCount(4);
 
   await tablist.getByRole('tab', { name: /sessions/i }).click();
   await expect(page.getByTestId('sessions-list-page')).toBeVisible({ timeout: 10000 });
