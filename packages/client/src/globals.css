@@ -96,6 +96,31 @@ body::before {
   min-height: 100vh;
 }
 
+/* Hoisted global SubmenuRail (v2 nav shell, s4 FE-1a). Mobile-first: no rail column below
+   640px (BottomTabBar is the only nav there this packet — FE-1b owns the <640px rail fold). */
+.app-shell-rail {
+  display: none;
+}
+
+/* ≥640px: give the rail a persistent grid column, reusing the existing 640px breakpoint value
+   (see the max-width:640px block below) in the opposite (min-width) direction — no new
+   breakpoint value introduced. Header keeps gridArea:'hd' (now spanning both columns) and
+   ModeContent keeps gridArea:'mn' (both set inline, unchanged by this rule). */
+@media (min-width: 640px) {
+  .app-shell {
+    grid-template-columns: 240px 1fr;
+    grid-template-areas: "hd hd" "rl mn";
+  }
+  .app-shell-rail {
+    display: block;
+    grid-area: rl;
+    overflow-y: auto;
+    padding: 24px 12px;
+    background: var(--sf);
+    border-right: 1px solid var(--bd);
+  }
+}
+
 /* Logo emblem responsive */
 @media (max-width: 390px) {
   .logo-emblem {

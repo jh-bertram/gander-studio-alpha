@@ -28,7 +28,7 @@ export default function SubmenuRail() {
   const { activeMode, setActiveMode } = useUIStore();
 
   return (
-    <nav role="navigation" aria-label="Party screen submenus" className="flex flex-col gap-1">
+    <nav role="navigation" aria-label="Main navigation" className="flex flex-col gap-1">
       {RAIL_ITEMS.map((item) => {
         const isActive = activeMode === item.mode;
         const Icon = item.icon;
