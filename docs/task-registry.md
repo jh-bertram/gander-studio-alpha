@@ -1,6 +1,6 @@
 # Task Registry — Gander Studio
 
-Last updated: 2026-07-18T04:18:30Z
+Last updated: 2026-07-18T14:50:00Z
 
 ---
 
@@ -620,7 +620,7 @@ To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard a7e4b96
 
 **Goal:** Program integration mop-up (skein residue, SC-2..SC-5): ui Dialog safe-focus wrapper + ReviseSpecAction migration (t1), RelationshipPanel half-width decision-with-evidence (t2), stale-comment hygiene sweep + ORC-routed dir deletions (t3), deferred-work Accuracy row + cross-repo guarded-push reflect flag (t4). SC-1 (s4 SC-5 amendment) discharged pre-sprint — human RATIFIED 2026-07-18.
 
-**Status:** WAVE 1 PREP — PM decomposition CR#1 PASS (0 blockers, 4 warnings), amend1 warning-resolution in flight. E2E baseline at HEAD f2164bb: 82 green / 43 red (125 total), artifacts at `.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-e2e-baseline-{green,red}.txt`.
+**Status:** CLOSED — human-VERIFIED at Step 4.5 ("ok, push!", 2026-07-18); 4/4 packets AUDIT_PASS (AUD#1 v2.0, seq 20); REQVAL COVERED 10/10 (RV#1 Mode B 9/10 -> ORC Mode A rev1 post human rmdir); AA close gate PASS (docs/after-actions/prog-studio-v2-2026-07-s5-integration.md); archived (project_log s5 entry + archive_correction L2760-2793 + POST_MORTEM L2795-2808). Commits: 1a61795 ceremony + 9e8afc8/d67c789/e70d6ef/4d7665c durability. E2E baseline 82g/43r @ f2164bb (operative control); auditor serial 84g/41r zero green->red.
 
 ### Rollback Point
 commit: f2164bbcc14a09443579fb11114f2378c30a95c6
@@ -700,3 +700,20 @@ To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard f2164bb
     </assignment>
   </assignments>
 </expectation_manifest>
+
+## Sprint: prog-studio-v2-2026-07-s5-integration — CLOSE-OUT (Step 4.9 refresh)
+
+**Status:** CLOSED (see updated Status line in the sprint section above). Program prog-studio-v2-2026-07: all 4 siblings DONE, skein STITCHED, s5 residue drained — program fully closed.
+
+### Rollback Point (CURRENT — post-close)
+commit: 4d7665c (t4 durability; full s5 chain 1a61795..4d7665c)
+recorded: 2026-07-18T14:50:00Z
+task_id: prog-studio-v2-2026-07-s5-integration
+To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard 4d7665c
+(Prior current point superseded: a7e4b96, recorded at s4 close 2026-07-11; f2164bb was the s5 OPEN-time point.)
+
+## Closed Tasks (Archive) — v2 program (s5 addendum)
+
+| Task ID | Sprint | Status | Commits | Closed | Notes |
+|---|---|---|---|---|---|
+| prog-studio-v2-2026-07-s5-integration | s5 (integration mop-up) | CLOSED | 1a61795..4d7665c (5) | 2026-07-18 | Skein residue drained: safe-focus wrapper, RelationshipPanel retune, hygiene sweep (rail-routed deletions), deferred-work ledger; program closed |

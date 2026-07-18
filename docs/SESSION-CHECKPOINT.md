@@ -5,7 +5,7 @@ type: project-doc
 # Session Checkpoint
 
 **Project:** gander-studio-alpha
-**Updated:** 2026-07-18 05:05:25 UTC (auto-rebuilt by session-end-checkpoint hook)
+**Updated:** 2026-07-18 14:36:07 UTC (auto-rebuilt by session-end-checkpoint hook)
 
 ## ⚠ STALE — UNCOMMITTED DEBT PRESENT
 
@@ -14,20 +14,8 @@ reflects the CURRENT working tree state but the listed files have not been commi
 Do not treat this checkpoint as authoritative for sprint state until debt is resolved.
 
 **Uncommitted tracked paths (debt):**
-  - `docs/agent-logs/AUD/latest.md`
-  - `docs/agent-logs/CR/latest.md`
-  - `docs/agent-logs/FE/latest.md`
-  - `docs/agent-logs/PM/latest.md`
-  - `docs/deferred-work.md`
-  - `docs/project-conventions.md`
-  - `docs/task-registry.md`
-  - `docs/v2-vision/v2-design-spec.md`
-  - `packages/client/src/AppShell.tsx`
-  - `packages/client/src/components/detail/RelationshipPanel.tsx`
-  - `packages/client/src/components/detail/ReviseSpecAction.tsx`
-  - `packages/client/src/components/ui/dialog.tsx`
-  - `packages/server/src/parsers/__tests__/program-dag-parser.test.ts`
-  - `packages/server/src/router.ts`
+  - `docs/events/agent-events-2026-07-18.jsonl`
+  - `docs/project_log.md`
 
 Ceremony-class files (chore(orchestration) commit class per
 `.claude/skills/commit-packet/SKILL.md §Two-Commit Pattern`) should be committed
@@ -35,7 +23,7 @@ before this checkpoint is treated as fresh. Non-ceremony files must NOT be
 auto-committed by this hook — manual ORC commit-packet is required.
 
 ## Agent Log Summary
-*Scanned at 2026-07-18T05:05:25.034438+00:00*
+*Scanned at 2026-07-18T14:36:07.084243+00:00*
 
 ### INTERRUPTED (6 task(s))
 
@@ -367,16 +355,16 @@ interrupted task's files are included in the debt list above.
 *Source: agent-events-2026-07-18.jsonl*
 
 ```
-{"seq":14,"ts":"2026-07-18T04:23:34Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s5-integration-t4","agent_id":"FE#4","parent_id":"ORC#0","edge_label":"task_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-t4-FE-1784348388.md"],"auto_logged":true}
-{"seq":15,"ts":"2026-07-18T04:25:02Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s5-integration-t3","agent_id":"FE#3","parent_id":"ORC#0","edge_label":"task_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-t3-FE-1784348388.md"],"auto_logged":true}
-{"seq":16,"ts":"2026-07-18T04:36:57Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s5-integration-t1","agent_id":"FE#1","parent_id":"ORC#0","edge_label":"task_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-t1-FE-1784348388.md"],"auto_logged":true}
-{"seq":17,"ts":"2026-07-18T04:39:40Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s5-integration-t2","agent_id":"FE#2","parent_id":"ORC#0","edge_label":"task_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-t2-FE-1784348388.md"],"auto_logged":true}
-{"seq":18,"ts":"2026-07-18T04:40:55Z","ev":"NOTE","task_id":"prog-studio-v2-2026-07-s5-integration","agent_id":"ORC#0","parent_id":"MAIN","edge_label":"gate_orc_delete","note":"GATE-ORC-DELETE: rmdir DENIED by permission rail. Per deletion-rail integrity (standards.md, s4 G2) NO side-door attempted; removal of the 3 enumerated empty dirs (components/{browse,edit,graph}) routed to HUMAN. SC-3g pending human execution; audit proceeds on all other SCs."}
-{"seq":19,"ts":"2026-07-18T04:41:28Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s5-integration","agent_id":"AUD#1","parent_id":"ORC#0","edge_label":"audit_verdict","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-AUD-1784349688.md","note":"GATE-AUDIT over t1-t4; SC-3g deferred-to-human (rail denial, seq 18); amend1 mandates auditor-run s3-drilldowns"}
 {"seq":20,"ts":"2026-07-18T04:58:52Z","ev":"AUDIT_PASS","task_id":"prog-studio-v2-2026-07-s5-integration","agent_id":"AUD#1","parent_id":"ORC#0","edge_label":"audit_verdict PASS","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-AUD-1784349688.md"],"note":"GATE-AUDIT t1-t4 PASS; SA/QA/SX all green; s3-drilldowns 8/8; serial full-suite 84P/41F zero green->red regressions vs s5 baseline; both flake claims green serially; SC-3g PENDING-HUMAN (rmdir denial seq18)"}
 {"seq":21,"ts":"2026-07-18T04:59:59Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s5-integration","agent_id":"RV#1","parent_id":"ORC#0","edge_label":"requirements_coverage_report","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-REQVAL-1784350799.md","note":"Mode B spawned validator; 4-packet sprint; SC-3g pending-human context supplied"}
 {"seq":22,"ts":"2026-07-18T05:04:16Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s5-integration","agent_id":"RV#1","parent_id":"ORC#0","edge_label":"requirements_coverage_report","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-REQVAL-1784350799.md"],"auto_logged":true}
 {"seq":23,"ts":"2026-07-18T05:05:25Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":24,"ts":"2026-07-18T14:29:36Z","ev":"NOTE","task_id":"prog-studio-v2-2026-07-s5-integration","agent_id":"ORC#0","parent_id":"HU","edge_label":"gate_orc_delete","note":"SC-3g RECEIPT: human executed rail-guarded rmdir (3 component dirs + stray packages/client/.claude tree); ORC ls-verified all absent, workspace intact. Deletion-rail integrity preserved: enumerate(t3) -> ORC denied(seq18) -> human executed -> ORC verified."}
+{"seq":25,"ts":"2026-07-18T14:29:36Z","ev":"REQVAL_COVERED","task_id":"prog-studio-v2-2026-07-s5-integration","agent_id":"ORC#0","parent_id":"MAIN","edge_label":"requirements_coverage_report","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-REQVAL-rev1-1784352600.md"],"note":"ORC-direct Mode A inline addendum; targeted R-005 re-check post human rmdir receipt; overall PARTIAL->COVERED 10/10 (RV#1 Mode B report stands for R-001..R-010 evidence)"}
+{"seq":26,"ts":"2026-07-18T14:32:42Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s5-integration","agent_id":"AR#1","parent_id":"ORC#0","edge_label":"archive_entry","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-AR-1784385162.md"}
+{"seq":27,"ts":"2026-07-18T14:35:07Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s5-integration","agent_id":"AR#1","parent_id":"ORC#0","edge_label":"archive_entry","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-AR-1784385162.md"],"auto_logged":true}
+{"seq":28,"ts":"2026-07-18T14:35:34Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s5-integration-arfix","agent_id":"AR#1","parent_id":"ORC#0","edge_label":"archive_correction","expected_output":"docs/project_log.md (in-place archive_correction)","mode":"transcript","note":"SendMessage transcript-resume; 3 factual drifts in s5 entry (cross-entry 15/16 contamination, ratification date, flake-claim labels); ORC logs terminal manually"}
+{"seq":29,"ts":"2026-07-18T14:36:07Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=1 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":1,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
 ```
 
 ---
