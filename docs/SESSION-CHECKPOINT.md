@@ -5,7 +5,7 @@ type: project-doc
 # Session Checkpoint
 
 **Project:** gander-studio-alpha
-**Updated:** 2026-07-11 06:41:18 UTC (auto-rebuilt by session-end-checkpoint hook)
+**Updated:** 2026-07-11 18:15:28 UTC (auto-rebuilt by session-end-checkpoint hook)
 
 ## ⚠ STALE — UNCOMMITTED DEBT PRESENT
 
@@ -15,7 +15,7 @@ Do not treat this checkpoint as authoritative for sprint state until debt is res
 
 **Uncommitted tracked paths (debt):**
   - `docs/events/agent-events-2026-07-11.jsonl`
-  - `docs/project_log.md`
+  - `docs/programs/prog-studio-v2-2026-07/program.md`
 
 Ceremony-class files (chore(orchestration) commit class per
 `.claude/skills/commit-packet/SKILL.md §Two-Commit Pattern`) should be committed
@@ -23,7 +23,7 @@ before this checkpoint is treated as fresh. Non-ceremony files must NOT be
 auto-committed by this hook — manual ORC commit-packet is required.
 
 ## Agent Log Summary
-*Scanned at 2026-07-11T06:41:18.917104+00:00*
+*Scanned at 2026-07-11T18:15:28.195625+00:00*
 
 ### INTERRUPTED (6 task(s))
 
@@ -348,16 +348,16 @@ interrupted task's files are included in the debt list above.
 *Source: agent-events-2026-07-11.jsonl*
 
 ```
-{"seq":38,"ts":"2026-07-11T06:19:04Z","ev":"AUDIT_FAIL","task_id":"prog-studio-v2-2026-07-s4-retirement-DOCS-1","agent_id":"AUD#9","parent_id":"ORC#0","edge_label":"audit_review FAIL","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-AUD-1783750241.md"],"reason":"CLAUDE.md tRPC note claims ConnectivityGraphSchema has no consumer; agent-detail.ts imports+safeParses it"}
-{"seq":39,"ts":"2026-07-11T06:19:42Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement-DOCS-1-rem","agent_id":"FE#9","parent_id":"ORC#0","edge_label":"remediation_request","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-rem-FE-1783750782.md","note":"AUD#9 QA FAIL: one-sentence CLAUDE.md fix (ConnectivityGraphSchema active-consumer)"}
-{"seq":40,"ts":"2026-07-11T06:21:06Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s4-retirement-DOCS-1-rem","agent_id":"FE#9","parent_id":"ORC#0","edge_label":"ui_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-rem-FE-1783750782.md"],"auto_logged":true}
-{"seq":41,"ts":"2026-07-11T06:21:12Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement-DOCS-1-reaudit","agent_id":"AUD#10","parent_id":"ORC#0","edge_label":"audit_review","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-reaudit-AUD-1783750872.md","note":"scoped reconfirm of the one-sentence rem"}
-{"seq":42,"ts":"2026-07-11T06:27:32Z","ev":"AUDIT_PASS","task_id":"prog-studio-v2-2026-07-s4-retirement-DOCS-1-reaudit","agent_id":"AUD#10","parent_id":"ORC#0","edge_label":"audit_review PASS","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-reaudit-AUD-1783750872.md"]}
-{"seq":43,"ts":"2026-07-11T06:28:20Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement","agent_id":"RV#1","parent_id":"ORC#0","edge_label":"requirements_validation","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-REQVAL-1783751300.md","note":"Mode B; 8 packets + 2 rem rounds all audit-PASS"}
-{"seq":44,"ts":"2026-07-11T06:34:40Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s4-retirement","agent_id":"RV#1","parent_id":"ORC#0","edge_label":"requirements_coverage_report","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-REQVAL-1783751300.md"],"note":"REQVAL 15/16 COVERED + requires_human_visual (R-005 Step 4.5); backfilled by ORC (validator-class hook miss, 5th consecutive \u2014 the dispatch-task checklist line is now standing practice)"}
-{"seq":45,"ts":"2026-07-11T06:38:32Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement","agent_id":"AR#1","parent_id":"ORC#0","edge_label":"archive_entry","expected_output":".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-AR-1783751912.md"}
-{"seq":46,"ts":"2026-07-11T06:40:53Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s4-retirement","agent_id":"AR#1","parent_id":"ORC#0","edge_label":"archive_entry","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-AR-1783751912.md"],"auto_logged":true}
-{"seq":47,"ts":"2026-07-11T06:41:19Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":49,"ts":"2026-07-11T17:05:11Z","ev":"SPAWN","task_id":"prog-studio-v2-2026-07-s4-retirement","agent_id":"AA#1","parent_id":"ORC#0","edge_label":"after_action","expected_output":"docs/after-actions/prog-studio-v2-2026-07-s4-retirement.md"}
+{"seq":50,"ts":"2026-07-11T17:21:04Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s4-retirement","agent_id":"AA#1","parent_id":"ORC#0","edge_label":"completion_packet","output_files":[".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-AA-1783789511.md"],"auto_logged":true}
+{"seq":51,"ts":"2026-07-11T17:22:02Z","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-s4-retirement","agent_id":"ORC#0","parent_id":"MAIN","edge_label":"delivery_report","output_files":["docs/after-actions/prog-studio-v2-2026-07-s4-retirement.md",".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-COMMIT-1783751900.md","docs/task-registry.md"],"note":"sprint CLOSED: 4.5 PASS, AA gate PASS, registry refreshed; push held for human opt-in"}
+{"seq":52,"ts":"2026-07-11T17:23:00Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":53,"ts":"2026-07-11T17:39:28Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":54,"ts":"2026-07-11T17:40:41Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":55,"ts":"2026-07-11T17:49:00Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":56,"ts":"2026-07-11T17:55:10Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
+{"seq":57,"ts":"2026-07-11T18:14:17+00:00","ev":"COMPLETE","task_id":"prog-studio-v2-2026-07-skein","agent_id":"ORC#0","parent_id":"HU","edge_label":"skein_report","output_files":["docs/programs/prog-studio-v2-2026-07/skein-report.md","docs/programs/prog-studio-v2-2026-07/skein-map.html","docs/programs/prog-studio-v2-2026-07/sprints/integration/orchestrator_brief.md","docs/programs/prog-studio-v2-2026-07/program.md"],"tokens":573532,"note":"skein reconciliation: 4 siblings DONE, 5/5 seams STITCHED, recommendation NEEDS_INTEGRATION (optional residue mop-up brief); program.md status PLANNED->STITCHED"}
+{"seq":58,"ts":"2026-07-11T18:15:28Z","ev":"BACKFILL_SCAN","task_id":"system","agent_id":"ORC#0","parent_id":"HUMAN_SESSION","edge_label":"backfill_scan_report","note":"backfill-autofire scan: checked=0 backfilled=0 ghost_tombstoned=0 ghost_skip_tombstoned=0 duplicate_skipped=0 failed=0","scan_summary":{"checked":0,"backfilled":0,"ghost_tombstoned":0,"ghost_skip_tombstoned":0,"duplicate_skipped":0,"failed":0}}
 ```
 
 ---
