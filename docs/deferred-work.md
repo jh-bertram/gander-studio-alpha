@@ -121,6 +121,13 @@ corpus-wide sprint-id taxonomy, not ad-hoc suffix additions.
 
 N/A reasons currently route via dataQualityNotes; a typed `reason` on QualityStatSchema is a small s3-adjacent extension (REQVAL note 3).
 
+### DEFERRED-V2S1-3 — party-stats Accuracy metric's sprintRoot-family grouping can cross-resolve a same-role FAIL/PASS across different tasks (accepted approximation)
+
+**Source:** prog-studio-v2-2026-07-s5-integration residue item 4a (skein-surfaced; unledgered until this entry).
+**What it is:** The party-stats "Accuracy" stat (`accuracy-first-pass` derivation, `PartyMemberCard.tsx`) is computed by `computePartyDerivations`'s attribution-flip algorithm in `packages/server/src/parsers/party-stats.ts`. Events are grouped into families via `familyKeyFor()` (party-stats.ts:96-106), which reuses `sprintRoot()` — the SAME boundary-anchored grouping key `session-slug-match.ts` uses for session synthesis/dedup — not the exact `task_id`. Within a family, an `AUDIT_FAIL` for a given role opens an unresolved-fail marker for that role that any LATER `AUDIT_PASS` for the same role in the SAME family resolves, per the algorithm's own doc comment (party-stats.ts:108-132). Because the grouping key is the family (sprintRoot cluster), not the individual task_id, a `FAIL` on task A and a `PASS` on task B can cross-resolve each other as long as both A and B carry the same canonicalized role and the same sprintRoot family — even though A and B are different tasks.
+**Why deferred:** This is a known, accepted approximation, not a defect: sprintRoot-family grouping is deliberate DRY reuse of an already-established grouping key (see the party-stats.ts:97-99 comment), and tightening it to exact-task_id resolution would require re-deriving task-to-task audit lineage that the corpus does not currently expose distinctly from family membership. Out of scope for the s5 integration mop-up sprint (docs-only packet; no `party-stats.ts` code change authorized here).
+**Schedule as:** Small BE packet on `party-stats.ts`'s attribution-flip algorithm — either (a) accept the family-level approximation permanently and document it in `session-data-inventory.md` §2.1 as intentional, or (b) tighten resolution to same-task_id (or a stricter same-task-family-instance key) if a future corpus exposes reliable task-to-task audit lineage.
+
 ## Sprint: prog-studio-v2-2026-07-s2-party-shell (2026-07-08)
 
 ### DEFERRED-V2S2-1 — 390px global header/main horizontal overflow (~16px, pre-existing)
@@ -174,3 +181,16 @@ AgentDetailSchema lacks the frontmatter agent name ReviseSpecAction targets; t4a
 **What it is:** `--mg` on `--sfh` measures 4.85:1 (numerically AA) but remains unrowed in `v2-design-spec.md`'s `contrast_pairs` table. DOCS-1 (this packet) confirms no new design tokens or contrast pairs were introduced this sprint (`design_system_source: DESIGN_MD`, structural/IA record only), so this item remains open and unaddressed.
 **Why deferred:** Conditional design-pass item, human-approved 2026-07-10 (ORC-witnessed) as out of scope for a docs-only/nav-retirement sprint.
 **Schedule as:** Design-pass packet on `v2-design-spec.md`'s `contrast_pairs` table (unchanged from the original `DEFERRED-V2S3-2` recommendation above).
+
+---
+
+## Cross-repo reflect-pass intake flags
+
+Items that belong to the `gander` control-plane repo (`/home/jhber/projects/gander/`), not to
+`gander-studio-alpha`. Recorded here ONLY as a durable handoff flag for the gander-side
+reflect/agent-improvement pass, which PULLs sibling-project artifacts as read-only evidence. These
+items are NOT editable from this repo — do not attempt a fix here.
+
+- **FLAG (cross-repo, do-not-fix-here): guarded-push docs-vs-installed-rail contradiction** — owned
+  by the gander-side reflect/agent-improvement pass; surfaced from
+  `prog-studio-v2-2026-07-s5-integration` (residue 4b). Not editable from `gander-studio-alpha`.
