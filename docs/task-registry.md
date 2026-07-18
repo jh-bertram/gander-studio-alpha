@@ -1,6 +1,6 @@
 # Task Registry — Gander Studio
 
-Last updated: 2026-07-11T06:30:00Z
+Last updated: 2026-07-18T04:18:30Z
 
 ---
 
@@ -613,3 +613,90 @@ To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard a7e4b96
 | Task ID | Sprint | Status | Commits | Closed | Notes |
 |---|---|---|---|---|---|
 | prog-studio-v2-2026-07-s4-retirement | s4 (final sibling) | CLOSED | 3acdfab..a7e4b96 (10) | 2026-07-11 | v1 CUT/ABSORB surfaces retired client+server; catalog added; docs v2; program awaits skein |
+
+---
+
+## Sprint: prog-studio-v2-2026-07-s5-integration
+
+**Goal:** Program integration mop-up (skein residue, SC-2..SC-5): ui Dialog safe-focus wrapper + ReviseSpecAction migration (t1), RelationshipPanel half-width decision-with-evidence (t2), stale-comment hygiene sweep + ORC-routed dir deletions (t3), deferred-work Accuracy row + cross-repo guarded-push reflect flag (t4). SC-1 (s4 SC-5 amendment) discharged pre-sprint — human RATIFIED 2026-07-18.
+
+**Status:** WAVE 1 PREP — PM decomposition CR#1 PASS (0 blockers, 4 warnings), amend1 warning-resolution in flight. E2E baseline at HEAD f2164bb: 82 green / 43 red (125 total), artifacts at `.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-e2e-baseline-{green,red}.txt`.
+
+### Rollback Point
+commit: f2164bbcc14a09443579fb11114f2378c30a95c6
+recorded: 2026-07-18T04:18:30Z
+task_id: prog-studio-v2-2026-07-s5-integration
+To recover: git -C /home/jhber/projects/gander-studio-alpha reset --hard f2164bbcc14a09443579fb11114f2378c30a95c6
+
+### Plan artifacts
+- ORC brief: `.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-ORCBRIEF-1784347058.md`
+- PM decomposition: `.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-PM-1784347058.md`
+- Critic PASS: `.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-CR-1784347867.md`
+- SC-precheck: `.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-sc-precheck-report.json` (0 findings)
+- Human request: `.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-human-request.md`
+
+### Expectation Manifest (assign-agents dispatch-time, s5-integration)
+
+<expectation_manifest>
+  <sprint_id>prog-studio-v2-2026-07-s5-integration</sprint_id>
+  <generated>2026-07-18T04:19:48Z</generated>
+  <assignments>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s5-integration-t1</task_id>
+      <agent>FE#1</agent>
+      <expected_tag>ui_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-t1-FE-1784348388.md</expected_file>
+      <wave>1</wave>
+      <blocks>NONE (feeds GATE-AUDIT)</blocks>
+      <receipt_check>
+        <item>dialog.tsx carries function-form initialFocus default ('?? false' present; baseline 0)</item>
+        <item>ReviseSpecAction no longer references hasFocusedOnOpenRef (baseline 3); consumes wrapper API</item>
+        <item>Popover clause discharged: symmetric support OR zero-consumer ACCEPT with grep citation</item>
+        <item>e2e result BASELINE-RELATIVE vs s5 artifacts; s3-drilldowns observed count reported (target 8/8); no absolute "full suite green" claim; no "pre-existing" label without stash-A/B receipt</item>
+        <item>lint x3 + client build PASS noted; no new Vite chunk-size warning</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s5-integration-t2</task_id>
+      <agent>FE#2</agent>
+      <expected_tag>ui_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-t2-FE-1784348388.md</expected_file>
+      <wave>1</wave>
+      <blocks>NONE</blocks>
+      <receipt_check>
+        <item>DECISION = RETUNE | ACCEPT, unambiguous</item>
+        <item>Evidence artifact cited: screenshot path under .claude/tasks/outputs/ or measured half-width dimensions</item>
+        <item>If RETUNE: diff confined to the four layout constants (RelationshipPanel.tsx:41-44); Handles intact; lint/build/e2e-baseline green. If ACCEPT: zero diff on the file</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s5-integration-t3</task_id>
+      <agent>FE#3</agent>
+      <expected_tag>completion_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-t3-FE-1784348388.md</expected_file>
+      <wave>1</wave>
+      <blocks>GATE-ORC-DELETE (ORC rmdir needs t3 enumeration)</blocks>
+      <receipt_check>
+        <item>Four stale comments corrected; each removed phrase stated; SC-3b REVISED two-part check: exportRouter.spawn grep==0 AND corrected 197-203 block text quoted verbatim (amend1 W4)</item>
+        <item>THREE empty dirs (browse/edit/graph) enumerated as rmdir targets for ORC + any extra debris tagged tracked-vs-empty-dir</item>
+        <item>quickcheck{,2}.mjs verify-absent evidence recorded; NO authored deletion for them</item>
+        <item>NO agent-performed deletion command output (rm/find -delete/fs-API/rmdir)</item>
+        <item>lint x3 + client build PASS noted; e2e note baseline-relative</item>
+      </receipt_check>
+    </assignment>
+    <assignment>
+      <task_id>prog-studio-v2-2026-07-s5-integration-t4</task_id>
+      <agent>FE#4</agent>
+      <expected_tag>completion_packet</expected_tag>
+      <expected_file>.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-t4-FE-1784348388.md</expected_file>
+      <wave>1</wave>
+      <blocks>NONE</blocks>
+      <receipt_check>
+        <item>New Accuracy family-grouping DEFERRED entry quoted (non-colliding tag; Source/What/Why/Schedule block)</item>
+        <item>Cross-repo guarded-push reflect-pass flag quoted (contains cross-repo + do-not-fix-here language)</item>
+        <item>git diff --name-only lists ONLY docs/deferred-work.md; zero edits under /home/jhber/projects/gander/</item>
+        <item>Optional residue-1 cross-ref NOT added</item>
+      </receipt_check>
+    </assignment>
+  </assignments>
+</expectation_manifest>

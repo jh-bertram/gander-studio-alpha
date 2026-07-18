@@ -1,0 +1,43 @@
+tests/e2e/agent-timeline-zoom.spec.ts:53:3 › AgentTimeline zoom controls › Load: zoom buttons and timeline SVG are visible on the Analyze tab
+tests/e2e/agent-timeline-zoom.spec.ts:65:3 › AgentTimeline zoom controls › Primary interaction: zoom-in widens SVG; zoom-out narrows it
+tests/e2e/agent-timeline-zoom.spec.ts:94:3 › AgentTimeline zoom controls › Bounds: zoom-in disables at ZOOM_MAX (4.0); zoom-out disables at ZOOM_MIN (0.25)
+tests/e2e/gander-studio-p1-fe-shell.spec.ts:15:1 › app shell loads with header and Browse mode active
+tests/e2e/overview-aggregate.spec.ts:55:1 › deselecting a session changes aggregate counts (headline behavior)
+tests/e2e/p6-t1-timeline-buffer.spec.ts:113:3 › AgentTimeline right-edge buffer (p6-t1) › Short-session guard: agent-timeline-scroller has no horizontal scrollbar for fixture session
+tests/e2e/p6-t1-timeline-buffer.spec.ts:54:3 › AgentTimeline right-edge buffer (p6-t1) › Load: timeline SVG is visible and Analyze tab renders for fixture session
+tests/e2e/p6-t1-timeline-buffer.spec.ts:65:3 › AgentTimeline right-edge buffer (p6-t1) › Primary: final tick label fits within SVG bounds and rightmost bar has visible gap
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts:122:1 › table tab shows Agent ID column header
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts:158:1 › analyze tab has aria-disabled and coming-in-s3 title
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts:184:1 › detail page shell persists across tab switches without remounting
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts:222:1 › Editor tab pre-fills with original source markdown
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts:251:1 › Save edit flow — success: appending text enables save and shows Saved to path
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts:291:1 › Save edit flow — revert to original restores textarea to pre-fill value
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts:336:1 › Analyze tab is disabled — aria-disabled true and Coming in S3 title
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts:364:1 › Editor textarea text is readable (color differs from background)
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts:41:1 › clicking a session row shows the detail page
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts:66:1 › overview and table tabs render real panels
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts:94:1 › overview tab shows the session sprint slug text
+tests/e2e/prog-studio-vision-s2-d3-session-buffer.spec.ts:64:1 › D3: opening Session B after Session A shows B's content (not A's) in the editor
+tests/e2e/prog-studio-vision-s2-d4-prose-slug.spec.ts:133:1 › D4: session detail page renders without crashing even when events data is empty
+tests/e2e/prog-studio-vision-s3-timeline-events.spec.ts:112:3 › AgentTimeline SEAM-06 ev-type markers (s3) › Primary: markers positioned within SVG bounds when timeline renders (boundingBox proof)
+tests/e2e/prog-studio-vision-s3-timeline-events.spec.ts:183:3 › AgentTimeline SEAM-06 ev-type markers (s3) › Error/empty state: AgentTimeline empty-state renders cleanly when no sessions exist
+tests/e2e/prog-studio-vision-s3-timeline-events.spec.ts:74:3 › AgentTimeline SEAM-06 ev-type markers (s3) › Load: Sessions page renders cleanly; timeline SVG renders when sessions exist
+tests/e2e/prog-studio-vision-s4-legibility.spec.ts:135:3 › Legibility and geometry — s4 juice surfaces › Primary: AgentTimeline bars within RIGHT_PAD no-clip boundary (boundingBox proof)
+tests/e2e/prog-studio-vision-s4-legibility.spec.ts:200:3 › Legibility and geometry — s4 juice surfaces › DEFERRED-002: zoom clamp still active — disabled at ZOOM_MIN(0.25) and ZOOM_MAX(4.0)
+tests/e2e/s3-t2-picker-store.spec.ts:125:1 › SC-interactions (c+d): per-agent checkbox toggles agent; per-metric toggle removes metric
+tests/e2e/s3-t2-picker-store.spec.ts:51:1 › SC-contrast: SessionPicker primary label text is visible against its background
+tests/e2e/s3-t2-picker-store.spec.ts:68:1 › SC-interactions (a): all-toggle selects all agents
+tests/e2e/s3-t2-picker-store.spec.ts:99:1 › SC-interactions (b): none-toggle deselects all agents
+tests/e2e/s3-t3-timeline.spec.ts:114:1 › SC-orphan-spawn: orphan-SPAWN agent bar has stroke-dasharray (dashed variant)
+tests/e2e/s3-t3-timeline.spec.ts:144:1 › SC-scroll: wide session produces scrollWidth > clientWidth on the scroller
+tests/e2e/s3-t3-timeline.spec.ts:167:1 › SC-units: wide session x-axis tick labels use adaptive hour unit
+tests/e2e/s3-t3-timeline.spec.ts:65:1 › Load: AgentTimeline SVG is visible for fixture session
+tests/e2e/s3-t3-timeline.spec.ts:74:1 › SC-contrast: AgentTimeline y-axis label text is visible against SVG background
+tests/e2e/s3-t4-stat-surfaces.spec.ts:148:1 › SC-contrast: table cell text color is visible against background
+tests/e2e/s3-t4-stat-surfaces.spec.ts:177:1 › AgentStatPanel role-aware: AUDITOR card shows audit grid, not 3-metric column
+tests/e2e/s3-t4-stat-surfaces.spec.ts:74:1 › AgentStatTable renders on Analyze tab for fixture session
+tests/e2e/s3-t4-stat-surfaces.spec.ts:85:1 › SC-sort: AgentStatTable sorts by spawns ascending then descending with aria-sort
+tests/e2e/s3-t5a-integration.spec.ts:101:1 › SC-round-trip: deselecting one agent updates timeline and stat panels
+tests/e2e/s3-t5a-integration.spec.ts:139:1 › SC-loading-intercept: aria-busy element visible while getStats is delayed
+tests/e2e/s3-t5a-integration.spec.ts:61:1 › SC-tab-wired: Analyze tab is enabled and renders analyze-tab content
+tests/e2e/s3-t5a-integration.spec.ts:83:1 › SC-contrast: AnalyzeTab session picker label text is visible against background

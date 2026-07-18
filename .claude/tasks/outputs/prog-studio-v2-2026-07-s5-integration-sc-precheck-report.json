@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "input_file": "/home/jhber/projects/gander-studio-alpha/.claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-PM-1784347058.md",
+  "repo_root": "/home/jhber/projects/gander-studio-alpha",
+  "findings": [],
+  "summary": {
+    "total_commands_extracted": 16,
+    "satisfiable": 0,
+    "unsatisfiable": 0,
+    "self_defeating": 0,
+    "checked_at": "2026-07-18T04:10:51Z"
+  }
+}

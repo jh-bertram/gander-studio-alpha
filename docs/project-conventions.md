@@ -1,3 +1,6 @@
+<!-- Re-verified 2026-07-18 (sprint prog-studio-v2-2026-07-s5-integration): full re-scan, all
+     fields IDENTICAL — commands, workspaces, runners unchanged post-v2 (s1-s4). e2e corpus now
+     26 spec files under packages/client/tests/e2e (post-s4 retirement). No overwrite needed. -->
 <!-- Re-detected 2026-07-07 (sprint gander-studio-p11-v2-vision). Diff vs 2026-05-25 block:
      test_runner was "playwright" with vitest "not confirmed by config file" — vitest is NOW CONFIRMED
      as the unit-test runner via package.json test scripts in BOTH client ("vitest run") and server
