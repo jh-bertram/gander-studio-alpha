@@ -113,6 +113,7 @@ export function aggregateSessionStats(
     critique_blocks: acc.critique_blocks,
     audit_passes: acc.audit_passes,
     audit_fails: acc.audit_fails,
+    files_touched: 0,
     ...(agentWallClockDefined.has(acc.agent_id) ? { wall_clock_ms: acc.wall_clock_ms } : {}),
   }));
 

@@ -2,12 +2,17 @@ import { describe, it, expect } from 'vitest';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { writeFile, mkdir } from 'node:fs/promises';
-import { parseEventLogFiles } from '../event-log-parser.js';
+import { parseEventLogFiles, readEventLogEntries, readEventLogEntriesWithDiagnostics } from '../event-log-parser.js';
 import { computeSessionStats } from '../session-stats.js';
 import { SessionStatsSchema } from '@gander-studio/shared';
 import type { Session, EventLogEntry } from '@gander-studio/shared';
 
 const FIXTURES_DIR = path.join(import.meta.dirname, 'fixtures');
+// Isolated single-fixture dir (t2) — readEventLogEntriesWithDiagnostics scans a
+// whole dir's agent-events-*.jsonl files; sharing FIXTURES_DIR would contaminate
+// the exact invalidLineCount/totalRawLines assertions below. See
+// party-stats.test.ts for the fuller rationale.
+const MALFORMED_LINE_DIR = path.join(import.meta.dirname, 'fixtures', 'malformed-line');
 
 // Minimal Session stub for computeSessionStats tests
 const STUB_SESSION: Session = {
@@ -15,6 +20,7 @@ const STUB_SESSION: Session = {
   sprint: 'prog-studio-sessions-2026-05-s1-backend',
   date: '2026-05-20',
   gap_classes: [],
+  has_after_action: true,
   filePath: '/tmp/test-session.md',
   source_root: '/tmp',
   agents: [],
@@ -180,5 +186,37 @@ describe('computeSessionStats — per-agent field names', () => {
     expect(sa1).toBeDefined();
     expect(sa1?.audit_passes).toBe(1);
     expect(sa1?.audit_fails).toBe(1);
+  });
+});
+
+// ─── 8. readEventLogEntriesWithDiagnostics — invalid-line surfacing (t2, SC3) ──
+// Fixture: SPAWN, an HCG_RESOLVED line matching the real seq-7 defect shape
+// sampled from docs/events/agent-events-2026-03-28.jsonl (resolved_by present,
+// agent_id absent), COMPLETE.
+
+describe('readEventLogEntriesWithDiagnostics — schema-invalid lines counted, never dropped (SC3)', () => {
+  it('counts the HCG_RESOLVED-shaped invalid line as invalid and retains a truncated sample', async () => {
+    const result = await readEventLogEntriesWithDiagnostics(MALFORMED_LINE_DIR);
+    expect(result.totalRawLines).toBe(3);
+    expect(result.validEntries).toBe(2);
+    expect(result.invalidLineCount).toBe(1);
+    expect(result.invalidLineSamples).toHaveLength(1);
+    expect(result.invalidLineSamples[0]).toContain('HCG_RESOLVED');
+    expect(result.entries).toHaveLength(2);
+  });
+
+  it('validEntries always equals entries.length (no double-count / no drop mismatch)', async () => {
+    const result = await readEventLogEntriesWithDiagnostics(MALFORMED_LINE_DIR);
+    expect(result.validEntries).toBe(result.entries.length);
+  });
+});
+
+// ─── 9. readEventLogEntries (unchanged) still behaves identically (regression) ─
+
+describe('readEventLogEntries — unchanged behavior on the same malformed fixture (t2 out_of_scope guard)', () => {
+  it('still silently drops the invalid line via console.warn (same 2-entry result as before this packet)', async () => {
+    const entries = await readEventLogEntries(MALFORMED_LINE_DIR);
+    expect(entries).toHaveLength(2);
+    expect(entries.map(e => e.seq)).toEqual([1, 3]);
   });
 });

@@ -67,11 +67,11 @@ export function computeSessionStats(session: Session, events: EventLogEntry[]): 
   }
 
   // --- Per-agent roll-up ---
-  const agentMap = new Map<string, EventCounts & { feedback_loops: number; timestamps: number[] }>();
+  const agentMap = new Map<string, EventCounts & { feedback_loops: number; timestamps: number[]; files: Set<string> }>();
 
   const getOrCreate = (agentId: string) => {
     if (!agentMap.has(agentId)) {
-      agentMap.set(agentId, { ...makeEmptyCounts(), feedback_loops: 0, timestamps: [] });
+      agentMap.set(agentId, { ...makeEmptyCounts(), feedback_loops: 0, timestamps: [], files: new Set<string>() });
     }
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return agentMap.get(agentId)!;
@@ -82,6 +82,7 @@ export function computeSessionStats(session: Session, events: EventLogEntry[]): 
     accumulateEv(bucket, entry.ev);
     const ts = Date.parse(entry.ts);
     if (!isNaN(ts)) bucket.timestamps.push(ts);
+    for (const f of entry.output_files ?? []) bucket.files.add(f);
   }
 
   // Per-agent feedback_loops — SEAM-04: same rule as total, attributed to the
@@ -116,6 +117,7 @@ export function computeSessionStats(session: Session, events: EventLogEntry[]): 
       critique_blocks: data.critique_blocks,
       audit_passes: data.audit_passes,
       audit_fails: data.audit_fails,
+      files_touched: data.files.size,
       feedback_loops: data.feedback_loops,
       wall_clock_ms,
     });

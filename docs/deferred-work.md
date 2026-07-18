@@ -4,6 +4,14 @@ Items surfaced during sprints but explicitly deferred for a future sprint.
 
 ---
 
+## Sprint: gander-studio-p9-sessions-feed-agentstats (2026-06-30)
+
+### DEFERRED-P9-1 — Tokens-per-agent stats not implemented
+
+`EventLogEntrySchema` carries no token-count field; token data is not present in the JSONL event log. Tokens-per-agent aggregation is deferred until the event schema is extended with a `tokens` field (or an alternative source is identified).
+
+---
+
 ## Sprint: prog-studio-vision-2026-06-s5 (2026-06-20)
 
 ### DEFERRED-006 — `--redb` used as text color below WCAG AA (app-wide, pre-existing)
@@ -81,3 +89,108 @@ Items surfaced during sprints but explicitly deferred for a future sprint.
 **What it is:** Muted `--wm` label text (~3.49:1) and active `--mt` button text (~4.14:1) on dark surfaces fall below WCAG AA 4.5:1. This is NOT a regression from p5 — the new overview UI reused the identical token idiom already present in the unmodified AgentStatPanel/AgentStatTable/SessionPicker.
 **Proposed fix:** A platform-level token pass (e.g. bump `--wm` alpha ~0.38→0.55, lighten `--mt` for text use) so the whole app clears AA. Cross-cutting; out of scope for a feature sprint.
 **Why deferred:** Pre-existing, app-wide, not introduced here. Warrants its own dedicated contrast-remediation sprint rather than a piecemeal fix.
+
+## p9 — synthetic-session under-collapse (accepted tradeoff, Critic-ratified)
+Some sprints with descriptive/non-standard sub-task suffixes synthesize as multiple cards instead of
+one (e.g. `gander-meta-xfolder-improve` + `-agentimprove` + `-hone`; `gander-meta-output-path-relocate`
++ `-t1t2`; `gander-meta-chronicle-skill` + `-firstrun`). `sprintRoot`'s right-strip only removes
+recognized noise segments (agent codes, `t\d+`/`s\d+`/numeric sub-ids, ceremony words, dates,
+timestamps); descriptive words like `firstrun`/`agentimprove` are kept, so they form their own root.
+This is deliberate under-suppression: no duplicate ids, no noise, and broadening the strip set risks
+OVER-suppressing genuinely distinct sprints (CR-rev2 ruling). Cosmetic only. Revisit only with a
+corpus-wide sprint-id taxonomy, not ad-hoc suffix additions.
+
+---
+
+## Sprint: gander-studio-p10-deferred-smalls (2026-07-02)
+
+### DEFERRED-P10-1 — s3-t3-timeline.spec.ts pre-existing tests fail: fixture sessions aged out of session.list's limit-50 window
+
+**Source:** FE#3 during `gander-studio-p10-deferred-smalls-003-gap2` (runtime a11y gate closure). Root cause traced to `packages/client/src/hooks/useSessions.ts` + `packages/server/src/session-list.ts`.
+**What:** The 5 pre-existing tests in `packages/client/tests/e2e/s3-t3-timeline.spec.ts` pin fixture sessions dated 2026-05-06 / late-May. `session.list` returns a hardcoded `limit: 50` date-descending window, so as newer sessions accumulate the pinned fixtures fall out of the list and the tests fail against a live dev environment — a data-staleness defect, NOT a regression from the p10 tooltip change (the 4 new p10 a11y tests pass green in the same file, same run).
+**Why deferred:** Out of scope for packet 003-gap2 (hard constraint: no src edits); pre-existing.
+**Schedule as:** Small BE/FE packet — either (a) make the pinned fixtures discoverable via a stable query (fetch by session id instead of scanning the list), (b) raise/parameterize the limit for test environments, or (c) refresh the pinned fixture ids. Decide against how the suite is meant to age.
+
+## Sprint: prog-studio-v2-2026-07-s1-data-layer (2026-07-08)
+
+### DEFERRED-V2S1-1 — No durable workflow-usage ledger (abilities always empty)
+
+`AgentDetailSchema.abilities` (workflows) is contracted empty-with-note (program.md §5 note 2): base-plan portability makes workflow orchestration throwaway scaffolding, so no durable per-agent workflow-usage source exists. Candidate fix: a workflow-usage ledger appended at Workflow-accelerant close (same schema-extension family as DEFERRED-P9-1). Until then s3 renders an honest "no recorded abilities" state.
+
+### DEFERRED-V2S1-2 — QualityStatSchema lacks a `reason` field
+
+N/A reasons currently route via dataQualityNotes; a typed `reason` on QualityStatSchema is a small s3-adjacent extension (REQVAL note 3).
+
+### DEFERRED-V2S1-3 — party-stats Accuracy metric's sprintRoot-family grouping can cross-resolve a same-role FAIL/PASS across different tasks (accepted approximation)
+
+**Source:** prog-studio-v2-2026-07-s5-integration residue item 4a (skein-surfaced; unledgered until this entry).
+**What it is:** The party-stats "Accuracy" stat (`accuracy-first-pass` derivation, `PartyMemberCard.tsx`) is computed by `computePartyDerivations`'s attribution-flip algorithm in `packages/server/src/parsers/party-stats.ts`. Events are grouped into families via `familyKeyFor()` (party-stats.ts:96-106), which reuses `sprintRoot()` — the SAME boundary-anchored grouping key `session-slug-match.ts` uses for session synthesis/dedup — not the exact `task_id`. Within a family, an `AUDIT_FAIL` for a given role opens an unresolved-fail marker for that role that any LATER `AUDIT_PASS` for the same role in the SAME family resolves, per the algorithm's own doc comment (party-stats.ts:108-132). Because the grouping key is the family (sprintRoot cluster), not the individual task_id, a `FAIL` on task A and a `PASS` on task B can cross-resolve each other as long as both A and B carry the same canonicalized role and the same sprintRoot family — even though A and B are different tasks.
+**Why deferred:** This is a known, accepted approximation, not a defect: sprintRoot-family grouping is deliberate DRY reuse of an already-established grouping key (see the party-stats.ts:97-99 comment), and tightening it to exact-task_id resolution would require re-deriving task-to-task audit lineage that the corpus does not currently expose distinctly from family membership. Out of scope for the s5 integration mop-up sprint (docs-only packet; no `party-stats.ts` code change authorized here).
+**Schedule as:** Small BE packet on `party-stats.ts`'s attribution-flip algorithm — either (a) accept the family-level approximation permanently and document it in `session-data-inventory.md` §2.1 as intentional, or (b) tighten resolution to same-task_id (or a stricter same-task-family-instance key) if a future corpus exposes reliable task-to-task audit lineage.
+
+## Sprint: prog-studio-v2-2026-07-s2-party-shell (2026-07-08)
+
+### DEFERRED-V2S2-1 — 390px global header/main horizontal overflow (~16px, pre-existing)
+
+Header.tsx/ModeContent.tsx fixed 28px padding overflows the document at 390px width (t6 bounding-rect probe; PartyPage itself is flush). Route to s4 (nav/shell redesign scope).
+
+### DEFERRED-V2S2-2 — CLAUDE.md Known-Issues bundle baseline stale — ✅ DONE (2026-07-10)
+
+**Resolution:** Fixed in `prog-studio-v2-2026-07-s4-retirement` (task `prog-studio-v2-2026-07-s4-retirement-DOCS-1`). Re-measured via a fresh `npm run build -w @gander-studio/client`: max chunk 407.00 kB / gzip 120.62 kB (`index-*.js`), no Vite chunk-size warning. CLAUDE.md Known Issues line updated with the new figure + measurement source.
+
+**Source:** Says "~700KB"; reality: 1,025 kB pre-split, 756.80 kB after the s2 route-level code-split (PartyPage/GraphPage/ProgramDagPage/ComposePage now lazy). Update in s4's docs pass.
+
+## Sprint: prog-studio-v2-2026-07-s3-drilldowns (2026-07-08)
+
+### DEFERRED-V2S3-1 — Retire ROSTER_AGENT_NAME_BY_CODE via schema extension
+
+AgentDetailSchema lacks the frontmatter agent name ReviseSpecAction targets; t4a ships a sanctioned 12-entry client map (AUD#4). BE follow-up: add agentName/specFile to AgentDetailSchema + assembleAgentDetail, then delete the client map.
+
+### DEFERRED-V2S3-2 — contrast_pairs row for --mg on --sfh
+
+4.85:1 (numerically AA) but unrowed; add the row to v2-design-spec.md's table before any text ever uses that pair (AUD#3 advisory; currently accent-only).
+
+---
+
+## Sprint: prog-studio-v2-2026-07-s4-retirement (2026-07-10)
+
+### DEFERRED-V2S4-1 — Roster rail collapse/expand not implemented
+
+**Source:** s3 inheritance (b) — human-approved deferral, human-ratified 2026-07-10 (ORC-witnessed).
+**What it is:** The hoisted global `SubmenuRail` (FE-1a) ships fixed at 240px width with no collapse/expand affordance. This is a polish item distinct from the delivered `<640px` bottom-bar fold (FE-1b), which IS shipped and provides the mobile nav form.
+**Why deferred:** Human-ratified 2026-07-10 (ORC-witnessed) as out of scope for `prog-studio-v2-2026-07-s4-retirement`; the rail is fully functional, keyboard-navigable, and accessible at its fixed width.
+**Schedule as:** Small FE packet on `SubmenuRail.tsx` + `AppShell.tsx` (collapse toggle, persisted width preference, animated grid-track transition).
+
+### DEFERRED-V2S2-1 — 390px global header/main horizontal overflow (carried forward, still open)
+
+**Source:** Originally logged above under `## Sprint: prog-studio-v2-2026-07-s2-party-shell` (2026-07-08), routed there to "s4 (nav/shell redesign scope)"; re-confirmed still open and deferred, human-ratified 2026-07-10 (ORC-witnessed).
+**What it is:** `Header.tsx`/`ModeContent.tsx` fixed 28px padding still overflows the document by ~16px at 390px width. No `prog-studio-v2-2026-07-s4-retirement` packet (FE-1a/FE-1b/FE-2/FE-3/FE-CAT/FE-4/BE-1) touched `Header.tsx` or `ModeContent.tsx` padding — the nav-shell rework (rail hoist, retirement, `<640px` fold) is orthogonal to this pre-existing padding overflow, so it remains unresolved.
+**Why deferred:** Human-ratified 2026-07-10 (ORC-witnessed) as out of scope for the nav-retirement sprint (no `Header.tsx`/`ModeContent.tsx` padding edits were authorized in any s4 packet).
+**Schedule as:** Small FE packet on `Header.tsx`/`ModeContent.tsx` padding (see the original `DEFERRED-V2S2-1` entry above for full detail).
+
+### DEFERRED-V2S3-1 — Retire ROSTER_AGENT_NAME_BY_CODE via schema extension (carried forward, still open)
+
+**Source:** Originally logged above under `## Sprint: prog-studio-v2-2026-07-s3-drilldowns` (2026-07-08); re-confirmed still open and deferred, human-ratified 2026-07-10 (ORC-witnessed).
+**What it is:** `AgentDetailSchema` still lacks the frontmatter agent name `ReviseSpecAction` targets; the sanctioned 12-entry client map remains in place. No `prog-studio-v2-2026-07-s4-retirement` packet touched `AgentDetailSchema` or `ReviseSpecAction.tsx`.
+**Why deferred:** Additive schema extension, human-approved 2026-07-10 (ORC-witnessed) as out of scope for the retirement sprint.
+**Schedule as:** Small BE packet — add `agentName`/`specFile` to `AgentDetailSchema` + `assembleAgentDetail`, then delete the client map (unchanged from the original `DEFERRED-V2S3-1` recommendation above).
+
+### DEFERRED-V2S3-2 — contrast_pairs row for --mg on --sfh (carried forward, still open)
+
+**Source:** Originally logged above under `## Sprint: prog-studio-v2-2026-07-s3-drilldowns` (2026-07-08); re-confirmed still open and deferred, human-ratified 2026-07-10 (ORC-witnessed).
+**What it is:** `--mg` on `--sfh` measures 4.85:1 (numerically AA) but remains unrowed in `v2-design-spec.md`'s `contrast_pairs` table. DOCS-1 (this packet) confirms no new design tokens or contrast pairs were introduced this sprint (`design_system_source: DESIGN_MD`, structural/IA record only), so this item remains open and unaddressed.
+**Why deferred:** Conditional design-pass item, human-approved 2026-07-10 (ORC-witnessed) as out of scope for a docs-only/nav-retirement sprint.
+**Schedule as:** Design-pass packet on `v2-design-spec.md`'s `contrast_pairs` table (unchanged from the original `DEFERRED-V2S3-2` recommendation above).
+
+---
+
+## Cross-repo reflect-pass intake flags
+
+Items that belong to the `gander` control-plane repo (`/home/jhber/projects/gander/`), not to
+`gander-studio-alpha`. Recorded here ONLY as a durable handoff flag for the gander-side
+reflect/agent-improvement pass, which PULLs sibling-project artifacts as read-only evidence. These
+items are NOT editable from this repo — do not attempt a fix here.
+
+- **FLAG (cross-repo, do-not-fix-here): guarded-push docs-vs-installed-rail contradiction** — owned
+  by the gander-side reflect/agent-improvement pass; surfaced from
+  `prog-studio-v2-2026-07-s5-integration` (residue 4b). Not editable from `gander-studio-alpha`.

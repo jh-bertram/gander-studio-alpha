@@ -1,0 +1,14 @@
+{"seq":1,"ts":"2026-07-02T00:00:00Z","ev":"SPAWN","task_id":"party-roster-fe-1","agent_id":"FE#1","parent_id":"ORC#0"}
+{"seq":2,"ts":"2026-07-02T00:05:00Z","ev":"AUDIT_PASS","task_id":"party-roster-fe-1","agent_id":"AUDITOR#1","parent_id":"ORC#0"}
+{"seq":3,"ts":"2026-07-02T00:10:00Z","ev":"SPAWN","task_id":"party-roster-fe-2","agent_id":"FE#1","parent_id":"ORC#0"}
+{"seq":4,"ts":"2026-07-02T00:15:00Z","ev":"AUDIT_PASS","task_id":"party-roster-fe-2","agent_id":"AUDITOR#1","parent_id":"ORC#0"}
+{"seq":5,"ts":"2026-07-02T00:20:00Z","ev":"SPAWN","task_id":"party-roster-fe-3","agent_id":"FE#1","parent_id":"ORC#0"}
+{"seq":6,"ts":"2026-07-02T00:25:00Z","ev":"AUDIT_PASS","task_id":"party-roster-fe-3","agent_id":"AUDITOR#1","parent_id":"ORC#0"}
+{"seq":7,"ts":"2026-07-02T00:30:00Z","ev":"SPAWN","task_id":"party-roster-fe-4","agent_id":"FE#2","parent_id":"ORC#0"}
+{"seq":8,"ts":"2026-07-02T00:35:00Z","ev":"AUDIT_PASS","task_id":"party-roster-fe-4","agent_id":"AUDITOR#1","parent_id":"ORC#0"}
+{"seq":9,"ts":"2026-07-02T01:00:00Z","ev":"SPAWN","task_id":"party-roster-be-1","agent_id":"BE#1","parent_id":"ORC#0"}
+{"seq":10,"ts":"2026-07-02T01:05:00Z","ev":"AUDIT_FAIL","task_id":"party-roster-be-1","agent_id":"AUDITOR#1","parent_id":"ORC#0"}
+{"seq":11,"ts":"2026-07-02T01:10:00Z","ev":"SPAWN","task_id":"party-roster-be-1","agent_id":"BE#1","parent_id":"ORC#0"}
+{"seq":12,"ts":"2026-07-02T01:15:00Z","ev":"AUDIT_PASS","task_id":"party-roster-be-1","agent_id":"AUDITOR#1","parent_id":"ORC#0"}
+{"seq":13,"ts":"2026-07-02T02:00:00Z","ev":"SPAWN","task_id":"party-roster-hr-1","agent_id":"HR#1","parent_id":"ORC#0"}
+{"seq":14,"ts":"2026-07-02T02:05:00Z","ev":"COMPLETE","task_id":"party-roster-hr-1","agent_id":"HR#1","parent_id":"ORC#0"}

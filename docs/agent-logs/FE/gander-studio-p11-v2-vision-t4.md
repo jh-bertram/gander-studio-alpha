@@ -1,0 +1,38 @@
+## [STAGE 1] RECEIVED
+- **From:** ORC (via task packet gander-studio-p11-v2-vision-rev-PM)
+- **At:** 2026-07-07T16:17:45-06:00
+- **Task ID:** gander-studio-p11-v2-vision-t4
+- **Message received:**
+  > You are FE#1 executing task packet `gander-studio-p11-v2-vision-t4` — the tangible v2 mockup: ONE self-contained static HTML file rendering the FF7 "party-screen" concept from t3's design spec. This is a DESIGN ARTIFACT for a human ratification gate, not app code. Your task packet is the single source of truth for scope and all 8 success criteria. Read it and follow it verbatim: .claude/tasks/outputs/gander-studio-p11-v2-vision-rev-PM-1783459761.md → section <task_packet> with <task_id>gander-studio-p11-v2-vision-t4</task_id> ONLY. Note: this is the REVISED plan — your packet includes the broadened SC2 (no external loads of ANY form...), SC7 (legibility: every rendered text fg/bg pair must be one of t3's contrast_pairs AA-pass entries...), and SC8 (any cost/MP/economics-style bar MUST carry a visible "projected / needs schema extension" label...). The spec you implement FAITHFULLY: docs/v2-vision/v2-design-spec.md (t3 — AUDIT-PASSED)...DELIVERABLE: docs/v2-vision/mockup/party-screen.html — single file, ALL CSS/JS inline, opens via file:// with zero network…[truncated]
+
+## [STAGE 2] PLAN
+- **At:** 2026-07-07T16:25:00-06:00
+- **Components to build:** single file `docs/v2-vision/mockup/party-screen.html` — inline `<style>` (FF7 :root tokens + layout/card/portrait/statbar/state CSS) + inline `<body>` markup (header, submenu rail nav, 6 party-member cards from t3's sample-data appendix, loading/empty/error state panels) + inline `<script>` (vanilla JS state-preview switcher only).
+- **State design:** No app state/store (static artifact). Local-only JS: a `data-state` attribute on `.party-surface` toggled by 4 demo buttons (Default/Loading/Empty/Error) to show all spec-required states without navigation.
+- **tRPC wiring:** NONE — this is a static design artifact, no server calls.
+- **A11Y plan:** native `<button>` elements only for every interactive target (cards, submenu items, state-switcher, CTA/Retry) — no div/span+onClick, so no keyboard-equivalent gap. `role="progressbar"` + aria-valuenow/min/max on numeric StatBars; `aria-label` "not applicable, {reason}" variant on N/A bars. `role="navigation"` + aria-label on submenu rail. `role="status"` on empty panel, `role="alert"` on error panel. `aria-live="polite"` wrapper for state-preview announcements. Heading order h1→h2 (Submenus)→h3 (per card agent code), no skipped levels. All decorative icons `aria-hidden="true"`.
+- **Data source:** t3 v2-design-spec.md `<sample_data_appendix>` table verbatim — 6 roster codes (FE, PM, AU, AR, BE, CR) with Activity/Stamina/Accuracy values exactly as tabulated; no cost/MP bar rendered (spec explicitly omits it → SC8 vacuous).
+- **Spec gap flagged pre-emptively:** t3's `contrast_pairs` table has no entry for materia-colored text (RoleTag label color per component_hierarchy says "color = materia token") — resolving by rendering the RoleTag label in `--wd`/`--sf` (an AA-verified pair) and keeping the materia color strictly on the tag's non-text background-tint/border (already governed by the existing 3:1 non-text rule), to stay inside SC7's strict binding.
+
+### Checkpoint — 16:32:00
+- Wrote `docs/v2-vision/mockup/party-screen.html` (558 lines). Constant audit: 0 raw-hex matches outside `:root` (13 total hex occurrences, all inside the :root token block, lines 1-40). Click-handler keyboard audit: 0 matches (every interactive element is a native `<button>`, none of the flagged span/div/li/a+onclick pattern). Inline-style scan: only `style="width:N%"` on `.stat-fill` bars (per-datum dynamic values, no Tailwind in this artifact, no class/style property overlap). JSON.parse: none present. Next: contrast-pair audit against t3's table (in progress at write time; two adjustments made — `.ps-header` background changed to `--sf` so `.ps-about`'s `--wd` text has a table-verified pair, `.party-card:active` simplified from `color-mix()` to a literal `var(--nav-active-bg)` per spec's card-active-pressed wording) — then self-verification greps (SC2/SC5/SC7/open-file sanity), all passing zero-external-load and balanced-tag checks.
+
+## [STAGE 3] COMPLETE
+- **At:** 2026-07-07T16:35:00-06:00
+- **Deliverables:**
+
+| File | Lines | Notes |
+|---|---|---|
+| `docs/v2-vision/mockup/party-screen.html` | 558 | Single self-contained static HTML file. Inline `<style>` (FF7 :root tokens + all layout/component CSS) + inline `<body>` markup (header, submenu rail, 6 party cards, loading/empty/error state panels, state-preview switcher) + inline `<script>` (vanilla JS state toggler only, no deps). |
+
+- **Lint:** N/A — plain static HTML file, not part of the `npm run lint` TypeScript workspace; no linter configured for `docs/`. Verified instead via: balanced-tag greps (div/button/svg/style/script/nav/header/main/ul/li/p/h1/h2/h3 — all open/close counts equal), `python3 html.parser` smoke parse (no errors), and the SC-specific content greps below.
+- **Constant audit:** 0 raw-hex matches outside the `:root` token block (13 total hex literals, all within lines 1-40 defining the FF7 palette once each). No repeated inline magic numbers found outside the sample-data table values (which are per-agent data, not repeated constants).
+- **Style-conflict check:** NONE — no Tailwind in this artifact; the only inline `style="width:N%"` attributes are per-datum StatBar fill widths (a distinct property, `width`, from anything the `.stat-fill` class controls — `background-color`/`border-radius`), so there is no class/inline-style property collision.
+- **Click-handler keyboard audit:** 0 matches for span/div/li/a+onclick — every interactive control (6 party cards, 4 submenu items, empty-state CTA, error-state Retry, 4 state-preview buttons) is a native `<button type="button">`, inherently keyboard-operable (Tab + Enter/Space) with no custom role/tabindex/onKeyDown needed.
+- **JSON.parse safety:** N/A — no `JSON.parse` calls in the file.
+- **SC2 self-check:** grepped `src="http`, `href="http`, `@import`, `cdn.`, `url(http`, `url('http`, `url("http`, `url(//`, `url('//`, `url("//`, `src="//`, `href="//` — all zero matches. No `@font-face` blocks present at all. Zero occurrences of the SVG xmlns namespace string (HTML5 inline `<svg>` does not require it) — moot since there is nothing to exempt.
+- **SC5 self-check:** 6 distinct real roster codes rendered as `.agent-code` cards: AR, AU, BE, CR, FE, PM (floor is 3; exceeded).
+- **SC7 self-check:** manually traced every `color:` declaration in the stylesheet to its effective background and matched against t3's `<contrast_pairs>` table; all match an AA-pass row (see completion_packet for the full trace and two flagged spec-gap resolutions: RoleTag text rendered in `--wd`/`--sf` instead of an unverified materia-color pairing; active-submenu-item background implemented as `--sfh` per the contrast_pairs table's literal "Active submenu label… background --sfh" row rather than the states-section's `--nav-active-bg` wording, which is an internal tension in t3's own spec).
+- **SC8 self-check:** no cost/MP/economics bar rendered anywhere (matches the spec's sample-data appendix, which omits cost bars entirely) — SC8 satisfied vacuously; only mention of "cost/MP/token bar" in the file is the caption's explicit statement that none is rendered.
+- **Open-file sanity:** `python3 -c "len(pathlib.Path(...).read_text())"` → 30721 chars; file exists at the absolute path and is a single, self-contained `.html` document openable via `file://`.
+

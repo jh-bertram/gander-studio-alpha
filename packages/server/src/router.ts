@@ -1,27 +1,23 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { writeFile, readFile, readdir, unlink, mkdir, copyFile, stat } from 'node:fs/promises';
+import { writeFile, readFile, readdir, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { GANDER_ROOT, LOADOUTS_DIR, EXPORT_BASE_DIR, SESSIONS_SOURCE_DIRS, SESSIONS_EDITS_DIR } from './env.js';
+import { GANDER_ROOT, SESSIONS_SOURCE_DIRS, SESSIONS_EDITS_DIR } from './env.js';
 import { parseAllAgents } from './parsers/agent-parser.js';
 import { parseAllSkills } from './parsers/skill-parser.js';
 import { parseAllHooks } from './parsers/hook-parser.js';
 import {
   AgentSchema,
   SkillSchema,
-  LoadoutSchema,
-  ExportInputSchema,
   SessionSchema,
   SessionStatsSchema,
   SessionRawInputSchema,
   SessionRawOutputSchema,
   AggregateStatsInputSchema,
-  ConnectivityGraphSchema,
-  PlanningListInputSchema,
-  PlanningListOutputSchema,
   ProgramGetDagInputSchema,
   ProgramGetDagOutputSchema,
-  type ConnectivityGraph,
+  PartyStatsSchema,
+  AgentDetailSchema,
   type ProgressionEntry,
   type SessionStats,
   type Session,
@@ -32,18 +28,22 @@ import { parseSessionFile } from './parsers/session-parser.js';
 import { parseEventLogFiles } from './parsers/event-log-parser.js';
 import { computeSessionStats } from './parsers/session-stats.js';
 import { collectSessions } from './session-list.js';
+import { sessionDocDirs } from './session-dirs.js';
 import { validateSaveEditPath } from './parsers/saveedit-guard.js';
 import { aggregateSessionStats } from './parsers/aggregate-stats.js';
 import { parseLedgerContent } from './parsers/progression-parser.js';
-import { parsePlanningBacklog } from './parsers/planning-parser.js';
 import { parseProgramDags } from './parsers/program-dag-parser.js';
 import { fileURLToPath } from 'node:url';
+import { synthesizeSessions } from './parsers/session-synthesis.js';
+import { sprintRoot } from './session-slug-match.js';
+import { assembleParty } from './parsers/party-roster.js';
+import { assembleAgentDetail } from './parsers/agent-detail.js';
 
 const t = initTRPC.create();
 
 // ---------------------------------------------------------------------------
 // Studio root — the gander-studio-alpha repo root (NOT GANDER_ROOT).
-// Planning and program.md files live here, not in the agent gander repo.
+// program.md files live here, not in the agent gander repo.
 // Resolves 3 levels up from packages/server/src/router.ts → repo root.
 // ---------------------------------------------------------------------------
 // router.ts lives at packages/server/src/router.ts
@@ -66,25 +66,39 @@ async function findSessionById(
   id: string,
 ): Promise<{ session: Session; dir: string } | null> {
   for (const dir of SESSIONS_SOURCE_DIRS) {
-    const postMortemsDir = path.join(dir, 'docs', 'post-mortems');
-    let entries: string[];
-    try {
-      entries = await readdir(postMortemsDir);
-    } catch {
-      continue;
-    }
-    for (const file of entries.filter((e) => e.endsWith('.md'))) {
-      const filePath = path.join(postMortemsDir, file);
+    for (const docDir of sessionDocDirs(dir)) {
+      let entries: string[];
       try {
-        const session = await parseSessionFile(filePath, dir);
-        if (session.id === id || session.sprint === id) {
-          return { session, dir };
-        }
+        entries = await readdir(docDir);
       } catch {
         continue;
       }
+      for (const file of entries.filter((e) => e.endsWith('.md'))) {
+        const filePath = path.join(docDir, file);
+        try {
+          const session = await parseSessionFile(filePath, dir);
+          if (session.id === id || session.sprint === id) {
+            return { session, dir };
+          }
+        } catch {
+          continue;
+        }
+      }
     }
   }
+
+  // Synthesis fallthrough: no doc found — build synthetic from event logs if possible.
+  const targetRoot = sprintRoot(id);
+  if (targetRoot !== null) {
+    for (const dir of SESSIONS_SOURCE_DIRS) {
+      const synthetics = await synthesizeSessions(dir, [], []);
+      const match = synthetics.find((s) => s.id === targetRoot);
+      if (match) {
+        return { session: match, dir };
+      }
+    }
+  }
+
   return null;
 }
 
@@ -97,14 +111,6 @@ function guardPath(filePath: string): void {
       message: 'filePath must be inside GANDER_ROOT',
     });
   }
-}
-
-function sanitizeName(name: string): string {
-  const clean = name.replace(/[^a-zA-Z0-9_-]/g, '');
-  if (clean.length === 0) {
-    throw new TRPCError({ code: 'BAD_REQUEST', message: 'Name contains no valid characters' });
-  }
-  return clean;
 }
 
 /**
@@ -137,21 +143,13 @@ async function resolveSessionEvents(
   return events;
 }
 
-// ---------------------------------------------------------------------------
-// Export schemas
-// ---------------------------------------------------------------------------
-
-// ExportInputSchema is imported from @gander-studio/shared
-
-const ExportResultSchema = z.object({
-  targetPath: z.string(),
-  plannedFiles: z.array(z.string()),
-  loadoutSummary: z.string(),
-});
-
 // Maximum number of sessions to fetch when building an aggregate across all sessions.
 // Large enough to span all known sessions; limits memory footprint for very large repos.
 const AGGREGATE_LIMIT = 500;
+
+/** Placeholder returned by getRaw for sessions with no after-action document (single-sourced). */
+const NO_AFTER_ACTION_PLACEHOLDER =
+  'No after-action document yet for {id} — synthesized from the event log.';
 
 // ---------------------------------------------------------------------------
 // Sub-routers
@@ -248,262 +246,6 @@ const hookRouter = t.router({
   }),
 });
 
-const loadoutRouter = t.router({
-  list: t.procedure.query(async () => {
-    try {
-      const entries = await readdir(LOADOUTS_DIR);
-      const jsonFiles = entries.filter(e => e.endsWith('.json'));
-      const loadouts: z.infer<typeof LoadoutSchema>[] = [];
-      for (const file of jsonFiles) {
-        try {
-          const raw = await readFile(path.join(LOADOUTS_DIR, file), 'utf8');
-          const parsed = LoadoutSchema.safeParse(JSON.parse(raw));
-          if (parsed.success) {
-            loadouts.push(parsed.data);
-          }
-        } catch {
-          // skip malformed files
-        }
-      }
-      return loadouts;
-    } catch {
-      // LOADOUTS_DIR doesn't exist or unreadable
-      return [];
-    }
-  }),
-
-  save: t.procedure
-    .input(LoadoutSchema)
-    .mutation(async ({ input }) => {
-      const sanitized = sanitizeName(input.name);
-      if (sanitized.length === 0) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Loadout name is empty after sanitization',
-        });
-      }
-
-      const createdAt = input.createdAt || new Date().toISOString();
-      const payload: z.infer<typeof LoadoutSchema> = { ...input, createdAt };
-
-      await mkdir(LOADOUTS_DIR, { recursive: true });
-      const filePath = path.join(LOADOUTS_DIR, `${sanitized}.json`);
-      await writeFile(filePath, JSON.stringify(payload, null, 2), 'utf8');
-      return { success: true as const, name: sanitized };
-    }),
-
-  delete: t.procedure
-    .input(z.object({ name: z.string() }))
-    .mutation(async ({ input }) => {
-      const sanitized = sanitizeName(input.name);
-      if (sanitized.length === 0) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Loadout name is empty after sanitization',
-        });
-      }
-
-      const filePath = path.join(LOADOUTS_DIR, `${sanitized}.json`);
-      try {
-        await unlink(filePath);
-      } catch {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: `Loadout '${sanitized}' not found`,
-        });
-      }
-      return { success: true as const };
-    }),
-});
-
-const exportRouter = t.router({
-  spawn: t.procedure
-    .input(ExportInputSchema)
-    .output(ExportResultSchema)
-    .mutation(async ({ input }) => {
-      const exportBaseResolved = path.resolve(EXPORT_BASE_DIR);
-      if (input.targetBasePath !== undefined) {
-        const resolved = path.resolve(input.targetBasePath);
-        if (resolved !== input.targetBasePath || !resolved.startsWith('/')) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: 'targetBasePath must be an absolute normalised path' });
-        }
-        // Enforce containment: targetBasePath must be inside or equal to EXPORT_BASE_DIR
-        if (resolved !== exportBaseResolved && !resolved.startsWith(exportBaseResolved + path.sep)) {
-          throw new TRPCError({ code: 'FORBIDDEN', message: 'targetBasePath must be inside EXPORT_BASE_DIR' });
-        }
-      }
-      const targetPath = path.join(input.targetBasePath ?? EXPORT_BASE_DIR, input.targetDirName);
-      // Double-check the fully-resolved target stays within EXPORT_BASE_DIR
-      const targetResolved = path.resolve(targetPath);
-      if (targetResolved !== exportBaseResolved && !targetResolved.startsWith(exportBaseResolved + path.sep)) {
-        throw new TRPCError({ code: 'FORBIDDEN', message: 'Export target resolves outside EXPORT_BASE_DIR' });
-      }
-      const { loadout } = input;
-
-      // Track (sourcePath, destPath) pairs alongside plannedFiles
-      const filePairs: Array<[string, string]> = [];
-      const plannedFiles: string[] = [];
-
-      // agent .md files — skip orchestrator.md (written as CLAUDE.md separately)
-      const agents = await parseAllAgents(GANDER_ROOT);
-      for (const agentName of loadout.agents) {
-        const agent = agents.find(a => a.name === agentName);
-        if (agent) {
-          if (path.basename(agent.filePath) === 'orchestrator.md') continue;
-          const rel = path.relative(GANDER_ROOT, agent.filePath);
-          const destPath = path.join(targetPath, rel);
-          filePairs.push([agent.filePath, destPath]);
-          plannedFiles.push(destPath);
-        }
-      }
-
-      // skill SKILL.md files
-      const skills = await parseAllSkills(GANDER_ROOT);
-      for (const skillName of loadout.skills) {
-        const skill = skills.find(s => s.name === skillName);
-        if (skill) {
-          const rel = path.relative(GANDER_ROOT, skill.filePath);
-          const destPath = path.join(targetPath, rel);
-          filePairs.push([skill.filePath, destPath]);
-          plannedFiles.push(destPath);
-        }
-      }
-
-      // hook files
-      const hooks = await parseAllHooks(GANDER_ROOT);
-      for (const hookPath of loadout.hooks) {
-        const hook = hooks.find(h => h.filePath === hookPath);
-        if (hook) {
-          const rel = path.relative(GANDER_ROOT, hook.filePath);
-          const destPath = path.join(targetPath, rel);
-          filePairs.push([hook.filePath, destPath]);
-          plannedFiles.push(destPath);
-        }
-      }
-
-      // special files: standards.md only (settings.json and CLAUDE.md are handled separately below)
-      const specialFiles: Array<[string, string]> = [];
-      if (input.includeStandards) {
-        specialFiles.push([
-          path.join(GANDER_ROOT, '.claude', 'rules', 'standards.md'),
-          path.join(targetPath, '.claude', 'rules', 'standards.md'),
-        ]);
-      }
-
-      // Check special files exist before adding to plan
-      for (const [src, dest] of specialFiles) {
-        try {
-          await stat(src);
-          filePairs.push([src, dest]);
-          plannedFiles.push(dest);
-        } catch {
-          // source absent — skip silently
-        }
-      }
-
-      // Create target directory
-      await mkdir(targetPath, { recursive: true });
-
-      // Copy each file; skip ENOENT silently and remove from plannedFiles
-      const copiedFiles: string[] = [];
-      for (const [sourcePath, destPath] of filePairs) {
-        try {
-          await mkdir(path.dirname(destPath), { recursive: true });
-          await copyFile(sourcePath, destPath);
-          copiedFiles.push(destPath);
-        } catch (err) {
-          if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-            throw new TRPCError({
-              code: 'INTERNAL_SERVER_ERROR',
-              message: 'Failed to copy file during export',
-            });
-          }
-          // ENOENT: source vanished between plan and copy — skip silently
-        }
-      }
-
-      // --- p2-001: Filter and rewrite settings.json ---
-      // Shape mirrors hook-parser.ts Settings/SettingsHooks interfaces; cast is safe for the
-      // same reason hook-parser.ts uses it: we own the source file and validate field-by-field.
-      interface SettingsHookEntry { type: string; command: string }
-      interface SettingsHooks {
-        [event: string]: Array<{ matcher: string; hooks: SettingsHookEntry[] }>;
-      }
-      interface SettingsShape { hooks?: SettingsHooks; [key: string]: unknown }
-
-      const srcSettingsPath = path.join(GANDER_ROOT, '.claude', 'settings.json');
-      try {
-        const rawSettings = await readFile(srcSettingsPath, 'utf8');
-        const settings = JSON.parse(rawSettings) as SettingsShape;
-        const { hooks: srcHooks, ...otherKeys } = settings;
-        const loadoutHookPaths = new Set(loadout.hooks);
-
-        const filteredHooks: SettingsHooks = {};
-        for (const [event, matchers] of Object.entries(srcHooks ?? {})) {
-          const filteredMatchers = matchers
-            .map(matcherEntry => ({
-              ...matcherEntry,
-              hooks: matcherEntry.hooks.filter(h => {
-                const srcHookPath = h.command.replace(/^bash\s+/, '');
-                return loadoutHookPaths.has(srcHookPath);
-              }),
-            }))
-            .filter(m => m.hooks.length > 0);
-
-          if (filteredMatchers.length > 0) {
-            filteredHooks[event] = filteredMatchers.map(matcherEntry => ({
-              ...matcherEntry,
-              hooks: matcherEntry.hooks.map(h => {
-                const srcHookPath = h.command.replace(/^bash\s+/, '');
-                const rel = path.relative(GANDER_ROOT, srcHookPath);
-                const destHookPath = path.join(targetPath, rel);
-                return { ...h, command: `bash ${destHookPath}` };
-              }),
-            }));
-          }
-        }
-
-        const destSettingsPath = path.join(targetPath, '.claude', 'settings.json');
-        await mkdir(path.dirname(destSettingsPath), { recursive: true });
-        const outSettings: SettingsShape = { ...otherKeys, hooks: filteredHooks };
-        await writeFile(destSettingsPath, JSON.stringify(outSettings, null, 2), 'utf8');
-        copiedFiles.push(destSettingsPath);
-      } catch (err) {
-        if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-          throw new TRPCError({
-            code: 'INTERNAL_SERVER_ERROR',
-            message: 'Failed to process settings.json during export',
-          });
-        }
-        // settings.json absent — skip silently
-      }
-
-      // --- p2-002: Write orchestrator.md content as CLAUDE.md ---
-      const orchestratorSrcPath = path.join(GANDER_ROOT, '.claude', 'agents', 'orchestrator.md');
-      let orchestratorContent: string;
-      try {
-        orchestratorContent = await readFile(orchestratorSrcPath, 'utf8');
-      } catch {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'orchestrator.md not found in GANDER_ROOT — cannot generate CLAUDE.md',
-        });
-      }
-      const destClaudeMdPath = path.join(targetPath, 'CLAUDE.md');
-      await writeFile(destClaudeMdPath, orchestratorContent, 'utf8');
-      copiedFiles.push(destClaudeMdPath);
-
-      const loadoutSummary =
-        `Loadout: ${loadout.name}\n` +
-        `Agents (${loadout.agents.length}): ${loadout.agents.join(', ')}\n` +
-        `Skills (${loadout.skills.length}): ${loadout.skills.join(', ')}\n` +
-        `Hooks (${loadout.hooks.length}): ${loadout.hooks.join(', ')}\n` +
-        `Created: ${loadout.createdAt}`;
-
-      return { targetPath, plannedFiles: copiedFiles, loadoutSummary };
-    }),
-});
-
 // ---------------------------------------------------------------------------
 // Session sub-router
 // ---------------------------------------------------------------------------
@@ -557,6 +299,18 @@ const sessionRouter = t.router({
     .input(z.object({ id: z.string(), content: z.string() }))
     .output(z.object({ success: z.boolean(), filePath: z.string() }))
     .mutation(async ({ input }) => {
+      // Resolve session first — unknown id → NOT_FOUND; doc-less → BAD_REQUEST.
+      // Behavior change: previously accepted any id; now requires a known, doc-backed session.
+      const found = await findSessionById(input.id);
+      if (!found) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
+      }
+      if (!found.session.has_after_action) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot edit a session with no after-action document',
+        });
+      }
       let target: string;
       try {
         target = validateSaveEditPath(input.id, SESSIONS_EDITS_DIR);
@@ -613,6 +367,13 @@ const sessionRouter = t.router({
         throw new TRPCError({ code: 'NOT_FOUND', message: `Session '${input.id}' not found` });
       }
       const { session } = found;
+      // Guard: doc-less sessions have no source file — return graceful placeholder (no 500).
+      if (!session.has_after_action) {
+        return {
+          content: NO_AFTER_ACTION_PLACEHOLDER.replace('{id}', session.id),
+          editedFilePath: undefined,
+        };
+      }
       // Prefer edit file in SESSIONS_EDITS_DIR when it exists (D6 round-trip).
       // Re-runs validateSaveEditPath to guard against path traversal.
       let editedFilePath: string | undefined;
@@ -635,64 +396,6 @@ const sessionRouter = t.router({
         }
       }
       return { content, editedFilePath };
-    }),
-});
-
-// ---------------------------------------------------------------------------
-// Connectivity router
-// ---------------------------------------------------------------------------
-
-const connectivityRouter = t.router({
-  getGraph: t.procedure
-    .input(z.object({ outputFile: z.string().optional() }))
-    .output(ConnectivityGraphSchema)
-    .query(async ({ input }): Promise<ConnectivityGraph> => {
-      const resolved = input.outputFile
-        ? path.join(GANDER_ROOT, input.outputFile)
-        : path.join(GANDER_ROOT, 'docs', 'connectivity-graph.json');
-
-      guardPath(resolved);
-
-      let raw: string;
-      try {
-        raw = await readFile(resolved, 'utf8');
-      } catch (err) {
-        const code = (err as NodeJS.ErrnoException).code;
-        if (code === 'ENOENT') {
-          throw new TRPCError({ code: 'NOT_FOUND', message: 'Connectivity graph not found — run the analyzer first' });
-        }
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Operation failed' });
-      }
-
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Failed to parse connectivity graph JSON' });
-      }
-
-      const result = ConnectivityGraphSchema.safeParse(parsed);
-      if (!result.success) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: `Connectivity graph validation failed: ${result.error.message}`,
-        });
-      }
-
-      return result.data;
-    }),
-});
-
-// ---------------------------------------------------------------------------
-// Planning router
-// ---------------------------------------------------------------------------
-
-const planningRouter = t.router({
-  list: t.procedure
-    .input(PlanningListInputSchema)
-    .output(PlanningListOutputSchema)
-    .query(async () => {
-      return parsePlanningBacklog(STUDIO_ROOT);
     }),
 });
 
@@ -737,6 +440,36 @@ const progressionRouter = t.router({
 });
 
 // ---------------------------------------------------------------------------
+// Roster router — v2 party/agent-detail contract (prog-studio-v2-2026-07).
+// getParty (t3) ships here; getAgentDetail (t4) appends to this SAME router.
+// ---------------------------------------------------------------------------
+
+const rosterRouter = t.router({
+  getParty: t.procedure
+    .output(PartyStatsSchema)
+    .query(async () => {
+      return assembleParty(SESSIONS_SOURCE_DIRS.map((dir) => path.join(dir, 'docs', 'events')));
+    }),
+  getAgentDetail: t.procedure
+    .input(z.object({ code: z.string() }))
+    .output(AgentDetailSchema)
+    .query(async ({ input }) => {
+      try {
+        return await assembleAgentDetail(
+          input.code,
+          GANDER_ROOT,
+          SESSIONS_SOURCE_DIRS.map((dir) => path.join(dir, 'docs', 'events')),
+        );
+      } catch (err) {
+        if (err instanceof Error && err.message.startsWith('Unknown role code')) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Unknown role code' });
+        }
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Operation failed' });
+      }
+    }),
+});
+
+// ---------------------------------------------------------------------------
 // App router
 // ---------------------------------------------------------------------------
 
@@ -745,13 +478,10 @@ export const appRouter = t.router({
   agent: agentRouter,
   skill: skillRouter,
   hook: hookRouter,
-  loadout: loadoutRouter,
-  export: exportRouter,
   session: sessionRouter,
-  connectivity: connectivityRouter,
   progression: progressionRouter,
-  planning: planningRouter,
   program: programRouter,
+  roster: rosterRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -5,6 +5,7 @@ import { useSessionRaw } from '../../../hooks/useSessionRaw';
 import { useSessionSave } from '../../../hooks/useSessionSave';
 import { useSessionStore } from '../../../store/session-store';
 import ShimmerBox from '../../../components/ui/shimmer-box';
+import { SESSION_EDITOR_READONLY_MSG } from '../../../constants/sessions';
 
 interface Props {
   session: Session;
@@ -25,8 +26,10 @@ export default function EditorTab({ session }: Props) {
 
   const { mutate, isLoading: saveLoading } = useSessionSave();
 
+  // Doc-less sessions (has_after_action === false) are read-only: no save allowed.
+  const docLess          = session.has_after_action === false;
   const isDirty          = editBuffer !== originalContent;
-  const isSaveDisabled   = !isDirty || saveLoading;
+  const isSaveDisabled   = docLess || !isDirty || saveLoading;
   const isRevertDisabled = !isDirty;
 
   function handleChange(e: ChangeEvent<HTMLTextAreaElement>): void {
@@ -36,6 +39,8 @@ export default function EditorTab({ session }: Props) {
   }
 
   function handleSave(): void {
+    // Guard: never call saveEdit for a doc-less session (server also rejects via BAD_REQUEST).
+    if (docLess) return;
     mutate({ id: session.id, content: editBuffer });
   }
 
@@ -49,19 +54,21 @@ export default function EditorTab({ session }: Props) {
       style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '72px' }}
     >
 
-      {/* Save target / success affordance */}
+      {/* Save target / success affordance — or read-only notice for doc-less sessions */}
       <div
         aria-live="polite"
         style={{
           fontFamily:    'var(--fm)',
           fontSize:      '11px',
-          color:         lastSaveResult ? 'var(--mt)' : 'var(--wd)',
+          color:         docLess ? 'var(--wm)' : lastSaveResult ? 'var(--mt)' : 'var(--wd)',
           letterSpacing: '0.03em',
         }}
       >
-        {lastSaveResult
-          ? `Saved to: ${lastSaveResult.filePath}`
-          : `Save target: ${session.id}.md`}
+        {docLess
+          ? SESSION_EDITOR_READONLY_MSG
+          : lastSaveResult
+            ? `Saved to: ${lastSaveResult.filePath}`
+            : `Save target: ${session.id}.md`}
       </div>
 
       {/* Loading skeleton while raw content is being fetched */}
@@ -95,24 +102,27 @@ export default function EditorTab({ session }: Props) {
       {!rawLoading && rawError == null && (
         <Textarea
           aria-label="Session markdown editor"
+          aria-readonly={docLess ? 'true' : undefined}
+          readOnly={docLess}
           value={editBuffer}
-          onChange={handleChange}
+          onChange={docLess ? undefined : handleChange}
           rows={24}
           style={{
             fontFamily:  'var(--fm)',
             fontSize:    '12px',
             resize:      'vertical',
             color:       'var(--w)',
-            background:  'var(--sfm)',
+            background:  docLess ? 'var(--sfh)' : 'var(--sfm)',
             border:      '1px solid var(--bd)',
             padding:     '10px 12px',
             caretColor:  'var(--mt)',
+            cursor:      docLess ? 'default' : undefined,
           }}
         />
       )}
 
-      {/* Action buttons */}
-      {!rawLoading && rawError == null && (
+      {/* Action buttons — hidden for doc-less (read-only) sessions */}
+      {!rawLoading && rawError == null && !docLess && (
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button
             data-testid="save-edit-button"

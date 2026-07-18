@@ -28,6 +28,11 @@ interface AnalyzeTabProps {
 
 type ViewMode = 'panel' | 'table';
 
+// ---- Constants --------------------------------------------------------------
+
+// Inlined locally — t4 owns src/constants/sessions.ts; no cross-packet file conflict.
+const ANALYZE_PANEL_METRICS_FIXED_NOTE = 'Metrics are role-fixed in card view';
+
 // ---- Loading affordance -----------------------------------------------------
 
 function AnalyzeLoadingState(): React.JSX.Element {
@@ -93,8 +98,8 @@ export default function AnalyzeTab({ session }: AnalyzeTabProps): React.JSX.Elem
               alignItems:          'start',
             }}
           >
-            {/* Left: SessionPicker */}
-            <SessionPicker stats={stats} />
+            {/* Left: SessionPicker — metric picker hidden in panel view (role-fixed) */}
+            <SessionPicker stats={stats} hideMetricPicker={viewMode === 'panel'} />
 
             {/* Right: Timeline + stat surface */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: 0 }}>
@@ -138,6 +143,20 @@ export default function AnalyzeTab({ session }: AnalyzeTabProps): React.JSX.Elem
                     {mode === 'panel' ? 'Panel' : 'Table'}
                   </button>
                 ))}
+                {/* Annotation: shown in panel view (table view shows the metric picker instead) */}
+                {viewMode === 'panel' && (
+                  <span
+                    data-testid="analyze-panel-metrics-note"
+                    style={{
+                      fontFamily: 'var(--fb)',
+                      fontSize:   '11px',
+                      fontStyle:  'italic',
+                      color:      'var(--wm)',
+                    }}
+                  >
+                    {ANALYZE_PANEL_METRICS_FIXED_NOTE}
+                  </span>
+                )}
               </div>
 
               {/* AgentTimeline */}

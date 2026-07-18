@@ -1,5 +1,6 @@
 import { useState, useCallback, type ReactElement } from 'react';
 import type { AgentActivity } from '@gander-studio/shared';
+import { formatWallClock } from '../../utils/session-metrics';
 
 // ---- Types -------------------------------------------------------------------
 
@@ -52,11 +53,6 @@ function compareActivities(
   return dir === 'asc' ? cmp : -cmp;
 }
 
-function formatWallClock(ms: number | undefined): string {
-  if (ms === undefined) return '—';
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-}
 
 function formatAudit(a: AgentActivity): string {
   return `${a.audit_passes}✓ / ${a.audit_fails}✗`;

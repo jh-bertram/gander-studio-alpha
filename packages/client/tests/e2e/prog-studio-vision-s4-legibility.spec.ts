@@ -80,7 +80,12 @@ test.describe('Legibility and geometry — s4 juice surfaces', () => {
 
     await page.goto(BASE_URL);
 
-    const progressionTab = page.getByRole('tab', { name: /progression/i });
+    // MIGRATED (s4 FE-1b): nav via the SubmenuRail (role="navigation", aria-label
+    // "Main navigation", hoisted global by FE-1a) — the 9-tab v1 BottomTabBar (role="tab") is
+    // retired.
+    const progressionTab = page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByRole('button', { name: /progression/i });
     await expect(progressionTab).toBeVisible({ timeout: 8000 });
     await progressionTab.click();
 

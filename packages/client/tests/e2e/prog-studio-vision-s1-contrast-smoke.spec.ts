@@ -143,14 +143,23 @@ test('Browse: foreground text contrast >= 4.5:1 on dark surface', async ({ page 
   expect(ratio).toBeGreaterThanOrEqual(4.5);
 });
 
-// ---- Test 2: Input text visible on browse/edit page --------------------------
+// ---- Test 2: Input text visible on default surface ---------------------------
 
 test('Input: text and border contrast >= 4.5:1 on surface (bg-transparent ancestor walk)', async ({ page }) => {
   await gotoPage(page, '/');
 
-  // Navigate to Edit page which has input/textarea fields
-  await page.locator('text=EDIT').first().click().catch(() => {});
-  await page.waitForTimeout(500);
+  // s4-retirement (FE-4): 'EDIT' nav is retired — its input/textarea fields are absorbed into
+  // the s3 drill-down ReviseSpecAction dialog. Same defensive isVisible-guard pattern already
+  // used by the 'Export:' test below in this file (bare .click().catch() on a nonexistent
+  // locator hangs to Playwright's actionability timeout and exceeds the 30s test budget — this
+  // guard is what makes the difference; NOT a behavior change to the assertion below, which
+  // still exercises whatever input the default surface offers, if any).
+  const editNav = page.locator('text=EDIT').first();
+  const hasEditNav = await editNav.isVisible({ timeout: 3000 }).catch(() => false);
+  if (hasEditNav) {
+    await editNav.click().catch(() => {});
+    await page.waitForTimeout(500);
+  }
 
   // Find any input field
   const inputSel = 'input:not([type="hidden"]), textarea';

@@ -1,0 +1,115 @@
+src/tests/compose/compose-connections-persist.spec.ts :: connections referencing missing nodes are silently skipped
+src/tests/compose/compose-connections-persist.spec.ts :: loadFromLoadout with connections restores edges into canvas store
+src/tests/compose/compose-connections-persist.spec.ts :: selectLoadoutPayload returns connections matching the restored edges
+src/tests/compose/materia-canvas.spec.ts :: DOM .react-flow__edge count matches store edges after proximity drop
+src/tests/compose/materia-canvas.spec.ts :: agent↔skill proximity drop renders a .react-flow__edge element
+src/tests/compose/materia-canvas.spec.ts :: canvas RF edges container attaches and shows no edges before any proximity drop
+src/tests/compose/materia-canvas.spec.ts :: canvas loads without console errors
+src/tests/compose/materia-canvas.spec.ts :: canvas shows edges when nodes are connected
+src/tests/compose/materia-canvas.spec.ts :: dragging a palette item to canvas adds a node
+src/tests/compose/materia-canvas.spec.ts :: edge creation fires link sound and renders DOM edge element
+src/tests/compose/materia-canvas.spec.ts :: orchestrator card node is visible on canvas mount
+src/tests/compose/materia-canvas.spec.ts :: orchestrator↔agent proximity drop renders a .react-flow__edge element
+tests/e2e/card-node-title-edit.spec.ts :: card node is visible on canvas
+tests/e2e/gander-studio-p1-browse-fe.spec.ts :: clicking an agent card opens drilldown dialog
+tests/e2e/gander-studio-p1-compose-fe.spec.ts :: compose page is visible when compose mode is active
+tests/e2e/gander-studio-p1-compose-fe.spec.ts :: loadout name input updates state and enables save button
+tests/e2e/gander-studio-p1-export-fe.spec.ts :: export button enables after valid target dir name is entered
+tests/e2e/gander-studio-p1-export-fe.spec.ts :: export page is visible when export mode is active
+tests/e2e/gander-studio-p1-export-fe.spec.ts :: invalid directory name shows inline error
+tests/e2e/gander-studio-p1-fe-shell.spec.ts :: clicking a nav item switches mode content
+tests/e2e/gander-studio-p1-fe-shell.spec.ts :: mode content renders empty-state placeholder when no data is present
+tests/e2e/gander-studio-p2-canvas-link-003a.spec.ts :: canvas palette renders empty-state message when no items match search
+tests/e2e/gander-studio-p9-sessions-feed-agentstats-t4.spec.ts :: t4-badge: no-doc badge visible on doc-less row; absent on doc-backed row
+tests/e2e/gander-studio-p9-sessions-feed-agentstats-t4.spec.ts :: t4-load: sessions list page loads and renders a table, loading, or empty state
+tests/e2e/gander-studio-p9-sessions-feed-agentstats-t4.spec.ts :: t4-save-disabled: editor is read-only for doc-less session (Save absent; textarea read-only)
+tests/e2e/gander-studio-p9-sessions-feed-agentstats-t5.spec.ts :: t5-audit-card: AUD card renders audit grid only (no default-metrics column)
+tests/e2e/gander-studio-p9-sessions-feed-agentstats-t5.spec.ts :: t5-default-card: non-CR/AUD card renders 3 metrics, no ✓/✗ grid
+tests/e2e/gander-studio-p9-sessions-feed-agentstats-t5.spec.ts :: t5-load: Analyze tab panel view renders stat grid with agent cards
+tests/e2e/graph-page.spec.ts :: filter interaction — toggling agent node-type removes agent nodes from DOM
+tests/e2e/graph-page.spec.ts :: load test — graph mode nav item and canvas are visible
+tests/e2e/graph-page.spec.ts :: primary interaction — dagre layout produces ≥2 nodes with distinct non-zero bounding boxes
+tests/e2e/layout-sidebar-removal.spec.ts :: BottomTabBar present at 390px and content has padding-bottom >= 56px
+tests/e2e/layout-sidebar-removal.spec.ts :: app-shell is single-column and BottomTabBar is present at 1200px
+tests/e2e/layout-sidebar-removal.spec.ts :: sidebar is not mounted in the DOM
+tests/e2e/loadout-list-panel.spec.ts :: clicking a list panel row does not throw and panel stays rendered
+tests/e2e/loadout-list-panel.spec.ts :: loadout list panel is visible on the compose page
+tests/e2e/overview-aggregate.spec.ts :: "None" button deselects all and shows no-sessions placeholder
+tests/e2e/overview-aggregate.spec.ts :: checkbox click does not navigate to session detail
+tests/e2e/overview-aggregate.spec.ts :: default: all sessions selected and aggregate stats panel is visible
+tests/e2e/p6-t2-agent-grouping.spec.ts :: aggregate panel card/row count equals distinct base codes from live aggregateStats
+tests/e2e/p6-t2-agent-grouping.spec.ts :: aggregate panel shows no per-instance agent_id labels (no #N suffix)
+tests/e2e/p6-t2-agent-grouping.spec.ts :: at least one base code was folded from 2+ instances (grouped count < raw count)
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts :: Browse page root testid is visible when Browse mode is active
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts :: Compose page root testid is visible when Compose mode is active
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts :: Edit page root testid is visible when Edit mode is active
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts :: Export page root testid is visible when Export mode is active
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts :: sessions list empty state renders no sessions found when list is empty
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts :: sessions list page is visible when sessions mode is active
+tests/e2e/prog-studio-sessions-2026-05-s2-list-edit-fe.spec.ts :: sessions list page renders table or empty/loading state
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: desktop 1280: rail visible, 3-col grid, no horizontal overflow
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: diagnostics footnote is visible when diagnostics counts are non-zero (live data)
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: empty: zero-member response renders the empty state with a Browse CTA
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: error: network failure renders the alert with a Retry that refetches to the default state
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: every visible card has a portrait, a code label, and exactly 3 stat bars
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: fresh load renders the party screen with >=3 real roster codes and stat bars
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: hover reveals the popover with raw stat values and an as-of date
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: keyboard focus reveals the popover immediately (no hover delay)
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: keyboard tab order: rail items in RAIL_ITEMS order, then party cards in DOM order
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: legibility spot-check: title and RoleTag colors resolve to real, distinguishable values
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: loading: 6 skeleton cards render while roster.getParty is pending
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: mobile 390: rail hidden, 1-col grid, no horizontal overflow, BottomTabBar covers nav
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: no regression: BottomTabBar renders 9 tabs; switching to Sessions and Programs still works
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: rail: Programs click lands on the Programs destination marker
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: rail: Progression click lands on the Progression destination marker
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: rail: Roster carries aria-current="page" on the party surface (intended nav side-effect of the Roster->party re-point)
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: rail: Roster click lands on the party-home destination marker
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: rail: Sessions click lands on the Sessions destination marker
+tests/e2e/prog-studio-v2-2026-07-s2-party-shell.spec.ts :: whole-card is keyboard-operable: Tab+Enter triggers selection deterministically, even after sustained focus (regression guard for the focus-oscillation defect fixed in t3-rem)
+tests/e2e/prog-studio-v2-2026-07-s3-drilldowns.spec.ts :: DI honest-empty detail: a role with no spec on disk renders honest empty panels, never a crash
+tests/e2e/prog-studio-v2-2026-07-s3-drilldowns.spec.ts :: PROOF 1 — Browse absorption: agent-detail renders Materia/Equipment/Abilities panels with live data
+tests/e2e/prog-studio-v2-2026-07-s3-drilldowns.spec.ts :: PROOF 2 — Graph absorption: relationship panel renders a visible edge + DETECTED/INFERRED legend
+tests/e2e/prog-studio-v2-2026-07-s3-drilldowns.spec.ts :: PROOF 3a — Edit absorption: revise dialog opens with explicit role/aria-modal + focus, edits save via the real mutation (mocked at the network boundary)
+tests/e2e/prog-studio-v2-2026-07-s3-drilldowns.spec.ts :: a11y: detail page heading structure has no level skips and all panel headings are present
+tests/e2e/prog-studio-v2-2026-07-s3-drilldowns.spec.ts :: a11y: detail page is keyboard-operable — Tab reaches the revise trigger, Enter activates it, Back-to-party returns via keyboard
+tests/e2e/prog-studio-v2-2026-07-s3-drilldowns.spec.ts :: back-to-party: detail-back click returns to the party surface
+tests/e2e/prog-studio-vision-2026-06-s5-reconcile.spec.ts :: BrowsePage renders without duplicate-key React warning for hooks
+tests/e2e/prog-studio-vision-2026-06-s5-reconcile.spec.ts :: archivist derives intel role producing --mb color token (SC3 runtime)
+tests/e2e/prog-studio-vision-2026-06-s5-reconcile.spec.ts :: meta-yellow token (--my) resolves correctly as control case
+tests/e2e/prog-studio-vision-s1-contrast-smoke.spec.ts :: Browse: foreground text contrast >= 4.5:1 on dark surface
+tests/e2e/prog-studio-vision-s1-contrast-smoke.spec.ts :: Export: page renders without invisible-text collision
+tests/e2e/prog-studio-vision-s1-contrast-smoke.spec.ts :: Input: text and border contrast >= 4.5:1 on surface (bg-transparent ancestor walk)
+tests/e2e/prog-studio-vision-s1-contrast-smoke.spec.ts :: Muted-foreground: placeholder/caption contrast >= 4.5:1 after alpha bump (0.38->0.55)
+tests/e2e/prog-studio-vision-s1-contrast-smoke.spec.ts :: Sessions: muted labels contrast >= 4.5:1
+tests/e2e/prog-studio-vision-s1-contrast-smoke.spec.ts :: Token integrity: no stock Shadcn light oklch values survive in @layer base :root
+tests/e2e/prog-studio-vision-s2-d1-export.spec.ts :: D1: canvas-store initial orchestrator node makes loadout non-empty and export button enabled when dir typed
+tests/e2e/prog-studio-vision-s2-d1-export.spec.ts :: D1: export.spawn POST payload contains non-empty agents array (real canvas data, not compose-store)
+tests/e2e/prog-studio-vision-s2-d1-export.spec.ts :: D1: invalid target dir name disables export button and shows inline error
+tests/e2e/prog-studio-vision-s2-d2-edit-save.spec.ts :: D2: EditPage is visible and file picker trigger is present
+tests/e2e/prog-studio-vision-s2-d2-edit-save.spec.ts :: D2: Save triggers real trpc agent.save mutation (payload captured at network boundary)
+tests/e2e/prog-studio-vision-s2-d2-edit-save.spec.ts :: D2: With no file selected, Save button is disabled and Save-as-New button is disabled
+tests/e2e/prog-studio-vision-s2-d3-session-buffer.spec.ts :: D3: Sessions list page is visible and shows session rows
+tests/e2e/prog-studio-vision-s2-d4-prose-slug.spec.ts :: D4: gander-studio-p2-p3 (prose-H1 sprint) shows non-zero event count in Overview tab
+tests/e2e/prog-studio-vision-s2-d4-prose-slug.spec.ts :: D4: sessions list is visible and contains at least one row
+tests/e2e/prog-studio-vision-s2-d5-confirm.spec.ts :: D5-confirm: ExportPage body text uses near-white foreground (s1 token --w active)
+tests/e2e/prog-studio-vision-s2-d5-confirm.spec.ts :: D5-confirm: ExportPage inputs are visible on dark surface
+tests/e2e/prog-studio-vision-s2-d5-confirm.spec.ts :: D5-confirm: typed text in both ExportPage inputs has WCAG AA contrast (>= 4.5:1)
+tests/e2e/prog-studio-vision-s3-planning.spec.ts :: empty / error state — no unhandled JS exceptions on Planning visit
+tests/e2e/prog-studio-vision-s3-planning.spec.ts :: load test — Planning tab visible and sprint headings render
+tests/e2e/prog-studio-vision-s3-planning.spec.ts :: primary interaction — expand sprint shows item row with kind badge
+tests/e2e/prog-studio-vision-s3-program-dag.spec.ts :: empty/error state — no unhandled JS exceptions on Programs visit
+tests/e2e/prog-studio-vision-s3-program-dag.spec.ts :: load test — Programs tab visible and DAG canvas renders
+tests/e2e/prog-studio-vision-s3-program-dag.spec.ts :: primary interaction — dagre layout produces ≥2 nodes with distinct bounding boxes
+tests/e2e/prog-studio-vision-s4-legibility.spec.ts :: Load: ProgressionPage XP bars have correct aria semantics and non-zero geometry
+tests/e2e/prog-studio-vision-s4-mute.spec.ts :: Load: mute toggle is visible in the header and keyboard-accessible
+tests/e2e/prog-studio-vision-s4-mute.spec.ts :: Mute gate: when muted, aria-pressed=true confirms audio gate is armed
+tests/e2e/prog-studio-vision-s4-mute.spec.ts :: Primary interaction: clicking mute toggle flips aria-pressed and persists
+tests/e2e/prog-studio-vision-s4-reduced-motion.spec.ts :: Load: app loads cleanly under reduced-motion emulation
+tests/e2e/prog-studio-vision-s4-reduced-motion.spec.ts :: Primary: .mode-enter and .skeleton-shimmer classes show animation:none under reduced-motion
+tests/e2e/prog-studio-vision-s4-reduced-motion.spec.ts :: Progression: count-up shows final value immediately under reduced-motion
+tests/e2e/prog-studio-vision-s4-render-loop.spec.ts :: GraphPage: zero render-loop errors when visiting graph surface with hover interaction
+tests/e2e/prog-studio-vision-s4-render-loop.spec.ts :: ProgressionPage: zero render-loop errors when visiting progression surface
+tests/e2e/prog-studio-vision-s4-render-loop.spec.ts :: Sessions/AgentTimeline: zero render-loop errors when visiting timeline surface
+tests/e2e/progression.spec.ts :: empty/error state — loading state or error card is shown when data is unavailable
+tests/e2e/progression.spec.ts :: load test — Progression nav tab is present and renders the page
+tests/e2e/progression.spec.ts :: primary interaction — at least one real sprint_id is visible in the ledger

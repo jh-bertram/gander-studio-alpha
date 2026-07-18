@@ -30,27 +30,6 @@ export const HookSchema = z.object({
   body: z.string(),
 });
 
-// Loadout — user-composed selection of agents, skills, hooks
-export const LoadoutSchema = z.object({
-  name: z.string(),
-  agents: z.array(z.string()),
-  skills: z.array(z.string()),
-  hooks: z.array(z.string()),
-  createdAt: z.string(),
-  connections: z.array(z.object({ source: z.string(), target: z.string() })).default([]),
-  cardTitle: z.string().optional(),
-});
-
-// ExportInputSchema — input for export.spawn procedure
-export const ExportInputSchema = z.object({
-  loadout: LoadoutSchema,
-  targetDirName: z
-    .string()
-    .regex(/^[a-zA-Z0-9_-]+$/, 'Invalid directory name'),
-  includeStandards: z.boolean().default(false),
-  targetBasePath: z.string().optional(),
-});
-
 // EventLogEntrySchema — one parsed JSONL event-log line
 // ev is z.string() (not z.enum) — live corpus has open-ended event types
 export const EventLogEntrySchema = z.object({
@@ -75,12 +54,14 @@ export const AgentActivitySchema = z.object({
   critique_blocks: z.number(),
   audit_passes: z.number(),
   audit_fails: z.number(),
+  files_touched: z.number(),
   wall_clock_ms: z.number().optional(),
 });
 export type AgentActivity = z.infer<typeof AgentActivitySchema>;
 
 // SessionSchema — top-level parsed session object
 // gap_classes/.default([]) and status/type/.optional() allow frontmatter-less files to parse
+// has_after_action: true (default) for doc-backed sessions; false for synthetics from event logs
 export const SessionSchema = z.object({
   id: z.string(),
   sprint: z.string(),
@@ -92,6 +73,7 @@ export const SessionSchema = z.object({
   filePath: z.string(),
   editedFilePath: z.string().optional(),
   source_root: z.string(),
+  has_after_action: z.boolean().default(true),
   agents: z.array(AgentActivitySchema),
   events: z.array(EventLogEntrySchema),
 });
@@ -168,8 +150,8 @@ const ConnectivityNodeDataSchema = z.object({
   // rule/ref-specific
   size_lines: z.number().optional(),
   // hook-specific
-  event_type: z.string().optional(),
-  matcher: z.string().optional(),
+  event_type: z.string().nullable().optional(),   // null on hooks lacking an event_type (e.g. aa-close-gate.sh)
+  matcher: z.string().nullable().optional(),       // null on hooks lacking a matcher
   // eval-specific
   agent_under_test: z.string().optional(),
   // claudemd-specific
@@ -267,53 +249,6 @@ export const ProgressionEntrySchema = z.object({
 export type ProgressionEntry = z.infer<typeof ProgressionEntrySchema>;
 
 // ---------------------------------------------------------------------------
-// Planning Backlog — output of planning.list procedure
-// Sources: docs/deferred-work.md (DEFERRED-NNN items) + docs/task-registry.md (sprint rows)
-// ---------------------------------------------------------------------------
-
-export const PlanningItemSchema = z.object({
-  /** Identifier: DEFERRED-NNN slug or sprint task_id */
-  id: z.string(),
-  /** Short title / heading text */
-  title: z.string(),
-  /** 'deferred' | 'done' | 'sprint-goal' | 'sprint-task' */
-  kind: z.enum(['deferred', 'done', 'sprint-goal', 'sprint-task']),
-  /** Full text body of the item */
-  body: z.string(),
-  /** Schedule-as line (deferred items only) */
-  scheduleAs: z.string().optional(),
-  /** Sprint this item belongs to */
-  sprint: z.string(),
-  /** ISO-8601 resolution date for done items */
-  resolvedAt: z.string().optional(),
-  /** Rollback commit sha (sprint items only) */
-  rollbackCommit: z.string().optional(),
-});
-export type PlanningItem = z.infer<typeof PlanningItemSchema>;
-
-export const PlanningSprintSchema = z.object({
-  /** Sprint id, e.g. "gander-studio-p7-graph-viz" */
-  sprint: z.string(),
-  /** Sprint goal text */
-  goal: z.string().optional(),
-  /** Sprint status string */
-  status: z.string().optional(),
-  /** All items in this sprint */
-  items: z.array(PlanningItemSchema),
-});
-export type PlanningSprint = z.infer<typeof PlanningSprintSchema>;
-
-export const PlanningListInputSchema = z.object({});
-export type PlanningListInput = z.infer<typeof PlanningListInputSchema>;
-
-export const PlanningListOutputSchema = z.object({
-  sprints: z.array(PlanningSprintSchema),
-  /** Number of source files that failed to parse (allSettled-skipped) */
-  skipped: z.number(),
-});
-export type PlanningListOutput = z.infer<typeof PlanningListOutputSchema>;
-
-// ---------------------------------------------------------------------------
 // Program DAG — output of program.getDag procedure
 // Source: docs/programs/*/program.md markdown tables
 // Node shape is compatible with React Flow (id, type, position, data).
@@ -376,3 +311,93 @@ export type ProgramGetDagInput = z.infer<typeof ProgramGetDagInputSchema>;
 
 export const ProgramGetDagOutputSchema = z.array(ProgramDagSchema);
 export type ProgramGetDagOutput = z.infer<typeof ProgramGetDagOutputSchema>;
+
+// ---------------------------------------------------------------------------
+// Party / Agent-Detail — v2 roster contract (roster.getParty, roster.getAgentDetail)
+// Analogy vocabulary is BINDING: equipment=tools, materia={skills,hooks}, abilities=workflows.
+// Source: docs/programs/prog-studio-v2-2026-07/sprints/.../orchestrator_brief.md
+// ---------------------------------------------------------------------------
+
+export const FeasibilitySchema = z.enum(['available', 'projected']);
+export type Feasibility = z.infer<typeof FeasibilitySchema>;
+
+export const PartyStatBarSchema = z.object({
+  label: z.string(),                // "Activity" | "Stamina" | "Accuracy"
+  raw: z.number().nullable(),       // underlying value (spawn count, rate fraction) or null when N/A
+  normalized: z.number().nullable(),// 0-100, or null when N/A
+  derivation: z.string(),           // derivation id, e.g. 'activity-spawns-normalized'
+  feasibility: FeasibilitySchema,
+  reason: z.string().optional(),    // populated when normalized is null (the N/A reason)
+});
+export type PartyStatBar = z.infer<typeof PartyStatBarSchema>;
+
+export const PartyMemberSchema = z.object({
+  code: z.string(),                                             // canonical role code, e.g. 'FE'
+  roleCategory: z.enum(['Impl', 'Command', 'Intel', 'Meta', 'Gate']),
+  materiaColorKey: z.string(),                                  // RUNTIME token NAME, e.g. '--mg' (never a hex)
+  portraitSeed: z.string(),                                     // deterministic, asset-free seed
+  stats: z.array(PartyStatBarSchema),
+  lastActivityTs: z.string().nullable(),                        // ISO ts of most-recent event; null if none
+  hasCorpusActivity: z.boolean(),                                // false for DI etc. — surfaced, never hidden
+});
+export type PartyMember = z.infer<typeof PartyMemberSchema>;
+
+export const PartyStatsSchema = z.object({                      // roster.getParty OUTPUT (envelope)
+  members: z.array(PartyMemberSchema),                          // sorted by activity recency (desc)
+  diagnostics: z.object({
+    totalRawLines: z.number(),
+    validEntries: z.number(),
+    invalidLineCount: z.number(),                               // schema-invalid lines COUNTED, not dropped
+    invalidLineSamples: z.array(z.string()),                    // truncated samples for observability
+    distinctEventTypes: z.number(),                             // §2.3 coverage
+    uncountedEventTypes: z.number(),                             // ev types no parser counts
+  }),
+  activityAnchor: z.number(),                                   // live max-spawns anchor (MEASURED at runtime)
+});
+export type PartyStats = z.infer<typeof PartyStatsSchema>;
+
+export const EquipmentSchema = z.object({ tool: z.string() });   // tools have no file provenance
+export type Equipment = z.infer<typeof EquipmentSchema>;
+
+export const MateriaSchema = z.object({
+  kind: z.enum(['skill', 'hook']),
+  name: z.string(),
+  provenancePath: z.string(),                                   // filePath under GANDER_ROOT
+});
+export type Materia = z.infer<typeof MateriaSchema>;
+
+export const AbilitySchema = z.object({
+  name: z.string(),
+  provenancePath: z.string(),
+});
+export type Ability = z.infer<typeof AbilitySchema>;
+
+export const RelationshipEdgeSchema = z.object({
+  target: z.string(),
+  edgeType: z.string(),
+  confidence: z.enum(['DETECTED', 'INFERRED']),
+});
+export type RelationshipEdge = z.infer<typeof RelationshipEdgeSchema>;
+
+export const QualityStatSchema = z.object({
+  label: z.string(),
+  raw: z.number().nullable(),
+  normalized: z.number().nullable(),
+  derivation: z.string(),
+  feasibility: FeasibilitySchema,
+  attribution: z.enum(['implementer-backward-look', 'direct-agent-id', 'gate-renderer']),
+});
+export type QualityStat = z.infer<typeof QualityStatSchema>;
+
+export const AgentDetailSchema = z.object({                     // roster.getAgentDetail OUTPUT
+  code: z.string(),
+  roleCategory: z.enum(['Impl', 'Command', 'Intel', 'Meta', 'Gate']),
+  materiaColorKey: z.string(),
+  equipment: z.array(EquipmentSchema),                          // tools
+  materia: z.object({ skills: z.array(MateriaSchema), hooks: z.array(MateriaSchema) }),
+  abilities: z.array(AbilitySchema),                            // workflows
+  relationships: z.array(RelationshipEdgeSchema),               // connectivity subset
+  qualityStats: z.array(QualityStatSchema),
+  dataQualityNotes: z.array(z.string()),                        // surfaced gaps (silent-empty forbidden)
+});
+export type AgentDetail = z.infer<typeof AgentDetailSchema>;

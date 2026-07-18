@@ -206,6 +206,7 @@ function parseAgentActivity(body: string): AgentActivity[] {
       audit_passes: data.audit_passes,
       audit_fails: data.audit_fails,
       feedback_loops: feedbackLoopsByAgent.get(agentId) ?? 0,
+      files_touched: 0,
       wall_clock_ms: wallClockMs,
     });
   }

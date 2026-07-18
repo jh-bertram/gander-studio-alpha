@@ -354,30 +354,11 @@ test('Analyze tab is disabled — aria-disabled true and Coming in S3 title', as
   await expect(analyzeTab).toHaveAttribute('title', 'Coming in S3');
 });
 
-// ─── t6b: Existing pages smoke regression (SC10) ─────────────────────────────
-test('Browse page root testid is visible when Browse mode is active', async ({ page }) => {
-  await page.goto('http://localhost:5173');
-  await page.locator('text=Browse').first().click();
-  await expect(page.getByTestId('browse-page')).toBeVisible({ timeout: 5000 });
-});
-
-test('Compose page root testid is visible when Compose mode is active', async ({ page }) => {
-  await page.goto('http://localhost:5173');
-  await page.locator('text=Compose').first().click();
-  await expect(page.getByTestId('compose-page')).toBeVisible({ timeout: 5000 });
-});
-
-test('Edit page root testid is visible when Edit mode is active', async ({ page }) => {
-  await page.goto('http://localhost:5173');
-  await page.locator('text=Edit').first().click();
-  await expect(page.getByTestId('edit-page')).toBeVisible({ timeout: 5000 });
-});
-
-test('Export page root testid is visible when Export mode is active', async ({ page }) => {
-  await page.goto('http://localhost:5173');
-  await page.locator('text=Export').first().click();
-  await expect(page.getByTestId('export-page')).toBeVisible({ timeout: 5000 });
-});
+// t6b: Existing pages smoke regression (SC10) — REMOVED (s4 FE-1b): these 4 sub-tests clicked
+// the retired v1 NAV_ITEMS labels (Browse/Compose/Edit/Export), which no longer exist in any nav
+// surface (RAIL_ITEMS has only Roster/Sessions/Progression/Programs). Per the packet's explicit
+// instruction, only these 4 obsolete sub-tests are removed; every other KEEP Sessions test in
+// this file is left intact.
 
 // ─── t6b-contrast: Editor textarea text is readable (color differs from background) ──
 test('Editor textarea text is readable (color differs from background)', async ({ page }) => {

@@ -1,18 +1,10 @@
-# CR latest — gander-studio-p6-overview-polish (rev1 re-check — Stage 3: COMPLETE — PASS)
+# CR latest — prog-studio-v2-2026-07-s5-integration (CR#1)
 
-Status: CRITIQUE_PASS (CR#1, rev1)
-
-Prior BLOCK's 1 blocker + 3 warnings re-verified:
-- BLOCKER (t1 RIGHT_PAD outside svg width): RESOLVED. svg width=contentWidth byte-identical (packet line 119), `Math.max(containerWidth, ...)` floor byte-identical (123-124), RIGHT_PAD folded INSIDE via plotAreaWidth/plotRight (77-78). normX/tick/orphan barEndX/baseline x2 re-anchored. Traced: plotRight <= contentWidth in all cases → no short-session scrollbar. Zoom + empty-state untouched.
-- W1 (t1 e2e boundingBox): RESOLVED (SC8 a-d: label right edge <= svg, bar right edge < svg, scrollWidth<=clientWidth).
-- W2 (t2 roster-agnostic): RESOLVED (SC12 no "AR"; SC13 /#\d+$/).
-- W3 (vitest ^4): RESOLVED (SC4/SC5, node env).
-
-2 new WARNINGs surfaced (non-blocking):
-- t2: e2e intercepts session.getStats; overview is served by session.aggregateStats (SessionListPage:336 / useAggregateStats:15). Retarget interception or assert purely on DOM.
-- t1: degenerate narrowest-session band (contentBarAreaActual==600) collapses RIGHT_PAD to 0 → cosmetic half-label overhang; bounded, no scrollbar.
-
-Verified OK: wall_clock_ms grouping mirrors aggregate-stats.ts; AgentStatPanel/Table git-diff guard (SC14); badge deferred (no gold-plating).
-
-Output: .claude/agents/tasks/outputs/gander-studio-p6-overview-polish-CR-rev1-1780012100.md
-Did NOT touch docs/events/ this pass.
+## Stage 3: COMPLETE — CRITIQUE_PASS
+Verdict: PASS. 0 BLOCKERs, 4 WARNINGs.
+- OVERSCOPED/t3: 4-file trigger literally met but comment-only + brief-sanctioned + SC-3h guard -> WARNING, not BLOCKER; ORC may optionally split client/server/docs.
+- AUDIT_RISK/SPRINT: intra-packet SC labels (SC-1x..SC-4x) off-by-one vs program SC-2..SC-5; program SC-1 discharged -> traceability hazard.
+- AUDIT_RISK/t1: focus-refactor equivalence; auditor must RUN s3-drilldowns suite (verified 8/8 baseline-green), not lint-only.
+- AUDIT_RISK/t3: SC-3b greps only line 203 while 197-202 also stale (in-scope-faithful; optional cleanup).
+Verified on-disk this turn: dialog/popover/ReviseSpecAction/RelationshipPanel/deferred-work facts; 3 paraphrased grep tokens EXACT; s3 8/8 green + 0 red.
+Output: .claude/tasks/outputs/prog-studio-v2-2026-07-s5-integration-CR-1784347867.md

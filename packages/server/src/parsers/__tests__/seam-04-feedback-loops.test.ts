@@ -35,6 +35,7 @@ const STUB_SESSION: Session = {
   sprint: 'seam04-parity-task',
   date: '2026-05-20',
   gap_classes: [],
+  has_after_action: true,
   filePath: '/tmp/seam04-parity-task.md',
   source_root: '/tmp',
   agents: [],

@@ -1,0 +1,30 @@
+<commit_record schema_version="2.0">
+  <task_id>prog-studio-v2-2026-07-s4-retirement</task_id>
+  <generated>2026-07-11T05:15:00Z</generated>
+  <provenance_marker>commit-packet@2.0.0</provenance_marker>
+  <inputs>
+    <completion_packet path=".claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-{FE-1a,FE-1b,navshell-rem,FE-2,FE-3,FE-CAT,FE-4}-FE-*.md + -BE-1-BE-*.md + -DOCS-1-FE-*.md + -DOCS-1-rem-FE-*.md"/>
+    <audit_verdict path="ten -AUD- verdicts, see ceremony commit 3acdfab; all SA=PASS QA=PASS SX=SECURE (DOCS-1 via reaudit)"/>
+  </inputs>
+  <branch_type>two-commit</branch_type>
+  <preflight_checks>
+    <secret_pattern_grep>CLEAN — no .env/.key/.pem/.secret in any staging set</secret_pattern_grep>
+    <pre_stage_scope_check>PASS — ceremony commit 3acdfab absorbed all orchestration M-state first; every subsequent durability staging set ⊆ packet enumerations; D-partition count-asserted (FE2=15, FE3=9, FE4=23, BE1=2 == AUD-verified sets)</pre_stage_scope_check>
+    <out_of_packet_classification>
+      <path status="benign-orchestration" reason="214 untracked legacy outputs predate the sprint; left uncommitted by design"/>
+    </out_of_packet_classification>
+  </preflight_checks>
+  <deviation_note>Cross-task file bundling (SKILL §Cross-Task File Bundling rule 2): shared nav files with intermingled multi-wave diffs (ui-store.ts, ModeContent.tsx, PartyPage.tsx, s2-party-shell + render-loop specs) assigned to last-touching packet FE-4's commit 9cd19da; contributing packets' commit bodies cite the bundling. DOCS-1-rem folded into DOCS-1 commit per remediation-fold convention. All 10 constituent audit PASSes pre-date every commit.</deviation_note>
+  <commits>
+    <commit><sha>3acdfab</sha><subject>chore(orchestration): prog-studio-v2-2026-07-s4-retirement ceremony</subject><staged_paths><path>65 orchestration files (event logs, agent logs, registry, checkpoint, sprint outputs)</path></staged_paths><trailers><task>prog-studio-v2-2026-07-s4-retirement</task><audit>none (ceremony class)</audit></trailers></commit>
+    <commit><sha>41eddd9</sha><subject>feat(v2-nav): hoist SubmenuRail into AppShell as global primary nav</subject><staged_paths><path>AppShell.tsx</path><path>globals.css</path><path>SubmenuRail.tsx</path></staged_paths><trailers><task>prog-studio-v2-2026-07-s4-retirement-FE-1a</task><audit>PASS</audit></trailers><packet_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-1a-FE-1783718024.md</packet_source></commit>
+    <commit><sha>272859b</sha><subject>feat(v2-nav): retire 9-tab NAV_ITEMS, fold rail into bottom bar &lt;640px</subject><staged_paths><path>navigation.ts</path><path>BottomTabBar.tsx</path><path>9 migrated e2e specs</path></staged_paths><trailers><task>prog-studio-v2-2026-07-s4-retirement-FE-1b</task><audit>PASS</audit></trailers><packet_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-1b-FE-1783719780.md</packet_source></commit>
+    <commit><sha>c7121b9</sha><subject>test(v2-detail): scale a11y tab bound to measured RF focusable count</subject><staged_paths><path>prog-studio-v2-2026-07-s3-drilldowns.spec.ts</path></staged_paths><trailers><task>prog-studio-v2-2026-07-s4-retirement-navshell-rem</task><audit>PASS</audit></trailers><packet_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-navshell-rem-FE-1783736674.md</packet_source></commit>
+    <commit><sha>b9896bf</sha><subject>feat(v2-retire): delete Compose surface (pages, store, components, 8 specs)</subject><staged_paths><path>15 deletions + playwright.config.ts</path></staged_paths><trailers><task>prog-studio-v2-2026-07-s4-retirement-FE-2</task><audit>PASS</audit></trailers><packet_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-2-FE-1783734546.md</packet_source></commit>
+    <commit><sha>1755e42</sha><subject>feat(v2-retire): delete Export and Planning surfaces</subject><staged_paths><path>9 deletions</path></staged_paths><trailers><task>prog-studio-v2-2026-07-s4-retirement-FE-3</task><audit>PASS</audit></trailers><packet_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-3-FE-1783738694.md</packet_source></commit>
+    <commit><sha>280173f</sha><subject>feat(v2-catalog): add 13-role RosterCatalogPage + Tier-2 spec</subject><staged_paths><path>RosterCatalogPage.tsx</path><path>FE-CAT.spec.ts</path></staged_paths><trailers><task>prog-studio-v2-2026-07-s4-retirement-FE-CAT</task><audit>PASS</audit></trailers><packet_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-CAT-FE-1783740756.md</packet_source></commit>
+    <commit><sha>9cd19da</sha><subject>feat(v2-retire): delete absorbed Browse/Graph/Edit; AppMode to 6 v2 members</subject><staged_paths><path>23 deletions + bundled shared files (ui-store, ModeContent, PartyPage, 3 specs)</path></staged_paths><trailers><task>prog-studio-v2-2026-07-s4-retirement-FE-4</task><audit>PASS</audit></trailers><packet_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-FE-4-FE-1783744272.md</packet_source></commit>
+    <commit><sha>abbe8c7</sha><subject>feat(v2-retire): remove 6 compose-era tRPC procedures (24 to 18)</subject><staged_paths><path>router.ts</path><path>schemas.ts</path><path>types.ts</path><path>2 parser deletions</path></staged_paths><trailers><task>prog-studio-v2-2026-07-s4-retirement-BE-1</task><audit>PASS</audit></trailers><packet_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-BE-1-BE-1783748323.md</packet_source></commit>
+    <commit><sha>a7e4b96</sha><subject>docs(v2): refresh CLAUDE.md + DESIGN.md to v2 reality; record deferrals</subject><staged_paths><path>CLAUDE.md</path><path>DESIGN.md</path><path>docs/deferred-work.md</path></staged_paths><trailers><task>prog-studio-v2-2026-07-s4-retirement-DOCS-1</task><audit>PASS</audit></trailers><packet_source>.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-DOCS-1-FE-1783749491.md + -DOCS-1-rem-FE-1783750782.md</packet_source></commit>
+  </commits>
+</commit_record>
