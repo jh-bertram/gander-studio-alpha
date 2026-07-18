@@ -342,3 +342,25 @@ Manual observations:
 - **The legacy dangling-spec problem is substantially dissolved rather than accumulated:** s3 left ~55 legacy reds pointing at retired-by-design routes; s4 deleted 33 spec files WITH their surfaces and migrated 11 more, leaving a 26-file/125-test suite whose 44 remaining reds are enumerated line-by-line in `BASELINE-red.txt` — a classified floor, not an unknown.
 - **Known stale-reference residue (declared, unowned by design):** `program-dag-parser.test.ts:197-203` doc-comment citing the removed `exportRouter.spawn` (BEP#1 flagged, low-sev, no owner assigned); `v2-design-spec.md:324` still names the old rail aria-label and a stale router.ts STUDIO_ROOT comment (CR#3 parked both as future-pass items). Cosmetic FS residue: empty `components/{browse,edit,graph}/` dirs, `quickcheck{,2}.mjs`.
 - **Doc-graph health improved:** CLAUDE.md's surfaces/procedures/architecture nodes were re-derived from disk and audit-verified (including the one false edge — the ConnectivityGraphSchema "no consumer" claim — caught and corrected in-sprint), so the repo's primary onboarding document points at real nodes again for the first time since the v2 program began.
+
+---
+
+## Addendum — SC-5 Amendment Human Ratification (2026-07-18)
+
+**Decision: RATIFIED.** On 2026-07-18T03:55Z the human explicitly ratified the PM amend1
+rewrite of s4 SC-5 — original "Full e2e suite green" (unsatisfiable against the 44-red
+pre-existing legacy floor classified in `.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-BASELINE-red.txt`)
+→ amended "KEEP-suites green (32/32) + zero NEW regressions vs the fresh 115g/67r baseline
+at `6c58f40`". REQVAL had validated the amended form and the 2026-07-11 human 4.5 walkthrough
+accepted the delivered state; this addendum supplies the previously missing explicit human
+signature on the SC rewrite itself.
+
+Consequences:
+- Skein drift-register row 20 (`docs/programs/prog-studio-v2-2026-07/skein-report.md`,
+  the only open cross-sibling drift) is **discharged**.
+- The baseline files `.claude/tasks/outputs/prog-studio-v2-2026-07-s4-retirement-BASELINE-{green,red}.txt`
+  (115 green / 67 red at `6c58f40`) are now the **authoritative regression reference** for
+  future sprints in this repo.
+
+Decision captured at session resume (RESUME seq 1, `docs/events/agent-events-2026-07-18.jsonl`)
+via explicit human choice; recorded by ORC#0.
