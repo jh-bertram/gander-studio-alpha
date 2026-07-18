@@ -38,8 +38,8 @@ const PANEL_TESTID = 'detail-relationship-panel';
 const PANEL_HEADING_ID = 'detail-relationship-panel-heading';
 const PANEL_ICON_SIZE = 18;
 
-const RELATIONSHIP_NODE_WIDTH = 180;
-const NODE_HORIZONTAL_GAP = 220;
+const RELATIONSHIP_NODE_WIDTH = 150;
+const NODE_HORIZONTAL_GAP = 150;
 const NODE_VERTICAL_GAP = 76;
 const CANVAS_HEIGHT_PX = 240;
 
