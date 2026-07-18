@@ -321,7 +321,7 @@ individually) with `aria-label` summarizing the card's agent code and role.
 - EmptyPartyState and ErrorPartyState containers: `role="status"` (empty) / `role="alert"`
   (error) so assistive tech announces the state change without requiring focus to move there
   manually.
-- SubmenuRail: `role="navigation"` with `aria-label="Party screen submenus"`; on mobile, the
+- SubmenuRail: `role="navigation"` with `aria-label="Main navigation"`; on mobile, the
   BottomTabBar fallback keeps its existing `role="tablist"`/`role="tab"` pattern, unchanged.
     </aria_requirements>
   </accessibility_spec>

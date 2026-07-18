@@ -43,7 +43,7 @@ const t = initTRPC.create();
 
 // ---------------------------------------------------------------------------
 // Studio root — the gander-studio-alpha repo root (NOT GANDER_ROOT).
-// Planning and program.md files live here, not in the agent gander repo.
+// program.md files live here, not in the agent gander repo.
 // Resolves 3 levels up from packages/server/src/router.ts → repo root.
 // ---------------------------------------------------------------------------
 // router.ts lives at packages/server/src/router.ts

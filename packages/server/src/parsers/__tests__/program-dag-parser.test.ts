@@ -194,10 +194,9 @@ describe('parseProgramDags — allSettled-and-skip', () => {
   });
 });
 
-// ─── 4. export.spawn containment guard ───────────────────────────────────────
+// ─── 4. (historical) export.spawn containment guard — REMOVED ────────────────
 
-// Note: the export.spawn router guard is tested via the router, but we document
-// here that the security check enforces EXPORT_BASE_DIR + path.sep prefix.
-// The guard rejects paths like '/tmp/gander-exports-evil' when EXPORT_BASE_DIR
-// is '/tmp/gander-exports' (missing path.sep suffix would allow sibling bypass).
-// This comment is documentation; the actual guard is in router.ts exportRouter.spawn.
+// Note: export.spawn — and the EXPORT_BASE_DIR + path.sep prefix containment guard that
+// gated it — was removed from router.ts in s4 BE-1 (prog-studio-v2-2026-07-s4-retirement).
+// There is no longer a router procedure to test here; this section is retained only as a
+// historical marker that a containment-guard test once lived at this location.
