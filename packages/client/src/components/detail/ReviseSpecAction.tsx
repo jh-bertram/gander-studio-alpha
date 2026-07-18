@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { Agent, Skill } from '@gander-studio/shared';
 import { trpc } from '@/trpc';
 import {
@@ -45,9 +45,10 @@ export default function ReviseSpecAction({ target }: ReviseSpecActionProps) {
 
   // Explicit focus targets (s2 AA §6 G2, BINDING) — never rely on base-ui's default open/close
   // focus behavior. `triggerRef` doubles as the DialogTrigger's own DOM ref and the `finalFocus`
-  // target; `textareaRef` is the ultimate `initialFocus` target so focus lands on the editable
-  // content, not the popup shell — see the t3-rem2 comment below for how that's made
-  // deterministic against the async-loaded Textarea.
+  // target; `textareaRef` is the ultimate focus target passed to `<DialogContent
+  // focusTargetRef>` so focus lands on the editable content, not the popup shell — see the
+  // `readyToFocus` comment below for how that's made deterministic against the async-loaded
+  // Textarea.
   const triggerRef = useRef<HTMLButtonElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -82,38 +83,13 @@ export default function ReviseSpecAction({ target }: ReviseSpecActionProps) {
     // reducer's structural drop of stale loads).
   }, [loadedRecord, key]);
 
-  // prog-studio-v2-2026-07-s3-drilldowns-t3-rem2 — base-ui's `initialFocus` ref resolves via a
-  // queueMicrotask fired once, synchronously, right after the dialog opens — BEFORE the async
-  // trpc.agent.get/skill.get query resolves. `<Textarea ref={textareaRef}>` only mounts once
-  // `!isLoading`, which is never true on that first microtask tick for a cold open, so
-  // `textareaRef.current` is null when base-ui resolves it and it falls back to the first
-  // tabbable element (the Cancel button) instead. `initialFocus={() => textareaRef.current ?? false}`
-  // below still lets base-ui land on the textarea for free in the rare case it's already mounted
-  // (a cache-hit open where isLoading is false synchronously); this effect is the deterministic
-  // path that covers every other case by focusing the textarea itself once it actually exists.
-  // `hasFocusedOnOpenRef` resets on every close and fires at most once per open so it never yanks
-  // focus away from a user mid-edit (e.g. after a save completes and isLoading is unaffected, or
-  // on any other re-render once the initial focus has already landed).
-  const hasFocusedOnOpenRef = useRef(false);
-
-  useEffect(() => {
-    if (!open) {
-      hasFocusedOnOpenRef.current = false;
-    }
-  }, [open]);
-
-  useLayoutEffect(() => {
-    if (
-      open &&
-      !isLoading &&
-      !loadError &&
-      !hasFocusedOnOpenRef.current &&
-      textareaRef.current
-    ) {
-      textareaRef.current.focus();
-      hasFocusedOnOpenRef.current = true;
-    }
-  }, [open, isLoading, loadError]);
+  // prog-studio-v2-2026-07-s5-integration-t1 — the deterministic post-mount focus fallback
+  // (base-ui's `initialFocus` ref resolves synchronously on a single microtask right after open,
+  // BEFORE the async trpc.agent.get/skill.get query resolves and `<Textarea>` mounts, so a bare
+  // `initialFocus` ref is null on that tick for a cold open) now lives in the `ui/dialog`
+  // wrapper's `focusOnReady` mechanism (`useDialogSafeFocus`) instead of being hand-rolled here.
+  // `readyToFocus` is the wrapper's "target is ready" signal.
+  const readyToFocus = !isLoading && !loadError;
 
   const agentSaveMutation = trpc.agent.save.useMutation();
   const skillSaveMutation = trpc.skill.save.useMutation();
@@ -176,7 +152,9 @@ export default function ReviseSpecAction({ target }: ReviseSpecActionProps) {
       <DialogContent
         role="dialog"
         aria-modal="true"
-        initialFocus={() => textareaRef.current ?? false}
+        open={open}
+        focusTargetRef={textareaRef}
+        focusOnReady={readyToFocus}
         finalFocus={triggerRef}
         style={{
           background: 'var(--sfh)',
